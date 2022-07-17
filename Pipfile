@@ -5,8 +5,12 @@ name = "pypi"
 
 [packages]
 django = "*"
+redis = "*"
+celery = "*"
+requests = "*"
+docker = "*"
 
 [dev-packages]
 
 [requires]
-python_version = "3.10"
+python_version = "3.8.10"
