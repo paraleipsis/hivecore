@@ -1,7 +1,6 @@
 from django.urls import path, include
 from . import views
 from rest_framework.routers import DefaultRouter
-import pprint
 
 # urlpatterns = [
 #     path('images/', views.image_list),
@@ -19,6 +18,13 @@ import pprint
 
 router = DefaultRouter()
 router.register(r'images', views.ImagesViewSet, basename='images')
+router.register(r'containers', views.ContainersViewSet, basename='containers')
+router.register(r'networks', views.NetworksViewSet, basename='networks')
+router.register(r'volumes', views.VolumesViewSet, basename='volumes')
+router.register(r'services', views.ServicesViewSet, basename='services')
+router.register(r'nodes', views.NodesViewSet, basename='nodes')
+router.register(r'swarm', views.SwarmViewSet, basename='swarm')
+router.register(r'status', views.StatusViewSet, basename='status')
 
 
 urlpatterns = router.urls
