@@ -1,7 +1,8 @@
-from rest_framework.decorators import api_view
+from dataclasses import fields
 from rest_framework.response import Response
 from rest_framework.viewsets import ViewSet
-
+from .serializers import ImageSerializer
+from .tasks import *
 
 import redis
 import json
@@ -10,6 +11,13 @@ redis_instance = redis.StrictRedis(decode_responses=True)
 
 
 class ImagesViewSet(ViewSet):
+    serializer_class = ImageSerializer
+
+    def create(self, request):
+        serializer = ImageSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        pull_image.delay(serializer.data)
+        return Response(serializer.data)
 
     def list(self, request, format=None):
         items = json.loads(redis_instance.get('/images'))
@@ -63,4 +71,3 @@ class StatusViewSet(ViewSet):
     def list(self, request, format=None):
         items = json.loads(redis_instance.get('/status'))
         return Response(items)
-

@@ -48,9 +48,23 @@ def sort_docker_stuff():
                 current_info_list.append({'ip': ip, 'host': host, 'type': endpoints[endpoint], 'items': collections})
             else:
                 for collection in collections:
+                    if endpoints[endpoint] == '/nodes':
+                        host = collection['Description']['Hostname']
+                        ip = collection['Status']['Addr']
                     current_info_list.append({'ip': ip, 'host': host, 'type': endpoints[endpoint], 'items': collection})
 
         redis_instance.set(f"{endpoints[endpoint]}", json.dumps({'count': len(current_info_list), 'result': current_info_list}))
         # redis_instance.set(f"{endpoints[endpoint]}", json.dumps(current_info_list))
 
     return None
+
+
+@shared_task
+def pull_image(data):
+    headers = {'content-type': 'application/json', 'Accept-Charset': 'UTF-8'}
+    nodes = json.loads(redis_instance.get('/nodes'))['result']
+    ip = [x for x in nodes if x['host'] == data['node']][0]['ip']
+    data = json.dumps({'params': {'image': data['image']}, 'task': 'image_pull'})
+    r = requests.post(f"http://{ip}:8001", headers=headers, data=data)  # response code for sending data
+    print(r)
+    print(ip)
