@@ -18,8 +18,14 @@ from rest_framework.routers import DefaultRouter
 
 router = DefaultRouter()
 router.register(r'images', views.ImagesViewSet, basename='images')
+router.register(r'images/build', views.BuildImagesViewSet, basename='build')
+
 router.register(r'containers', views.ContainersViewSet, basename='containers')
+router.register(r'containers/create_container', views.CreateContainerViewSet, basename='create_container')
+
 router.register(r'networks', views.NetworksViewSet, basename='networks')
+router.register(r'networks/create_network', views.CreateNetworkViewSet, basename='create_network')
+
 router.register(r'volumes', views.VolumesViewSet, basename='volumes')
 router.register(r'services', views.ServicesViewSet, basename='services')
 router.register(r'nodes', views.NodesViewSet, basename='nodes')
