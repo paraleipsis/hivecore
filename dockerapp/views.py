@@ -1,9 +1,11 @@
-from traceback import print_tb
 from rest_framework.response import Response
 from rest_framework.viewsets import ViewSet, ModelViewSet, GenericViewSet
 from rest_framework.views import APIView
 from rest_framework.mixins import CreateModelMixin, ListModelMixin
-from .serializers import ContainerSerializer, ImageSerializer, BuildImageSerializer, CreateContainerSerializer, CreateNetworkSerializer, NetworkSerializer
+from .serializers import ContainerSerializer, ImageSerializer, BuildImageSerializer, CreateContainerSerializer, \
+                            CreateNetworkSerializer, NetworkSerializer, CreateVolumeSerializer, VolumesSerializer, \
+                                ConfigsSerializer, CreateConfigSerializer, SecretsSerializer, CreateSecretSerializer, \
+                                    ServicesSerializer, CreateServiceSerializer
 from .tasks import *
 import redis
 import json
@@ -123,17 +125,87 @@ class CreateNetworkViewSet(ViewSet):
 
 
 class VolumesViewSet(ViewSet):
+    serializer_class = VolumesSerializer
 
     def list(self, request, format=None):
         items = json.loads(redis_instance.get('/volumes'))
         return Response(items)
 
 
+class CreateVolumeViewSet(ViewSet):
+    serializer_class = CreateVolumeSerializer
+
+    def list(self, request, format=None):
+        return Response('ok')
+
+    def create(self, request):
+        serializer = CreateVolumeSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        create_volume.delay(serializer.data)
+        return Response(serializer.data)
+
+
+class ConfigsViewSet(ViewSet):
+    serializer_class = ConfigsSerializer
+
+    def list(self, request, format=None):
+        items = json.loads(redis_instance.get('/configs'))
+        return Response(items)
+
+
+class CreateConfigViewSet(ViewSet):
+    serializer_class = CreateConfigSerializer
+
+    def list(self, request, format=None):
+        return Response('ok')
+
+    def create(self, request):
+        serializer = CreateConfigSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        create_config.delay(serializer.data)
+        return Response(serializer.data)
+
+
+class SecretsViewSet(ViewSet):
+    serializer_class = SecretsSerializer
+
+    def list(self, request, format=None):
+        items = json.loads(redis_instance.get('/secrets'))
+        return Response(items)
+
+
+class CreateSecretViewSet(ViewSet):
+    serializer_class = CreateSecretSerializer
+
+    def list(self, request, format=None):
+        return Response('ok')
+
+    def create(self, request):
+        serializer = CreateSecretSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        create_secret.delay(serializer.data)
+        return Response(serializer.data)
+
+
 class ServicesViewSet(ViewSet):
+    serializer_class = ServicesSerializer
 
     def list(self, request, format=None):
         items = json.loads(redis_instance.get('/services'))
         return Response(items)
+
+
+class CreateServiceViewSet(ViewSet):
+    serializer_class = CreateServiceSerializer
+
+    def list(self, request, format=None):
+        return Response('ok')
+
+    def create(self, request):
+        serializer = CreateServiceSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        create_service.delay(serializer.data)
+        return Response(serializer.data)
 
 
 class NodesViewSet(ViewSet):

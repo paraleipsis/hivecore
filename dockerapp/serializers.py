@@ -1,5 +1,3 @@
-from cgi import print_form
-from requests import request
 from rest_framework import serializers
 import json
 from .tasks import redis_instance
@@ -80,7 +78,9 @@ class NetworkSerializer(serializers.Serializer):
 class CreateNetworkSerializer(serializers.Serializer):
    name = serializers.CharField(required=True)
    node = serializers.ChoiceField(required=True, choices=[node['host'] for node in json.loads(redis_instance.get('/nodes'))['result']])
-   driver = serializers.ChoiceField(required=False, choices=['bridge', 'overlay'])
+
+   network_plugins = json.loads(redis_instance.get('/status'))['result'][0]['items']['Plugins']['Network']
+   driver = serializers.ChoiceField(required=False, choices=network_plugins)
    options = serializers.CharField(style={'base_template': 'textarea.html'}, required=False)
 
    # ipv4 config
@@ -105,3 +105,45 @@ class CreateNetworkSerializer(serializers.Serializer):
    labels = serializers.CharField(style={'base_template': 'textarea.html'}, required=False)
    scope = serializers.ChoiceField(required=False, choices=['local', 'global', 'swarm'])
    internal = serializers.BooleanField(required=False)
+
+
+class VolumesSerializer(serializers.Serializer):
+   volume_id = serializers.CharField(required=True)
+
+
+class CreateVolumeSerializer(serializers.Serializer):
+   name = serializers.CharField(required=True)
+   node = serializers.ChoiceField(required=True, choices=[node['host'] for node in json.loads(redis_instance.get('/nodes'))['result']])
+
+   volume_plugins = json.loads(redis_instance.get('/status'))['result'][0]['items']['Plugins']['Volume']
+   driver = serializers.ChoiceField(required=False, choices=volume_plugins)
+   driver_opts = serializers.CharField(style={'base_template': 'textarea.html'}, required=False)
+
+   labels = serializers.CharField(style={'base_template': 'textarea.html'}, required=False)
+
+
+class ConfigsSerializer(serializers.Serializer):
+   config_name = serializers.CharField(required=True)
+
+
+class CreateConfigSerializer(serializers.Serializer):
+   name = serializers.CharField(required=True)
+   node = serializers.ChoiceField(required=True, choices=[node['host'] for node in json.loads(redis_instance.get('/nodes'))['result']])
+
+
+class SecretsSerializer(serializers.Serializer):
+   secret_name = serializers.CharField(required=True)
+
+
+class CreateSecretSerializer(serializers.Serializer):
+   name = serializers.CharField(required=True)
+   node = serializers.ChoiceField(required=True, choices=[node['host'] for node in json.loads(redis_instance.get('/nodes'))['result']])
+
+
+class ServicesSerializer(serializers.Serializer):
+   service_name = serializers.CharField(required=True)
+
+
+class CreateServiceSerializer(serializers.Serializer):
+   name = serializers.CharField(required=True)
+   node = serializers.ChoiceField(required=True, choices=[node['host'] for node in json.loads(redis_instance.get('/nodes'))['result']])

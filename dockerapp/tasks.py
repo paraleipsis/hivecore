@@ -1,3 +1,4 @@
+import dataclasses
 import json
 import requests
 import docker
@@ -30,13 +31,14 @@ def collect_docker_stuff():
 @shared_task
 def sort_docker_stuff():
     items = json.loads(redis_instance.get('docker_stuff')) # json with info from hosts to list
-    endpoints = ['/status', '/images', '/containers', '/networks', '/volumes', '/services', '/nodes', '/swarm']
+    endpoints = ['/status', '/images', '/containers', '/networks', '/volumes', '/services', '/nodes', '/swarm', '/configs', '/secrets']
 
     for endpoint in range(len(endpoints)): # sort by endpoints
         current_info_list = []
         for i in range(len(items)):
 
-            if endpoint >= 5 and items[i]['endpoints']['/status']['Swarm']['ControlAvailable'] is False: # if not manager skip  ['/services', '/nodes', '/swarm']
+            # if not manager skip  ['/services', '/nodes', '/swarm', 'configs', 'secrets']
+            if endpoint >= 5 and items[i]['endpoints']['/status']['Swarm']['ControlAvailable'] is False:
                 continue
 
             ip = items[i]['ip']
@@ -53,7 +55,6 @@ def sort_docker_stuff():
                     current_info_list.append({'ip': ip, 'host': host, 'type': endpoints[endpoint], 'items': collection})
 
         redis_instance.set(f"{endpoints[endpoint]}", json.dumps({'count': len(current_info_list), 'result': current_info_list}))
-        # redis_instance.set(f"{endpoints[endpoint]}", json.dumps(current_info_list))
 
     return None
 
@@ -140,7 +141,6 @@ def create_container(data):
 
     data = json.dumps({'params': {x: data[x] for x in data if x not in "node"}, 'task': 'create_container'})
 
-    print(data)
     requests.post(f"http://{ip}:8001", headers=headers, data=data)  # response code for sending data
 
 
@@ -176,5 +176,50 @@ def create_network(data):
         data['labels'] = {k: v for d in [{j[0]: j[1]} for j in [i.split(':') for i in data['labels'].split('\r\n')]] for k, v in d.items()}
 
     data = json.dumps({'params': {x: data[x] for x in data if x not in "node"}, 'task': 'create_network'})
+    requests.post(f"http://{ip}:8001", headers=headers, data=data)  # response code for sending data
+
+
+@shared_task
+def create_volume(data):
+    headers = {'content-type': 'application/json', 'Accept-Charset': 'UTF-8'}
+    nodes = json.loads(redis_instance.get('/nodes'))['result']
+    ip = [x for x in nodes if x['host'] == data['node']][0]['ip']
+
+    if 'driver_opts' in data.keys():
+        data['driver_opts'] = {k: v for d in [{j[0]: j[1]} for j in [i.split('=') for i in data['driver_opts'].split('\r\n')]] for k, v in d.items()}
+
+    if 'labels' in data.keys():
+        data['labels'] = {k: v.strip() for d in [{j[0]: j[1]} for j in [i.split(':') for i in data['labels'].split('\r\n')]] for k, v in d.items()}
+
+    data = json.dumps({'params': {x: data[x] for x in data if x not in "node"}, 'task': 'create_volume'})
+    requests.post(f"http://{ip}:8001", headers=headers, data=data)  # response code for sending data
+
+
+@shared_task
+def create_config(data):
+    headers = {'content-type': 'application/json', 'Accept-Charset': 'UTF-8'}
+    nodes = json.loads(redis_instance.get('/nodes'))['result']
+    ip = [x for x in nodes if x['host'] == data['node']][0]['ip']
+    data = json.dumps({'params': {x: data[x] for x in data if x not in "node"}, 'task': 'create_config'})
+    print(data)
+    requests.post(f"http://{ip}:8001", headers=headers, data=data)  # response code for sending data
+
+
+@shared_task
+def create_secret(data):
+    headers = {'content-type': 'application/json', 'Accept-Charset': 'UTF-8'}
+    nodes = json.loads(redis_instance.get('/nodes'))['result']
+    ip = [x for x in nodes if x['host'] == data['node']][0]['ip']
+    data = json.dumps({'params': {x: data[x] for x in data if x not in "node"}, 'task': 'create_secret'})
+    print(data)
+    requests.post(f"http://{ip}:8001", headers=headers, data=data)  # response code for sending data
+
+
+@shared_task
+def create_service(data):
+    headers = {'content-type': 'application/json', 'Accept-Charset': 'UTF-8'}
+    nodes = json.loads(redis_instance.get('/nodes'))['result']
+    ip = [x for x in nodes if x['host'] == data['node']][0]['ip']
+    data = json.dumps({'params': {x: data[x] for x in data if x not in "node"}, 'task': 'create_service'})
     print(data)
     requests.post(f"http://{ip}:8001", headers=headers, data=data)  # response code for sending data
