@@ -162,8 +162,13 @@ class CreateConfigViewSet(ViewSet):
     def create(self, request):
         serializer = CreateConfigSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        create_config.delay(serializer.data)
-        return Response(serializer.data)
+
+        serialized_data = serializer.data  # copy of serializer.data (property returns OrderedDict - immutable)
+        if 'data_path' in serializer.data.keys():
+            serialized_data['data_path'] = request.data['data_path'].read().decode("utf-8")  # change key that contains null to data from file
+
+        create_config.delay(serialized_data)
+        return Response(serialized_data)
 
 
 class SecretsViewSet(ViewSet):
@@ -183,8 +188,13 @@ class CreateSecretViewSet(ViewSet):
     def create(self, request):
         serializer = CreateSecretSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        create_secret.delay(serializer.data)
-        return Response(serializer.data)
+
+        serialized_data = serializer.data  # copy of serializer.data (property returns OrderedDict - immutable)
+        if 'data_path' in serializer.data.keys():
+            serialized_data['data_path'] = request.data['data_path'].read().decode("utf-8")  # change key that contains null to data from file
+
+        create_secret.delay(serialized_data)
+        return Response(serialized_data)
 
 
 class ServicesViewSet(ViewSet):

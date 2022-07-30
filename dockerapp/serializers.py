@@ -130,6 +130,19 @@ class CreateConfigSerializer(serializers.Serializer):
    name = serializers.CharField(required=True)
    node = serializers.ChoiceField(required=True, choices=[node['host'] for node in json.loads(redis_instance.get('/nodes'))['result']])
 
+   data_path = serializers.FileField(required=False)
+   data_field = serializers.CharField(style={'base_template': 'textarea.html'}, required=False)
+
+   def validate(self, data):
+      data_path = data.get('data_path', None)
+      data_field = data.get('data_field', None)
+      if not data_path and not data_field:
+         raise serializers.ValidationError("specify config")
+
+      return data
+
+   labels = serializers.CharField(style={'base_template': 'textarea.html'}, required=False)
+
 
 class SecretsSerializer(serializers.Serializer):
    secret_name = serializers.CharField(required=True)
@@ -138,6 +151,19 @@ class SecretsSerializer(serializers.Serializer):
 class CreateSecretSerializer(serializers.Serializer):
    name = serializers.CharField(required=True)
    node = serializers.ChoiceField(required=True, choices=[node['host'] for node in json.loads(redis_instance.get('/nodes'))['result']])
+
+   data_path = serializers.FileField(required=False)
+   data_field = serializers.CharField(style={'base_template': 'textarea.html'}, required=False)
+
+   def validate(self, data):
+      data_path = data.get('data_path', None)
+      data_field = data.get('data_field', None)
+      if not data_path and not data_field:
+         raise serializers.ValidationError("specify secret")
+
+      return data
+
+   labels = serializers.CharField(style={'base_template': 'textarea.html'}, required=False)
 
 
 class ServicesSerializer(serializers.Serializer):

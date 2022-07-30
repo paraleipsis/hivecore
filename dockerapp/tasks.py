@@ -75,14 +75,10 @@ def build_image(data):
     ip = [x for x in nodes if x['host'] == data['node']][0]['ip']
 
     if 'dockerfile_path' in data.keys():
-        # fileobj = data['dockerfile_path']
         data['fileobj'] = data.pop('dockerfile_path')
-
     else:
-        # fileobj = data['dockerfile_field']
         data['fileobj'] = data.pop('dockerfile_field')
 
-    # data = json.dumps({'params': {'fileobj': fileobj, 'tag': data['tag']}, 'task': 'image_build'})
     data = json.dumps({'params': {x: data[x] for x in data if x not in "node"}, 'task': 'image_build'})
     requests.post(f"http://{ip}:8001", headers=headers, data=data)  # response code for sending data
 
@@ -200,8 +196,16 @@ def create_config(data):
     headers = {'content-type': 'application/json', 'Accept-Charset': 'UTF-8'}
     nodes = json.loads(redis_instance.get('/nodes'))['result']
     ip = [x for x in nodes if x['host'] == data['node']][0]['ip']
+
+    if 'data_path' in data.keys():
+        data['data'] = data.pop('data_path')
+    else:
+        data['data'] = data.pop('data_field')
+
+    if 'labels' in data.keys():
+        data['labels'] = {k: v.strip() for d in [{j[0]: j[1]} for j in [i.split(':') for i in data['labels'].split('\r\n')]] for k, v in d.items()}
+
     data = json.dumps({'params': {x: data[x] for x in data if x not in "node"}, 'task': 'create_config'})
-    print(data)
     requests.post(f"http://{ip}:8001", headers=headers, data=data)  # response code for sending data
 
 
@@ -210,6 +214,15 @@ def create_secret(data):
     headers = {'content-type': 'application/json', 'Accept-Charset': 'UTF-8'}
     nodes = json.loads(redis_instance.get('/nodes'))['result']
     ip = [x for x in nodes if x['host'] == data['node']][0]['ip']
+
+    if 'data_path' in data.keys():
+        data['data'] = data.pop('data_path')
+    else:
+        data['data'] = data.pop('data_field')
+
+    if 'labels' in data.keys():
+        data['labels'] = {k: v.strip() for d in [{j[0]: j[1]} for j in [i.split(':') for i in data['labels'].split('\r\n')]] for k, v in d.items()}
+
     data = json.dumps({'params': {x: data[x] for x in data if x not in "node"}, 'task': 'create_secret'})
     print(data)
     requests.post(f"http://{ip}:8001", headers=headers, data=data)  # response code for sending data
