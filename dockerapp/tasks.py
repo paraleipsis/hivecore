@@ -235,4 +235,4 @@ def create_service(data):
     ip = [x for x in nodes if x['host'] == data['node']][0]['ip']
     data = json.dumps({'params': {x: data[x] for x in data if x not in "node"}, 'task': 'create_service'})
     print(data)
-    requests.post(f"http://{ip}:8001", headers=headers, data=data)  # response code for sending data
+    # requests.post(f"http://{ip}:8001", headers=headers, data=data)  # response code for sending data
