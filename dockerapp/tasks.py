@@ -1,7 +1,8 @@
-import dataclasses
 import json
+from typing import List
 import requests
 import docker
+from docker.types import TaskTemplate, ContainerSpec, ServiceMode, RestartPolicy, Mount, UpdateConfig, ConfigReference, SecretReference, EndpointSpec, NetworkAttachmentConfig
 import redis
 from celery import shared_task
 
@@ -146,23 +147,20 @@ def create_network(data):
     nodes = json.loads(redis_instance.get('/nodes'))['result']
     ip = [x for x in nodes if x['host'] == data['node']][0]['ip']
 
-    subnet, gateway  = '', ''
-    if 'subnet' in data.keys():
+    if 'subnet' in data.keys() and 'gateway' in data.keys():
         subnet = data.pop('subnet')
-
-    if 'gateway' in data.keys():
         gateway = data.pop('gateway')
 
-    ipam_pool = docker.types.IPAMPool(
-        subnet=subnet,
-        gateway=gateway
-    )
+        ipam_pool = docker.types.IPAMPool(
+            subnet=subnet,
+            gateway=gateway
+        )
 
-    ipam_config = docker.types.IPAMConfig(
-        pool_configs=[ipam_pool]
-    )
+        ipam_config = docker.types.IPAMConfig(
+            pool_configs=[ipam_pool]
+        )
 
-    data['ipam'] = ipam_config
+        data['ipam'] = ipam_config
 
     # com.docker.network.bridge.enable_icc=true | options from "a=a\r\nb=b" to ['a=a', 'b=b']
     if 'options' in data.keys():
@@ -170,6 +168,7 @@ def create_network(data):
 
     if 'labels' in data.keys():
         data['labels'] = {k: v for d in [{j[0]: j[1]} for j in [i.split(':') for i in data['labels'].split('\r\n')]] for k, v in d.items()}
+    print(data)
 
     data = json.dumps({'params': {x: data[x] for x in data if x not in "node"}, 'task': 'create_network'})
     requests.post(f"http://{ip}:8001", headers=headers, data=data)  # response code for sending data
@@ -230,9 +229,87 @@ def create_secret(data):
 
 @shared_task
 def create_service(data):
-    headers = {'content-type': 'application/json', 'Accept-Charset': 'UTF-8'}
-    nodes = json.loads(redis_instance.get('/nodes'))['result']
-    ip = [x for x in nodes if x['host'] == data['node']][0]['ip']
-    data = json.dumps({'params': {x: data[x] for x in data if x not in "node"}, 'task': 'create_service'})
-    print(data)
-    # requests.post(f"http://{ip}:8001", headers=headers, data=data)  # response code for sending data
+
+    def dict_from_dict(source_dict={}, keys=[]):
+        # form new dict from source dict with provided keys
+        return {x:source_dict[x] if x in source_dict else None for x in keys}
+
+    def field_mapping(data_dict, data_dict_key, sep=None, ports=False):
+        try:
+            # ports (no sht...)
+            if ports:
+                return {k: v for d in [{int(j[0]): int(j[1])} for j in [i.split(':') for i in data_dict[data_dict_key].split(',')]] for k, v in d.items()}
+            # labels or environment variables (a=a/a: a to {a: a})
+            return {k.strip(): v.strip() for d in [{j[0]: j[1]} for j in [i.split(sep) for i in data_dict[data_dict_key].split('\r\n')]] for k, v in d.items()}
+        except AttributeError:
+            return None
+
+    def none_check(reference):
+        i = field_mapping(data_dict=data, data_dict_key=reference, sep=':')
+        if i is not None:
+            if reference == 'secrets':
+                return [SecretReference(secret_id=v, secret_name=k) for k, v in i.items()]
+            return [ConfigReference(config_id=v, config_name=k) for k, v in i.items()]
+        return None
+
+    service = dict_from_dict(source_dict=data, keys=['service_name', 'labels'])
+    container_spec = dict_from_dict(source_dict=data, keys=['image', 'hostname', 'environment', 'working_dir', 'open_stdin', 'tty'])
+    mounts = dict_from_dict(source_dict=data, keys=['container_path', 'volume', 'read_only'])
+    restart_policy = dict_from_dict(source_dict=data, keys=['restart_condition', 'restart_delay', 'max_attempts', 'restart_window'])
+    endpoint_spec = dict_from_dict(source_dict=data, keys=['ports'])
+    update_config = dict_from_dict(source_dict=data, keys=['update_parallelism', 'update_delay', 'failure_action', 'update_order'])
+    service_mode = dict_from_dict(source_dict=data, keys=['scheduling_mode', 'replicas'])
+
+    secret = none_check('secrets')
+    config = none_check('configs')
+
+    container_spec['environment'] = field_mapping(data_dict=container_spec, data_dict_key='environment', sep='=')
+    endpoint_spec['ports'] = field_mapping(data_dict=endpoint_spec, data_dict_key='ports', ports=True)
+    service['labels'] = field_mapping(data_dict=service, data_dict_key='labels', sep=':')
+
+    if None in mounts.values():
+        mounts = None
+    else:
+        mounts = [Mount(target=mounts['container_path'], source=mounts['volume'], read_only=mounts['read_only'])]
+        
+
+    client.create_service(
+        task_template=TaskTemplate(
+            container_spec=ContainerSpec(
+                image=container_spec['image'],
+                hostname=container_spec['hostname'],
+                env=container_spec['environment'],
+                workdir=container_spec['working_dir'],
+                open_stdin=container_spec['open_stdin'],
+                tty=container_spec['tty'],
+                mounts=mounts,
+                secrets=secret,
+                configs=config
+            ),
+            restart_policy=RestartPolicy(
+                condition=restart_policy['restart_condition'],
+                delay=restart_policy['restart_delay'],
+                max_attempts=restart_policy['max_attempts'],
+                window=restart_policy['restart_window']
+            ),
+        ),
+        endpoint_spec=EndpointSpec(ports=endpoint_spec['ports']),
+        update_config=UpdateConfig(
+            parallelism=update_config['update_parallelism'], 
+            delay=update_config['update_delay'], 
+            failure_action=update_config['failure_action'], 
+            order=update_config['update_order']
+        ),
+        name=service['service_name'],
+        labels=service['labels'],
+        mode=ServiceMode(
+            mode=service_mode['scheduling_mode'], 
+            replicas=service_mode['replicas']
+        ),
+        networks=[NetworkAttachmentConfig(target=i) for i in data['networks']]
+    )
+
+    return None
+
+
+

@@ -214,7 +214,17 @@ class CreateServiceViewSet(ViewSet):
     def create(self, request):
         serializer = CreateServiceSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        create_service.delay(serializer.data)
+        serialized_data = serializer.data
+        print(serialized_data)
+
+        for i in ('configs', 'secrets'):
+            if len(serialized_data[i]) > 0:
+                serialized_data[i] = '\r\n'.join(serialized_data[i])
+            else:
+                serialized_data[i] = None
+
+        serialized_data['networks'] = list(serialized_data['networks'])
+        create_service.delay(serialized_data)
         return Response(serializer.data)
 
 

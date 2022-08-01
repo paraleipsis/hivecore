@@ -174,32 +174,34 @@ class ServicesSerializer(serializers.Serializer):
 
 
 class CreateServiceSerializer(serializers.Serializer):
-   name = serializers.CharField(required=True)
-   node = serializers.ChoiceField(required=True, choices=[node['host'] for node in json.loads(redis_instance.get('/nodes'))['result']])
+   service_name = serializers.CharField(required=True)
+   # node = serializers.ChoiceField(required=True, choices=[node['host'] for node in json.loads(redis_instance.get('/nodes'))['result']])
 
    image = serializers.CharField(required=True)
 
    ports = serializers.CharField(required=False)
 
    # replicated mode
-   mode = serializers.ChoiceField(choices=['replicated', 'global'])
+   scheduling_mode = serializers.ChoiceField(choices=['replicated', 'global'])
    replicas = serializers.IntegerField(min_value=1, required=False, default=1, initial=1)
 
    # login
+   hostname = serializers.CharField(required=False)
    working_dir = serializers.CharField(required=False)
    open_stdin = serializers.BooleanField(required=False)
    tty = serializers.BooleanField(required=False)
 
    # volumes
-   volumes = serializers.CharField(required=False)
+   container_path = serializers.CharField(required=False) # path in container
+   VOL_CHOISES = [net['items']['Name'] for net in json.loads(redis_instance.get('/volumes'))['result']]
+   VOL_CHOISES.insert(0, "None")
+   volume = serializers.ChoiceField(choices=VOL_CHOISES, required=False) # volume name
+   read_only = serializers.BooleanField(required=False)
 
    # network
-   net = [net['items']['Name'] for net in json.loads(redis_instance.get('/networks'))['result']]
-   net_id = [net['items']['Id'] for net in json.loads(redis_instance.get('/networks'))['result']]
-   host = [net['host'] for net in json.loads(redis_instance.get('/networks'))['result']]
-   NET_CHOISES = [':'.join(list(a)) for a in zip(net, host, net_id)]
+   NET_CHOISES = [net['items']['Name'] for net in json.loads(redis_instance.get('/networks'))['result']]
    NET_CHOISES.insert(0, "None")
-   network = serializers.ChoiceField(choices=NET_CHOISES)
+   networks = serializers.MultipleChoiceField(choices=NET_CHOISES, required=False, style={'base_template': 'checkbox_multiple.html'})
 
    # env
    environment = serializers.CharField(style={'base_template': 'textarea.html'}, required=False)
@@ -218,13 +220,13 @@ class CreateServiceSerializer(serializers.Serializer):
    configs = serializers.MultipleChoiceField(choices=CONF_CHOISES, style={'base_template': 'checkbox_multiple.html'}, required=False)
 
    # restart policy
-   condition = serializers.ChoiceField(choices=['none', 'on-failure', 'any'])
-   delay = serializers.IntegerField(min_value=0, required=False, default=5, initial=5)
+   restart_condition = serializers.ChoiceField(choices=['none', 'on-failure', 'any'])
+   restart_delay = serializers.IntegerField(min_value=0, required=False, default=5, initial=5)
    max_attempts = serializers.IntegerField(min_value=0, required=False, default=0, initial=0)
-   window = serializers.IntegerField(min_value=0, required=False, default=0, initial=0)
+   restart_window = serializers.IntegerField(min_value=0, required=False, default=0, initial=0)
 
    # update config
-   parallelism = serializers.IntegerField(min_value=0, required=False, default=1, initial=1)
-   delay = serializers.IntegerField(min_value=0, required=False, default=0, initial=0)
+   update_parallelism = serializers.IntegerField(min_value=0, required=False, default=1, initial=1)
+   update_delay = serializers.IntegerField(min_value=0, required=False, default=0, initial=0)
    failure_action = serializers.ChoiceField(choices=['continue', 'pause'])
-   order = serializers.ChoiceField(choices=['start_first', 'stop_first'])
+   update_order = serializers.ChoiceField(choices=['start-first', 'stop-first'])
