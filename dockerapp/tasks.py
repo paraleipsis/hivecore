@@ -1,10 +1,10 @@
 import json
-from typing import List
 import requests
 import docker
 from docker.types import TaskTemplate, ContainerSpec, ServiceMode, RestartPolicy, Mount, UpdateConfig, ConfigReference, SecretReference, EndpointSpec, NetworkAttachmentConfig
 import redis
 from celery import shared_task
+from requests.exceptions import ConnectionError
 
 
 # claim ip's
@@ -17,12 +17,15 @@ def collect_docker_stuff():
     res = []
     headers = {'content-type': 'application/json', 'Accept-Charset': 'UTF-8'}
     for ip in nodes:
-        res.append(
-            {
-                'ip': str(ip['Status']['Addr']),
-                'endpoints': json.loads(requests.get(f"http://{ip['Status']['Addr']}:8001", headers=headers).text)
-                }
-        )
+        try:
+            res.append(
+                {
+                    'ip': str(ip['Status']['Addr']),
+                    'endpoints': json.loads(requests.get(f"http://{ip['Status']['Addr']}:8001", headers=headers).text)
+                    }
+            )
+        except ConnectionError:
+            continue
 
         redis_instance.set("docker_stuff", json.dumps(res))
         

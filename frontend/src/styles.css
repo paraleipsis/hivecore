@@ -1,0 +1,108 @@
+body {
+    background-color: black;
+}
+
+* {
+    font-family: "Roboto", sans-serif;
+    color: white;
+}
+
+.button {
+    padding: 0.8em 1.8em;
+    border: 1px solid transparent;
+    position: relative;
+    overflow: hidden;
+    background-color: transparent;
+    text-align: center;
+    text-transform: uppercase;
+    font-size: 16px;
+    transition: .3s;
+    z-index: 1;
+    font-family: inherit;
+    color: white;
+   }
+   
+   .button::before {
+    content: '';
+    width: 0;
+    height: 300%;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) rotate(45deg);
+    background: white;
+    transition: .5s ease;
+    display: block;
+    z-index: -1;
+   }
+   
+   .button:hover::before {
+    width: 105%;
+   }
+   
+   .button:hover {
+    color: black;
+   }
+
+   .button_git img {
+    height: 30px;
+    width: 30px;
+  }
+
+   .button_git:hover img {
+    content: url("./components/images/git_icon_black.png");
+    transform: scale(1.1);
+  }
+
+
+  body, html {
+    margin: 0;
+    padding: 0;
+    padding-top: 45px;
+    
+  }
+
+  .main {
+    height: 90.5vh;
+    position: relative;
+    z-index: 0;
+    text-align: center;
+  }
+
+  .footer {
+    position: relative;
+    justify-content: space-between;
+    padding: 20px 40px;
+    bottom: 0;
+  }
+
+  .footer-logo {
+    font-size: 35px;
+  }
+
+  .copyright {
+    text-align: center;
+  }
+
+  
+
+  .main_info {
+    font-size: 50px;
+    color: white;  
+    position: absolute;
+    top: 50%;
+    left: 40.5%;
+    margin: -125px 0 0 -125px;
+  }
+
+  .p5Canvas {
+    position:absolute; 
+    bottom:0;
+    right:0;
+    left:0; 
+    margin:auto; 
+  
+    background: black;
+    z-index: -1;  
+  }
+
