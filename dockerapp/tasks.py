@@ -5,6 +5,7 @@ from docker.types import TaskTemplate, ContainerSpec, ServiceMode, RestartPolicy
 import redis
 from celery import shared_task
 from requests.exceptions import ConnectionError
+from hurry.filesize import size, si
 
 
 # claim ip's
@@ -35,7 +36,7 @@ def collect_docker_stuff():
 @shared_task
 def sort_docker_stuff():
     items = json.loads(redis_instance.get('docker_stuff')) # json with info from hosts to list
-    endpoints = ['/status', '/images', '/containers', '/networks', '/volumes', '/services', '/nodes', '/swarm', '/configs', '/secrets']
+    endpoints = ['/status', '/containers', '/images', '/networks', '/volumes', '/services', '/nodes', '/swarm', '/configs', '/secrets']
 
     for endpoint in range(len(endpoints)): # sort by endpoints
         current_info_list = []
@@ -49,6 +50,7 @@ def sort_docker_stuff():
             host = items[i]['endpoints']['/status']['Name']
             collections = items[i]['endpoints'][endpoints[endpoint]]
 
+            # '/swarm', '/status' enpoints return one dict instead of list of dicts so we dont need to iterate over it
             if endpoints[endpoint] in ('/swarm', '/status'):
                 current_info_list.append({'ip': ip, 'host': host, 'type': endpoints[endpoint], 'items': collections})
             else:
@@ -56,6 +58,51 @@ def sort_docker_stuff():
                     if endpoints[endpoint] == '/nodes':
                         host = collection['Description']['Hostname']
                         ip = collection['Status']['Addr']
+                    # if there is no tag take tags from digest
+                    if endpoints[endpoint] == '/images':
+
+                        containers = json.loads(redis_instance.get('/containers'))['result']
+                        for container in containers:
+                            image = collection['Id']
+                            if image in container['items'].values():
+                                collection['Used_by'] = container['items']['Id']
+                                break
+                            else:
+                                collection['Used_by'] = 'unused'
+                        
+                        try:
+                            collection['Repository'] = collection['RepoDigests'][0][:collection['RepoDigests'][0].index('@')]
+                        except IndexError:
+                            collection['Repository'] = collection['RepoTags'][0][:collection['RepoTags'][0].index(':')]
+
+                        collection['Created'] = collection['Created'][:collection['Created'].index('.')].replace('T', ' ')
+
+                        # convert image size in bytes to mb
+                        collection['Size'] = size(collection['Size'], system=si)
+
+                        if 'ExposedPorts' in collection['Config']:
+                            collection['Config']['ExposedPorts'] = list(collection['Config']['ExposedPorts'].keys())
+                        else:
+                            collection['Config']['ExposedPorts'] = 'No Exposed Ports'
+
+                        if collection['Config']['Volumes']:
+                            collection['Config']['Volumes'] = list(collection['Config']['Volumes'].keys())
+                        else:
+                            collection['Config']['Volumes'] = 'No Volumes'
+
+                        if not collection['DockerVersion']:
+                            collection['DockerVersion'] = 'Docker'
+
+                        if not collection['Config']['Cmd']:
+                            collection['Config']['Cmd'] = 'No CMD'
+
+                        if not collection['Config']['Entrypoint']:
+                            collection['Config']['Entrypoint'] = 'No Entrypoint'
+
+                        if not collection['RepoTags']:
+                            for digest in collection['RepoDigests']:
+                                collection['RepoTags'].append(f"{digest[:digest.index('@')]}:<none>")
+
                     current_info_list.append({'ip': ip, 'host': host, 'type': endpoints[endpoint], 'items': collection})
 
         redis_instance.set(f"{endpoints[endpoint]}", json.dumps({'count': len(current_info_list), 'result': current_info_list}))

@@ -13,7 +13,7 @@ export default function App() {
 
         <div className='text-white'>
           <p className="footer-logo">
-            <img src={logo}  style={{ width: '100px', height: '100px' }}/>
+              <img src={logo}  style={{ width: '100px', height: '100px' }}/>
               Liquorice
           </p>
           <div className="border-top copyright">
@@ -25,7 +25,7 @@ export default function App() {
           <p>
             <a href='https://github.com/paraleipsis/liquorice' target="_blank">
                 <button className='button button_git col-md-9'>
-                  <img src={git_w}/>
+                  &nbsp;<img src={git_w}/>
                   GITHUB
                 </button>
                 
