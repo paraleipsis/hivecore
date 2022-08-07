@@ -1,7 +1,6 @@
 import React from "react";
-import logo from './images/favicon.png';
-import git_w from './images/git_icon_white.png';
-// import git_b from './images/git_icon_black.png';
+import logo from '../assets/images/favicon.png';
+import git_w from '../assets/images/git_icon_white.png';
 
 import { MDBFooter, MDBContainer, MDBRow, MDBCol, MDBIcon } from 'mdb-react-ui-kit';
 
@@ -16,7 +15,7 @@ export default function App() {
               <img src={logo}  style={{ width: '100px', height: '100px' }}/>
               Liquorice
           </p>
-          <div className="border-top copyright">
+          <div className="border-top footer-copyright">
             Copyright 2022 © by paraleipsis
           </div>
         </div>

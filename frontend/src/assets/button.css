@@ -1,0 +1,47 @@
+.button {
+    padding: 0.8em 1.8em;
+    border: 1px solid transparent;
+    position: relative;
+    overflow: hidden;
+    background-color: transparent;
+    text-align: center;
+    /* text-transform: uppercase; */
+    font-size: 15px;
+    transition: .3s;
+    z-index: 1;
+    font-family: inherit;
+    color: white;
+}
+   
+.button::before {
+    content: '';
+    width: 0;
+    height: 300%;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) rotate(45deg);
+    background: white;
+    transition: .5s ease;
+    display: block;
+    z-index: -1;
+}
+   
+.button:hover::before {
+    width: 105%;
+}
+   
+.button:hover {
+    color: black;
+}
+
+/* github image on footer button */
+.button_git img {
+    height: 30px;
+    width: 30px;
+}
+
+.button_git:hover img {
+    content: url("./images/git_icon_black.png");
+    transform: scale(1.1);
+}

@@ -1,0 +1,41 @@
+body, html {
+    background-color: black;
+    margin: 0;
+    padding: 0;
+    padding-top: 45px;
+    
+}
+  
+* {
+    font-family: "Roboto", sans-serif;
+    color: white;
+}
+
+/* main div block between navbar and footer */
+.main {
+    height: 90.5vh;
+    position: relative;
+    z-index: 0;
+    text-align: center;
+}
+
+/* home page informational title */
+.home-info {
+    font-size: 50px;
+    color: white;  
+    position: absolute;
+    top: 50%;
+    left: 40.5%;
+    margin: -125px 0 0 -125px;
+}
+
+/* animation on home page */
+.p5Canvas {
+    position:absolute; 
+    bottom:0;
+    right:0;
+    left:0; 
+    margin:auto; 
+    background: black;
+    z-index: -1;  
+}

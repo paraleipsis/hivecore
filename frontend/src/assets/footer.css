@@ -1,0 +1,14 @@
+.footer {
+    position: relative;
+    justify-content: space-between;
+    padding: 20px 40px;
+    bottom: 0;
+}
+
+.footer-logo {
+    font-size: 35px;
+}
+
+.footer-copyright {
+    text-align: center;
+}

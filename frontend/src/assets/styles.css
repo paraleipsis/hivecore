@@ -54,7 +54,7 @@ body, html {
   }
 
    .button_git:hover img {
-    content: url("./components/images/git_icon_black.png");
+    content: url("./images/git_icon_black.png");
     transform: scale(1.1);
   }
 
@@ -77,13 +77,13 @@ body, html {
     font-size: 35px;
   }
 
-  .copyright {
+  .footer-copyright {
     text-align: center;
   }
 
   
 
-  .main_info {
+  .home-info {
     font-size: 50px;
     color: white;  
     position: absolute;

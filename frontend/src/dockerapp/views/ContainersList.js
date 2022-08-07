@@ -1,71 +1,32 @@
 import  React, { Component } from  'react';
-import  ImagesService  from  './ImagesService';
+import  ContainersService  from  '../services/ContainersService';
 import 'bootstrap/dist/css/bootstrap.css';
 import Card from 'react-bootstrap/Card';
 
-const  imagesService  =  new  ImagesService();
+const  containersService  =  new ContainersService();
 
 
-
-class  ImagesList  extends  Component {
+class  ContainersList  extends  Component {
 
 constructor(props) {
 	super(props);
 	this.state  = {
-		images: [],
+		containers: [],
 	};
 }
 
-
 componentDidMount() {
 	var  self  =  this;
-	imagesService.getImages().then(function (data) {
-		self.setState({ images:  data.result})
+	containersService.getContainers().then(function (data) {
+		self.setState({ containers:  data.result})
 	});
 }
 
 openNav(info) {
     document.getElementById("mySidenav").style.width = "100%";
-    document.getElementById('image-id').innerHTML = info.items.Id;
-    document.getElementById('image-repo').innerHTML = info.items.Repository;
-    document.getElementById('image-container').innerHTML = info.items.Used_by;
-    document.getElementById('image-tags').innerHTML = info.items.RepoTags;
-    document.getElementById('image-size').innerHTML = info.items.Size;
-    document.getElementById('image-created').innerHTML = info.items.Created;
-    document.getElementById('image-host').innerHTML = info.host;
-    document.getElementById('image-docker-version').innerHTML = info.items.DockerVersion;
-    document.getElementById('image-os').innerHTML = info.items.Os;
-    document.getElementById('image-architecture').innerHTML = info.items.Architecture;
-
-    var labels = info.items.ContainerConfig.Labels;
-    var stringLabels = JSON.stringify(labels).replace(/[{}]/g, '').replace(/["]/g, '').split(',');
-    console.log(stringLabels)
-    if (stringLabels[0] != '' && stringLabels[0] != 'null') {
-        var bodyString = '';
-        $.each(stringLabels, function(index, label) {
-            bodyString += ('<tr><td>'+label+'</td><td>');
-        });
-        $('.image-labels tbody').html(bodyString);
-    } else {
-        $('.image-labels tbody').html('<tr><td>'+'No labels'+'</td><td>')
-    }
-
-    document.getElementById('image-cmd').innerHTML = info.items.Config.Cmd;
-    document.getElementById('image-entrypoint').innerHTML = info.items.Config.Entrypoint;
-    document.getElementById('image-exposedports').innerHTML = info.items.Config.ExposedPorts;
-    document.getElementById('image-volumes').innerHTML = info.items.Config.Volumes;
-
-    var envs = info.items.Config.Env;
-    // var stringLabels = JSON.stringify(labels).replace(/[{}]/g, '').replace(/["]/g, '').split(',');
-    var bodyString = '';
-    $.each(envs, function(index, env) {
-        bodyString += ('<tr><td>'+env+'</td><td>');
-    });
-    $('.image-env tbody').html(bodyString);
-
 };
 
-  closeNav() {
+closeNav() {
     document.getElementById("mySidenav").style.width = "0";
 };
 
@@ -73,19 +34,44 @@ AutoWidthColumns() {
     $(window).resize(function() {}).resize(); 
 }
 
+container_ports(ports) {
+    var size = Object.keys(ports).length;
+    var p_ports = ''
+
+    if (size > 0) {
+        for (var key in ports) {
+            if (ports[key]) {
+                for (var host_port in ports[key]) {
+                    p_ports += ports[key][host_port]['HostIp'] + ':' + ports[key][host_port]['HostPort'] + '->' + key + ', '
+                }
+            } else {
+                p_ports += key +  ', ';
+            }
+        }
+        console.log(p_ports)
+        return p_ports
+    }
+    return '-';
+}
+
 render() {
 
     return (
             <section className='images-section'>
+
                 <div id="main" className="images--list">
 
+                        {/* sidebar with specific container details */}
                         <div id="mySidenav" className="sidenav">
-                            <a className="closebtn" onClick={() => {this.closeNav()}}>&times;</a>
-                            <Card className='card-info'>
-                                <Card.Header className='image-info-header'>IMAGE DETAILS</Card.Header>
-                                <Card.Body className='image-info'>
 
-                                    {/* image details table */}
+                            <a className="closebtn" onClick={() => {this.closeNav()}}>&times;</a>
+
+                            <Card className='card-info card-container-details'>
+
+                                <Card.Header className='container-info-header'>CONTAINER DETAILS</Card.Header>
+                                <Card.Body className='container-info'>
+
+                                    {/* container details table */}
                                     <table id="table-details" className="table table-details" cellPadding="0" cellSpacing="0" border="0">
                                         <thead key="thead" className='tbl-header tbl-header-details'>
                                             <tr>
@@ -154,8 +140,9 @@ render() {
                                         </tbody>
 
                                     </table>
-                                    {/* image labels table */}
-                                    <table id="image-labels" className="table image-labels" cellPadding="0" cellSpacing="0" border="0">
+
+                                    {/* container labels table */}
+                                    <table id="container-labels" className="table container-labels" cellPadding="0" cellSpacing="0" border="0">
                                         <thead key="thead" className='tbl-header'>
                                             <tr>
                                                 <th>Labels</th>
@@ -163,15 +150,18 @@ render() {
                                         </thead>
                                         <tbody className='tbl-content'></tbody>
                                     </table>
-                                    {/* <Card.Title>ID</Card.Title>
-                                    <Card.Text id='image-info'></Card.Text> */}
+
                                 </Card.Body>
                             </Card>
+
                             <br/>
                             <br/>
-                            <Card className='card-info'>
+
+                            <Card className='card-info card-dockerfile-details'>
+
                                 <Card.Header className='image-info-header'>DOCKERFILE</Card.Header>
                                 <Card.Body className='image-info'>
+
                                     {/* image dockerfile table */}
                                     <table id="table-details-dockerfile" className="table table-details" cellPadding="0" cellSpacing="0" border="0">
                                         <thead key="thead" className='tbl-header tbl-header-details'>
@@ -219,38 +209,46 @@ render() {
                                     <Card.Text id='image-info'></Card.Text> */}
                                 </Card.Body>
                             </Card>
+
                             <br/>
                             <br/>
+
                         </div>
                         
-                        
-                        {/* main images table */}
+                        {/* main containers table */}
                         <table id="main-images-table" className="table main-images-table" cellPadding="0" cellSpacing="0" border="0">
                             <thead key="thead" className='tbl-header main-images-header'>
                                 <tr className='main-images-row'>
-                                    <th className='images-main-table-tags-header'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Tags</th>
+                                    <th className='images-main-table-tags-header'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Name</th>
                                     <th className='images-main-table-host-header'>Host</th>
-                                    <th>Repository</th>
-                                    <th>Container</th>
-                                    <th>ID</th>
-                                    <th>Size</th>
+                                    <th>Status</th>
+                                    <th>Image</th>
+                                    <th>IP Address</th>
+                                    <th>Ports</th>
                                     <th>Created</th>
                                 </tr>
                             </thead>
 
                             <tbody className='tbl-content main-images-content'>
-                                {this.state.images.map( c  =>
+                                {this.state.containers.map( c  =>
                                     <tr key={c.items.Id + c.host} className='main-images-row'>
-                                    <td><button onClick={() => {this.openNav(c)}} className='button'>{c.items.RepoTags}</button></td>
+                                    <td>
+                                        <button onClick={() => {this.openNav(c)}} className='button'>
+                                            {/* {c.items.Name} */}
+                                            {c.items.Name.length > 20 ? c.items.Name.slice(0, 20) + ' ...' : c.items.Name}
+                                        </button>
+                                    </td>
                                     <td className='images-main-table-host-body'>{c.host}</td>
-                                    <td>{c.items.Repository}</td>
-                                    <td>{c.items.Used_by.slice(0, 12)}</td>
-                                    <td>{c.items.Id.slice(c.items.Id.indexOf(':')+1, 19)}</td>
-                                    <td>{c.items.Size}</td>
-                                    <td className='main-images-created-data'>{c.items.Created}</td>
+                                    <td>{c.items.State.Status}</td>
+                                    {/* {console.log(this.container_ports(c.items.NetworkSettings.Ports))} */}
+                                    <td>{c.items.Config.Image.indexOf("@") > -1 ? c.items.Config.Image.slice(0, c.items.Config.Image.indexOf('@')) : c.items.Config.Image}</td>
+                                    <td>{Object.values(c.items.NetworkSettings.Networks)[0]['IPAddress'] != '' ? Object.values(c.items.NetworkSettings.Networks)[0]['IPAddress'] : '-'}</td>
+                                    <td>{this.container_ports(c.items.NetworkSettings.Ports)}</td>
+                                    <td className='main-images-created-data'>{c.items.Created.replace('T', ' ').slice(0, c.items.Created.indexOf('.'))}</td>
                                 </tr>)}
                             </tbody>
                         </table>
+                        
                         {this.AutoWidthColumns()}
                 </div>
             </section>
@@ -259,4 +257,4 @@ render() {
   }
 }
 
-export  default  ImagesList;
+export  default  ContainersList;

@@ -5,16 +5,20 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 
 import NavBar from './components/NavBar'
 import Footer from './components/Footer'
-import  ImagesList from './ImagesList';
-import  Animation from './Animation_render';
 
-import './styles.css'
+import  ImagesList from './dockerapp/views/ImagesList';
+import  ContainersList from './dockerapp/views/ContainersList';
+
+import  HomeAnimation from './liquorice/views/home/HomePage';
+
+import './assets/styles.css'
 
 const BaseLayout = () => (
   <div className="container-fluid">
     <div className="content">
-      <Route path="/" exact component={Animation} />
+      <Route path="/" exact component={HomeAnimation} />
       <Route path="/images" exact component={ImagesList} />
+      <Route path="/containers" exact component={ContainersList} />
     </div>
   </div>
   

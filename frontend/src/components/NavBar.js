@@ -23,7 +23,7 @@ function NavBar() {
             </MDBNavbarItem>
             
             <MDBNavbarItem>
-              <a href='/'><button className='button'>Features</button></a>
+              <a href='/containers'><button className='button'>Containers</button></a>
             </MDBNavbarItem>
             
           </MDBNavbarNav>
