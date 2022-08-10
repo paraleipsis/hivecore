@@ -1,0 +1,61 @@
+/* The side navigation menu */
+.sidenav {
+    height: 100%; 
+    width: 0; 
+    position: absolute; 
+    z-index: 1; 
+    top: 0; 
+    left: 0;
+    background-color: black; 
+    overflow-x: hidden; 
+    padding-top: 60px; 
+    transition: 0.5s; 
+}
+
+/* card header in sidebar */
+.image-info-header {
+    text-align: left;
+    border-bottom: 2px white;
+}
+
+/* card content in sidebar */
+.image-info {
+    text-align: left;
+}
+
+/* common card style in sidebar */
+.card-info {
+    border-radius: 0px;
+    border-left: 1px white solid;
+    margin-left: 400px;
+    margin-right: auto;
+    width: 50%;
+    background-color: black;
+}
+
+/* common table with details about objects in sidebar */
+.table-details thead, .table-details tbody {
+    display: inline-block;
+    word-break: break-all;
+}
+
+/* image labels/env tables in sidebar */
+.image-labels {
+    width: 600px;
+}
+
+.image-env {
+    width: 600px;
+}
+
+/* style of close button (top right corner) */
+.sidenav .closebtn {
+    cursor: pointer;
+    color: white;
+    text-decoration: none;
+    position: absolute;
+    top: 0;
+    right: 25px;
+    font-size: 36px;
+    margin-left: 50px;
+}

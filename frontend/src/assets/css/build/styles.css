@@ -1,0 +1,234 @@
+.button {
+  padding: 0.8em 1.8em;
+  border: 1px solid transparent;
+  position: relative;
+  overflow: hidden;
+  background-color: transparent;
+  text-align: center;
+  /* text-transform: uppercase; */
+  font-size: 15px;
+  transition: 0.3s;
+  z-index: 1;
+  font-family: inherit;
+  color: white;
+}
+
+.button::before {
+  content: "";
+  width: 0;
+  height: 300%;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) rotate(45deg);
+  background: white;
+  transition: 0.5s ease;
+  display: block;
+  z-index: -1;
+}
+
+.button:hover::before {
+  width: 105%;
+}
+
+.button:hover {
+  color: black;
+}
+
+/* github image on footer button */
+.button_git img {
+  height: 30px;
+  width: 30px;
+}
+
+.button_git:hover img {
+  content: url("../..//images/git_icon_black.png");
+  transform: scale(1.1);
+}
+
+.footer {
+  position: relative;
+  justify-content: space-between;
+  padding: 20px 40px;
+  bottom: 0;
+}
+
+.footer-logo {
+  font-size: 35px;
+}
+
+.footer-copyright {
+  text-align: center;
+}
+
+/* The side navigation menu */
+.sidenav {
+  height: 100%;
+  width: 0;
+  position: absolute;
+  z-index: 1;
+  top: 0;
+  left: 0;
+  background-color: black;
+  overflow-x: hidden;
+  padding-top: 60px;
+  transition: 0.5s;
+}
+
+/* card header in sidebar */
+.image-info-header {
+  text-align: left;
+  border-bottom: 2px white;
+}
+
+/* card content in sidebar */
+.image-info {
+  text-align: left;
+}
+
+/* common card style in sidebar */
+.card-info {
+  border-radius: 0px;
+  border-left: 1px white solid;
+  margin-left: 400px;
+  margin-right: auto;
+  width: 50%;
+  background-color: black;
+}
+
+/* common table with details about objects in sidebar */
+.table-details thead, .table-details tbody {
+  display: inline-block;
+  word-break: break-all;
+}
+
+/* image labels/env tables in sidebar */
+.image-labels {
+  width: 600px;
+}
+
+.image-env {
+  width: 600px;
+}
+
+/* style of close button (top right corner) */
+.sidenav .closebtn {
+  cursor: pointer;
+  color: white;
+  text-decoration: none;
+  position: absolute;
+  top: 0;
+  right: 25px;
+  font-size: 36px;
+  margin-left: 50px;
+}
+
+.images--list {
+  width: 70%;
+}
+
+.containers--list {
+  width: 70%;
+}
+
+/* common table style */
+table {
+  height: 100%;
+  width: 100%;
+  table-layout: fixed;
+  font-size: 20px;
+}
+
+.tbl-header {
+  background-color: rgba(255, 255, 255, 0.3);
+}
+
+th {
+  padding: 20px 15px;
+  text-align: left;
+  font-weight: 500;
+  font-size: 15px;
+  color: white;
+  text-transform: uppercase;
+  border-bottom: solid 1px rgba(255, 255, 255, 0.1);
+}
+
+td {
+  padding: 15px;
+  text-align: left;
+  vertical-align: middle;
+  font-weight: 300;
+  font-size: 15px;
+  color: white;
+  border-bottom: solid 1px rgba(255, 255, 255, 0.1);
+}
+
+.main-table {
+  margin-top: 30px;
+  width: 100%;
+}
+
+.main-table-content {
+  display: block;
+  height: 500px;
+  overflow: auto;
+}
+
+.main-table-header, .main-table-content tr {
+  display: table;
+  width: 100%;
+  table-layout: fixed;
+}
+
+.main-table-header {
+  width: calc(100% - 1em);
+}
+
+/* main images table hosts overflow in sidebar */
+.images-main-table-host-body, .images-main-table-tags-header, .images-main-table-host-header {
+  position: relative;
+  z-index: 1;
+}
+
+body, html {
+  background-color: black;
+  margin: 0;
+  padding: 0;
+  padding-top: 45px;
+}
+
+* {
+  font-family: "Roboto", sans-serif;
+  color: white;
+}
+
+/* main div block between navbar and footer */
+.main {
+  height: 90.5vh;
+  position: relative;
+  z-index: 0;
+  text-align: center;
+}
+
+/* home page informational title */
+.home-info {
+  font-size: 50px;
+  color: white;
+  position: absolute;
+  top: 50%;
+  left: 40.5%;
+  margin: -125px 0 0 -125px;
+}
+
+/* animation on home page */
+.p5Canvas {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  left: 0;
+  margin: auto;
+  background: black;
+  z-index: -1;
+}
+
+/*# sourceMappingURL=styles.css.map */

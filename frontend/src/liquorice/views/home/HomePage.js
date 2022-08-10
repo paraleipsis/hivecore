@@ -1,7 +1,6 @@
 import  React, { Component } from  'react';
 import 'bootstrap/dist/css/bootstrap.css';
 import { ReactP5Wrapper } from "react-p5-wrapper";
-import p5 from "https://cdn.skypack.dev/p5@1.4.1";
 
 export  class GridUnit {
     constructor(edgeLength, center) {
@@ -15,6 +14,7 @@ export  class GridUnit {
 }
 
 let dividedGridUnits = [];
+
 export class Grid {
     constructor(x, y, unitEdgeLength, repetition) {
         this.x = x;
@@ -30,6 +30,7 @@ export class Grid {
             y: this.upperLeftPoint.y + this.edgeLength,
         };
     }
+
     generateCenterPoints(unit, repetition) {
         let coordinates = [];
         for (let i = 0; i < repetition; i++) {
@@ -45,11 +46,13 @@ export class Grid {
         }
         return coordinates;
     }
+
     generateGridUnit(centerPoints, unitEdgeLength) {
         return centerPoints.map((p) => {
             return new GridUnit(unitEdgeLength, p);
         });
     }
+
     divide() {
         if (this.edgeLength < 500) {
             dividedGridUnits = [...dividedGridUnits, ...this.units];
@@ -69,8 +72,10 @@ export class Grid {
 }
 
 export const sketch = (p) => {
+
     const canvasWidth = 800;
     const canvasHeight = canvasWidth;
+
     class Upper {
         constructor(unit) {
             this.baseDelay = 0;
@@ -82,10 +87,12 @@ export const sketch = (p) => {
             this.delay = p.random(100, 100);
             this.speed = p.random(2, 5);
         }
+
         restart() {
             this.baseDelay = p.frameCount;
             this.isStop = false;
         }
+
         move() {
             if (this.isStop || p.frameCount < this.delay + this.baseDelay) {
                 return;
@@ -104,6 +111,7 @@ export const sketch = (p) => {
                 this.alpha = 255;
             }
         }
+
         display() {
             p.fill(250, 250, 250, this.alpha);
             p.push();
@@ -112,7 +120,9 @@ export const sketch = (p) => {
             p.pop();
         }
     }
+
     let uppers = [];
+
     p.setup = () => {
         p.createCanvas(canvasWidth, canvasHeight);
         p.angleMode(p.DEGREES);
@@ -125,6 +135,7 @@ export const sketch = (p) => {
             uppers = [...uppers, new Upper(unit)];
         });
     };
+    
     p.draw = () => {
         p.background("#000000");
         p.translate(canvasWidth / 2, canvasHeight / 2);

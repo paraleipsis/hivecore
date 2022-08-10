@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
 import { BrowserRouter } from 'react-router-dom';
 import { Route, Link } from 'react-router-dom';
-import 'bootstrap/dist/css/bootstrap.min.css';
 
 import NavBar from './components/NavBar'
 import Footer from './components/Footer'
@@ -10,8 +9,6 @@ import  ImagesList from './dockerapp/views/ImagesList';
 import  ContainersList from './dockerapp/views/ContainersList';
 
 import  HomeAnimation from './liquorice/views/home/HomePage';
-
-import './assets/styles.css'
 
 const BaseLayout = () => (
   <div className="container-fluid">

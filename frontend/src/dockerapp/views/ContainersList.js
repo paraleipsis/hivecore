@@ -1,6 +1,5 @@
 import  React, { Component } from  'react';
 import  ContainersService  from  '../services/ContainersService';
-import 'bootstrap/dist/css/bootstrap.css';
 import Card from 'react-bootstrap/Card';
 
 const  containersService  =  new ContainersService();
@@ -16,7 +15,7 @@ constructor(props) {
 }
 
 componentDidMount() {
-	var  self  =  this;
+	var self = this;
 	containersService.getContainers().then(function (data) {
 		self.setState({ containers:  data.result})
 	});
@@ -29,10 +28,6 @@ openNav(info) {
 closeNav() {
     document.getElementById("mySidenav").style.width = "0";
 };
-
-AutoWidthColumns() {
-    $(window).resize(function() {}).resize(); 
-}
 
 container_ports(ports) {
     var size = Object.keys(ports).length;
@@ -57,9 +52,9 @@ container_ports(ports) {
 render() {
 
     return (
-            <section className='images-section'>
+            <section className='containers-section'>
 
-                <div id="main" className="images--list">
+                <div id="main" className="containers--list">
 
                         {/* sidebar with specific container details */}
                         <div id="mySidenav" className="sidenav">
@@ -216,9 +211,9 @@ render() {
                         </div>
                         
                         {/* main containers table */}
-                        <table id="main-images-table" className="table main-images-table" cellPadding="0" cellSpacing="0" border="0">
-                            <thead key="thead" className='tbl-header main-images-header'>
-                                <tr className='main-images-row'>
+                        <table id="main-table" className="table main-table" cellPadding="0" cellSpacing="0" border="0">
+                            <thead key="thead" className='tbl-header main-table-header'>
+                                <tr className='main-table-row'>
                                     <th className='images-main-table-tags-header'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Name</th>
                                     <th className='images-main-table-host-header'>Host</th>
                                     <th>Status</th>
@@ -229,27 +224,23 @@ render() {
                                 </tr>
                             </thead>
 
-                            <tbody className='tbl-content main-images-content'>
+                            <tbody className='tbl-content main-table-content'>
                                 {this.state.containers.map( c  =>
-                                    <tr key={c.items.Id + c.host} className='main-images-row'>
+                                    <tr key={c.items.Id + c.host} className='main-table-row'>
                                     <td>
                                         <button onClick={() => {this.openNav(c)}} className='button'>
-                                            {/* {c.items.Name} */}
                                             {c.items.Name.length > 20 ? c.items.Name.slice(0, 20) + ' ...' : c.items.Name}
                                         </button>
                                     </td>
                                     <td className='images-main-table-host-body'>{c.host}</td>
                                     <td>{c.items.State.Status}</td>
-                                    {/* {console.log(this.container_ports(c.items.NetworkSettings.Ports))} */}
                                     <td>{c.items.Config.Image.indexOf("@") > -1 ? c.items.Config.Image.slice(0, c.items.Config.Image.indexOf('@')) : c.items.Config.Image}</td>
                                     <td>{Object.values(c.items.NetworkSettings.Networks)[0]['IPAddress'] != '' ? Object.values(c.items.NetworkSettings.Networks)[0]['IPAddress'] : '-'}</td>
                                     <td>{this.container_ports(c.items.NetworkSettings.Ports)}</td>
-                                    <td className='main-images-created-data'>{c.items.Created.replace('T', ' ').slice(0, c.items.Created.indexOf('.'))}</td>
+                                    <td>{c.items.Created.replace('T', ' ').slice(0, c.items.Created.indexOf('.'))}</td>
                                 </tr>)}
                             </tbody>
                         </table>
-                        
-                        {this.AutoWidthColumns()}
                 </div>
             </section>
 	);
