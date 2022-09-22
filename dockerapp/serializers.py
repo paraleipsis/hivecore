@@ -27,6 +27,8 @@ class BuildImageSerializer(serializers.Serializer):
 
 class ContainerSerializer(serializers.Serializer):
    container_id = serializers.CharField(required=True)
+   container_ip = serializers.CharField(required=True)
+   container_signal = serializers.CharField(required=True)
 
 
 class CreateContainerSerializer(serializers.Serializer):

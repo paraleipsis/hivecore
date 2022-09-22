@@ -1,9 +1,18 @@
-import  React, { Component } from  'react';
-import  ContainersService  from  '../services/ContainersService';
+import React, { Component, useState  } from  'react';
+import Modal from 'react-bootstrap/Modal';
+
+import ContainersService  from  '../services/ContainersService';
 import Card from 'react-bootstrap/Card';
+import start_button from '../../assets/images/start_white.png';
+import stop_button from '../../assets/images/stop_white.png';
+import pause_button from '../../assets/images/pause_white.png';
+import resume_button from '../../assets/images/resume_white.png';
+import restart_button from '../../assets/images/restart_white.png';
+import terminal_button from '../../assets/images/terminal_white.png';
+import remove_button from '../../assets/images/remove_white.png';
+import kill_button from '../../assets/images/kill_white.png';
 
 const  containersService  =  new ContainersService();
-
 
 class  ContainersList  extends  Component {
 
@@ -14,10 +23,14 @@ constructor(props) {
 	};
 }
 
+state ={
+    openModal : false
+}
+
 componentDidMount() {
 	var self = this;
 	containersService.getContainers().then(function (data) {
-		self.setState({ containers:  data.result})
+		self.setState({containers:  data.result})
 	});
 }
 
@@ -43,10 +56,93 @@ container_ports(ports) {
                 p_ports += key +  ', ';
             }
         }
-        console.log(p_ports)
         return p_ports
     }
     return '-';
+}
+
+handleSignal(obj){
+	containersService.signalContainer(obj).then((response)=>{
+		this.setState({containers:  response.data.result})
+	});
+}
+
+onClickButton = e =>{
+    e.preventDefault()
+    this.setState({openModal : true})
+}
+
+onCloseModal = ()=>{
+    this.setState({openModal : false})
+}
+
+ButtonAction (button, containers, container_signal) {
+    if (container_signal == 'remove_container') {
+        return  <>
+                    <button className='button' id={container_signal} onClick={this.onClickButton}>
+                        <img src={button} className='action-img'/>
+                    </button>
+
+                    <Modal show={this.state.openModal} onHide={this.onCloseModal}>
+                        <Modal.Header closeButton>
+                        <Modal.Title>Modal heading</Modal.Title>
+                        </Modal.Header>
+                        <Modal.Body>Woohoo, you're reading this text in a modal!</Modal.Body>
+                        <Modal.Footer>
+                        <button className='button' onClick={this.onCloseModal}>
+                            Cancel
+                        </button>
+                        <button className='button' onClick={() =>{ 
+                            this.onCloseModal(); 
+                            this.handleSignal({
+                                'container_id': containers.items.Id,
+                                'container_ip': containers.ip,
+                                'container_signal': container_signal
+                                });}}>
+                            Remove
+                        </button>
+                        </Modal.Footer>
+                    </Modal>
+                </>
+    } else {
+        return <button className='button' id={container_signal}
+                onClick={()=>this.handleSignal({
+                    'container_id': containers.items.Id,
+                    'container_ip': containers.ip,
+                    'container_signal': container_signal
+                    })}>
+            <img src={button} className='action-img'/>
+        </button>
+    }
+}
+
+containerActions(containers) {
+    if (containers.items.State.Status == "running") {
+        return  <div className='signal-buttons'>
+                    {this.ButtonAction(stop_button, containers, 'stop_container')}
+                    {this.ButtonAction(restart_button, containers, 'restart_container')}
+                    {this.ButtonAction(pause_button, containers, 'pause_container')}
+                    {this.ButtonAction(kill_button, containers, 'kill_container')}
+                    {this.ButtonAction(terminal_button, containers, 'terminal_container')}
+                    {this.ButtonAction(remove_button, containers, 'remove_container')}
+                </div>
+    } else if (containers.items.State.Status == "paused") {
+        return  <div className='signal-buttons'>
+                    {this.ButtonAction(resume_button, containers, 'resume_container')}
+                    {this.ButtonAction(restart_button, containers, 'restart_container')}
+                    {this.ButtonAction(kill_button, containers, 'kill_container')}
+                    {this.ButtonAction(terminal_button, containers, 'terminal_container')}
+                    {this.ButtonAction(remove_button, containers, 'remove_container')}
+                </div>
+    } else if (containers.items.State.Status == "exited") {
+        return  <div className='signal-buttons'>
+                    {this.ButtonAction(start_button, containers, 'start_container')}
+                    {this.ButtonAction(restart_button, containers, 'restart_container')}
+                    {this.ButtonAction(kill_button, containers, 'kill_container')}
+                    {this.ButtonAction(terminal_button, containers, 'terminal_container')}
+                    {this.ButtonAction(remove_button, containers, 'remove_container')}
+                </div>
+    }
 }
 
 render() {
@@ -56,171 +152,19 @@ render() {
 
                 <div id="main" className="containers--list">
 
-                        {/* sidebar with specific container details */}
-                        <div id="mySidenav" className="sidenav">
-
-                            <a className="closebtn" onClick={() => {this.closeNav()}}>&times;</a>
-
-                            <Card className='card-info card-container-details'>
-
-                                <Card.Header className='container-info-header'>CONTAINER DETAILS</Card.Header>
-                                <Card.Body className='container-info'>
-
-                                    {/* container details table */}
-                                    <table id="table-details" className="table table-details" cellPadding="0" cellSpacing="0" border="0">
-                                        <thead key="thead" className='tbl-header tbl-header-details'>
-                                            <tr>
-                                                <th>ID</th>
-                                            </tr>
-                                            <tr>
-                                                <th>Repository</th>
-                                            </tr>
-                                            <tr>
-                                                <th>Container</th>
-                                            </tr>
-                                            <tr>
-                                                <th>Tags</th>
-                                            </tr>
-                                            <tr>
-                                                <th>Size</th>
-                                            </tr>
-                                            <tr>
-                                                <th>Created</th>
-                                            </tr>
-                                            <tr>
-                                                <th>Host</th>
-                                            </tr>
-                                            <tr>
-                                                <th>Docker Version</th>
-                                            </tr>
-                                            <tr>
-                                                <th>OS</th>
-                                            </tr>
-                                            <tr>
-                                                <th>Architecture</th>
-                                            </tr>
-                                        </thead>
-
-                                        <tbody className='tbl-content tbl-content-details'>
-                                            <tr>
-                                                <td id='image-id'></td>
-                                            </tr>
-                                            <tr>
-                                                <td id='image-repo'></td>
-                                            </tr>
-                                            <tr>
-                                                <td id='image-container'></td>
-                                            </tr>
-                                            <tr>
-                                                <td id='image-tags'></td>
-                                            </tr>
-                                            <tr>
-                                                <td id='image-size'></td>
-                                            </tr>
-                                            <tr>
-                                                <td id='image-created'></td>
-                                            </tr>
-                                            <tr>
-                                                <td id='image-host'></td>
-                                            </tr>
-                                            <tr>
-                                                <td id='image-docker-version'></td>
-                                            </tr>
-                                            <tr>
-                                                <td id='image-os'></td>
-                                            </tr>
-                                            <tr>
-                                                <td id='image-architecture'></td>
-                                            </tr>
-                                        </tbody>
-
-                                    </table>
-
-                                    {/* container labels table */}
-                                    <table id="container-labels" className="table container-labels" cellPadding="0" cellSpacing="0" border="0">
-                                        <thead key="thead" className='tbl-header'>
-                                            <tr>
-                                                <th>Labels</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody className='tbl-content'></tbody>
-                                    </table>
-
-                                </Card.Body>
-                            </Card>
-
-                            <br/>
-                            <br/>
-
-                            <Card className='card-info card-dockerfile-details'>
-
-                                <Card.Header className='image-info-header'>DOCKERFILE</Card.Header>
-                                <Card.Body className='image-info'>
-
-                                    {/* image dockerfile table */}
-                                    <table id="table-details-dockerfile" className="table table-details" cellPadding="0" cellSpacing="0" border="0">
-                                        <thead key="thead" className='tbl-header tbl-header-details'>
-                                            <tr>
-                                                <th>CMD</th>
-                                            </tr>
-                                            <tr>
-                                                <th>ENTRYPOINT</th>
-                                            </tr>
-                                            <tr>
-                                                <th>Exposed Ports</th>
-                                            </tr>
-                                            <tr>
-                                                <th>Volumes</th>
-                                            </tr>
-                                        </thead>
-
-                                        <tbody className='tbl-content tbl-content-details'>
-                                            <tr>
-                                                <td id='image-cmd'></td>
-                                            </tr>
-                                            <tr>
-                                                <td id='image-entrypoint'></td>
-                                            </tr>
-                                            <tr>
-                                                <td id='image-exposedports'></td>
-                                            </tr>
-                                            <tr>
-                                                <td id='image-volumes'></td>
-                                            </tr>
-                                        </tbody>
-
-                                    </table>
-                                    
-                                    {/* image Env table */}
-                                    <table className="table image-env" cellPadding="0" cellSpacing="0" border="0">
-                                        <thead key="thead" className='tbl-header'>
-                                            <tr>
-                                                <th>Env</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody className='tbl-content'></tbody>
-                                    </table>
-                                    {/* <Card.Title>ID</Card.Title>
-                                    <Card.Text id='image-info'></Card.Text> */}
-                                </Card.Body>
-                            </Card>
-
-                            <br/>
-                            <br/>
-
-                        </div>
-                        
                         {/* main containers table */}
                         <table id="main-table" className="table main-table" cellPadding="0" cellSpacing="0" border="0">
                             <thead key="thead" className='tbl-header main-table-header'>
                                 <tr className='main-table-row'>
                                     <th className='images-main-table-tags-header'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Name</th>
                                     <th className='images-main-table-host-header'>Host</th>
-                                    <th>Status</th>
-                                    <th>Image</th>
+                                    <th className='container-status-th'>Status</th>
+                                    <th className='container-actions'>Actions</th>
+                                    <th className='container-image-th'>Image</th>
                                     <th>IP Address</th>
                                     <th>Ports</th>
                                     <th>Created</th>
+                                    
                                 </tr>
                             </thead>
 
@@ -233,11 +177,15 @@ render() {
                                         </button>
                                     </td>
                                     <td className='images-main-table-host-body'>{c.host}</td>
-                                    <td>{c.items.State.Status}</td>
-                                    <td>{c.items.Config.Image.indexOf("@") > -1 ? c.items.Config.Image.slice(0, c.items.Config.Image.indexOf('@')) : c.items.Config.Image}</td>
+                                    <td className='container-status-td'>{c.items.State.Status}</td>
+                                    <td className='container-actions'>
+                                        {this.containerActions(c)}
+                                    </td>
+                                    <td className='container-image-td'>{c.items.Config.Image.indexOf("@") > -1 ? c.items.Config.Image.slice(0, c.items.Config.Image.indexOf('@')) : c.items.Config.Image}</td>
                                     <td>{Object.values(c.items.NetworkSettings.Networks)[0]['IPAddress'] != '' ? Object.values(c.items.NetworkSettings.Networks)[0]['IPAddress'] : '-'}</td>
                                     <td>{this.container_ports(c.items.NetworkSettings.Ports)}</td>
                                     <td>{c.items.Created.replace('T', ' ').slice(0, c.items.Created.indexOf('.'))}</td>
+                                    
                                 </tr>)}
                             </tbody>
                         </table>

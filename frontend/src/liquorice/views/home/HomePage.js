@@ -165,7 +165,7 @@ render() {
     return (
         <div  className="home-animation">
             <ReactP5Wrapper sketch={sketch}/>
-            <div className="home-info">Visualize | Monitor | Control</div>
+            <div className="home-info">Manage | Monitor | Control</div>
         </div>
 	);
 

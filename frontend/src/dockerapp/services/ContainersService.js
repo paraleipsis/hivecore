@@ -5,12 +5,16 @@ export default class ContainersService{
 	
 	constructor(){}
 	
-	
 	async getContainers() {
 		const url = `${API_URL}/dockerapp/containers/`;
         const response = await axios.get(url);
         const data = await response.data;
 		return data;
 	}  
-	
+
+	async signalContainer(container) {
+		const url = `${API_URL}/dockerapp/containers/`;
+		console.log(container)
+		return axios.post(url, container);
+	}
 }

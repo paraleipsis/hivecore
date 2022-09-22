@@ -1,6 +1,10 @@
 import React, { Component } from  'react';
 import ImagesService  from  '../services/ImagesService';
 import Card from 'react-bootstrap/Card';
+import Nav from 'react-bootstrap/Nav';
+// import "../../dist/jquery.simple-checkbox-table.js"
+// import Form from 'react-bootstrap/Form';
+
 
 const  imagesService  =  new  ImagesService();
 
@@ -19,7 +23,15 @@ componentDidMount() {
 	imagesService.getImages().then(function (data) {
 		self.setState({ images:  data.result})
 	});
+
+    // $('.main-table').simpleCheckboxTable({
+    // });
 }
+
+deleteData(id) {
+
+}
+
 
 openNav(info) {
     document.getElementById("mySidenav").style.width = "100%";
@@ -50,6 +62,10 @@ openNav(info) {
 closeNav() {
     document.getElementById("mySidenav").style.width = "0";
 };
+
+containerActions(status) {
+
+}
 
 render() {
 
@@ -220,6 +236,18 @@ render() {
 
                         </div>
 
+                        {/* <Nav>
+                        <Nav.Item>
+                            <Nav.Link><button className='button'>Pull Image</button></Nav.Link>
+                        </Nav.Item>
+                        <Nav.Item>
+                            <Nav.Link eventKey="link-1"><button className='button'>Build Image</button></Nav.Link>
+                        </Nav.Item>
+                        <Nav.Item>
+                            <Nav.Link><button className='button' onClick={()=> this.deleteData()}>Remove</button></Nav.Link>
+                        </Nav.Item>
+                        </Nav> */}
+
                         {/* main images table */}
                         <table id="main-table" className="table main-table" cellPadding="0" cellSpacing="0" border="0">
                             <thead key="thead" className='tbl-header main-table-header'>
@@ -237,7 +265,13 @@ render() {
                             <tbody className='tbl-content main-table-content'>
                                 {this.state.images.map( c  =>
                                     <tr key={c.items.Id + c.host} className='main-table-row'>
-                                    <td><button onClick={() => {this.openNav(c)}} className='button'>{c.items.RepoTags}</button></td>
+                                    <td className='images-main-table-repotags-body'>
+                                        <div>
+                                            <button onClick={() => {this.openNav(c)}} className='button'>
+                                                {c.items.RepoTags}
+                                            </button>
+                                        </div>
+                                    </td>
                                     <td className='images-main-table-host-body'>{c.host}</td>
                                     <td>{c.items.Repository}</td>
                                     <td>{c.items.Used_by.slice(0, 12)}</td>
@@ -247,6 +281,8 @@ render() {
                                 </tr>)}
                             </tbody>
                         </table>
+
+                        
 
                 </div>
 

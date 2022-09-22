@@ -68,26 +68,13 @@ class ContainersViewSet(ViewSet):
         return Response(items)
 
     def post(self, request, *args, **kwargs):
-        # set id's of containers to values of checkboxes by using react
-        selected_values = request.POST.getlist('container')  # get list of checked items (id's of containers) by name of checkboxes
-
-        # [454a18c9701, 134b18z9483, 984a18v0904] - example
-
-        # in loop do start/stop/restart/pause/kill/resume/remove container
-
-        # get name of pressed button
-        # implement logic of interaction with this id's
-        if request.POST.get("start"):
-            pass
-        elif request.POST.get("stop"):
-            pass
-
-        # ...
-
-        return Response(request.POST)
+        serializer = ContainerSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        print(serializer.data)
+        items = json.loads(redis_instance.get('/containers'))
+        return Response(items)
 
 
-# container create and start
 class CreateContainerViewSet(ViewSet):
     serializer_class = CreateContainerSerializer
 

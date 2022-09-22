@@ -1,11 +1,11 @@
 // div for main images table 
 .images--list {
-  width: 70%;
+  width: 100%;
 }
 
 // div for main images table
 .containers--list {
-  width: 70%;
+  width: 100%;
 }
 
 /* common table style */
@@ -17,7 +17,7 @@ table {
 }
 
 .tbl-header {
-  background-color: rgba(255,255,255,0.3);
+  background-color: white;
 }
 
 th {
@@ -25,7 +25,7 @@ th {
   text-align: left;
   font-weight: 500;
   font-size: 15px;
-  color: white;
+  color: black;
   text-transform: uppercase;
   border-bottom: solid 1px rgba(255,255,255,0.1);
 }
@@ -37,7 +37,7 @@ td {
   font-weight: 300;
   font-size: 15px;
   color: white;
-  border-bottom: solid 1px rgba(255,255,255,0.1);
+  // border-bottom: solid 1px rgba(255,255,255,0.1);
 }
 
 .main-table {
@@ -63,7 +63,77 @@ td {
 
 // images
 // main images table hosts overflow in sidebar
-.images-main-table-host-body, .images-main-table-tags-header, .images-main-table-host-header {
+.images-main-table-host-body, .images-main-table-tags-header, .images-main-table-host-header .images-main-table-tags-body{
   position: relative;
   z-index: 1;
 }
+
+// containers
+.container-actions {
+  width: 380px;
+  white-space: nowrap;
+}
+
+.container-actions button {
+  width: 16px;
+  font-size: 15px;
+  z-index: 0;
+}
+
+.container-status-td, .container-status-th {
+  width: 120px;
+}
+
+.action-img {
+  width: 16px;
+  height: 16px;
+}
+
+// images for container actions
+#remove_container:hover img {
+  content: url("../../images/remove.png");
+  // transform: scale(1.1);
+}
+
+#terminal_container:hover img {
+  content: url("../../images/terminal.png");
+  // transform: scale(1.1);
+}
+
+#stop_container:hover img {
+  content: url("../../images/stop.png");
+  // transform: scale(1.1);
+}
+
+#restart_container:hover img {
+  content: url("../../images/restart.png");
+  // transform: scale(1.1);
+}
+
+#kill_container:hover img {
+  content: url("../../images/kill.png");
+  // transform: scale(1.1);
+}
+
+#pause_container:hover img {
+  content: url("../../images/pause.png");
+  // transform: scale(1.1);
+}
+
+#resume_container:hover img {
+  content: url("../../images/resume.png");
+  // transform: scale(1.1);
+}
+
+#start_container:hover img {
+  content: url("../../images/start.png");
+  // transform: scale(1.1);
+}
+
+// modal
+.modal-backdrop {
+  background-color: 'rgba(255,255,255,0.5';
+}
+
+
+
