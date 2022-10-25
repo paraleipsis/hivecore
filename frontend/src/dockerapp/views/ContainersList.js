@@ -1,6 +1,5 @@
 import React, { Component, useState  } from  'react';
 import Modal from 'react-bootstrap/Modal';
-
 import ContainersService  from  '../services/ContainersService';
 import Card from 'react-bootstrap/Card';
 import start_button from '../../assets/images/start_white.png';
@@ -20,10 +19,14 @@ constructor(props) {
 	super(props);
 	this.state  = {
 		containers: [],
+        container_id: '',
+        container_ip: '',
+        container_signal: '',
+        force_remove: false,
 	};
 }
 
-state ={
+state = {
     openModal : false
 }
 
@@ -67,9 +70,13 @@ handleSignal(obj){
 	});
 }
 
-onClickButton = e =>{
-    e.preventDefault()
-    this.setState({openModal : true})
+onClickButton = (containers, container_signal) =>{
+    this.setState({
+        openModal: true,
+        container_id: containers.items.Id,
+        container_ip: containers.ip,
+        container_signal: container_signal,
+    })
 }
 
 onCloseModal = ()=>{
@@ -78,32 +85,9 @@ onCloseModal = ()=>{
 
 ButtonAction (button, containers, container_signal) {
     if (container_signal == 'remove_container') {
-        return  <>
-                    <button className='button' id={container_signal} onClick={this.onClickButton}>
-                        <img src={button} className='action-img'/>
-                    </button>
-
-                    <Modal show={this.state.openModal} onHide={this.onCloseModal}>
-                        <Modal.Header closeButton>
-                        <Modal.Title>Modal heading</Modal.Title>
-                        </Modal.Header>
-                        <Modal.Body>Woohoo, you're reading this text in a modal!</Modal.Body>
-                        <Modal.Footer>
-                        <button className='button' onClick={this.onCloseModal}>
-                            Cancel
-                        </button>
-                        <button className='button' onClick={() =>{ 
-                            this.onCloseModal(); 
-                            this.handleSignal({
-                                'container_id': containers.items.Id,
-                                'container_ip': containers.ip,
-                                'container_signal': container_signal
-                                });}}>
-                            Remove
-                        </button>
-                        </Modal.Footer>
-                    </Modal>
-                </>
+        return  <button className='button' id={container_signal} onClick={()=>this.onClickButton(containers, container_signal)}>
+                    <img src={button} className='action-img'/>
+                </button>
     } else {
         return <button className='button' id={container_signal}
                 onClick={()=>this.handleSignal({
@@ -131,7 +115,6 @@ containerActions(containers) {
                     {this.ButtonAction(resume_button, containers, 'resume_container')}
                     {this.ButtonAction(restart_button, containers, 'restart_container')}
                     {this.ButtonAction(kill_button, containers, 'kill_container')}
-                    {this.ButtonAction(terminal_button, containers, 'terminal_container')}
                     {this.ButtonAction(remove_button, containers, 'remove_container')}
                 </div>
     } else if (containers.items.State.Status == "exited") {
@@ -139,7 +122,6 @@ containerActions(containers) {
                     {this.ButtonAction(start_button, containers, 'start_container')}
                     {this.ButtonAction(restart_button, containers, 'restart_container')}
                     {this.ButtonAction(kill_button, containers, 'kill_container')}
-                    {this.ButtonAction(terminal_button, containers, 'terminal_container')}
                     {this.ButtonAction(remove_button, containers, 'remove_container')}
                 </div>
     }
@@ -149,6 +131,32 @@ render() {
 
     return (
             <section className='containers-section'>
+
+                <Modal show={this.state.openModal} onHide={this.onCloseModal} className="removeConfirm">
+                    <Modal.Header closeButton>
+                        <Modal.Title>Remove container</Modal.Title>
+                    </Modal.Header>
+                    <Modal.Body>Are you sure you want to remove container: {this.state.container_id.slice(0, 12)}</Modal.Body>
+                    <Modal.Footer>
+                        <div>
+                            <input id="force_checkbox" type="checkbox"/>
+                            Force remove
+                        </div>
+                        <button className='button button-modal' onClick={this.onCloseModal}>
+                            Cancel
+                        </button>
+                        <button className='button button-modal' onClick={() =>{ 
+                            this.onCloseModal(); 
+                            this.handleSignal({
+                                'container_id': this.state.container_id,
+                                'container_ip': this.state.container_ip,
+                                'container_signal': this.state.container_signal,
+                                'force': document.getElementById('force_checkbox').checked,
+                                });}}>
+                            Remove
+                        </button>
+                    </Modal.Footer>
+                </Modal>
 
                 <div id="main" className="containers--list">
 
@@ -164,7 +172,6 @@ render() {
                                     <th>IP Address</th>
                                     <th>Ports</th>
                                     <th>Created</th>
-                                    
                                 </tr>
                             </thead>
 

@@ -243,6 +243,26 @@ td {
   background-color: "rgba(255,255,255,0.5";
 }
 
+.modal-body {
+  color: white;
+  background-color: black;
+}
+
+.modal-title {
+  color: black;
+  background-color: white;
+}
+
+.modal-footer {
+  background-color: black;
+  color: white;
+  border-radius: 0%;
+}
+
+.modal-content {
+  border-radius: 0%;
+}
+
 body, html {
   background-color: black;
   margin: 0;

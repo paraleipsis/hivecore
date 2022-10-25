@@ -135,6 +135,16 @@ def build_image(data):
 
 
 @shared_task
+def container_action(data):
+    print(data)
+    headers = {'content-type': 'application/json', 'Accept-Charset': 'UTF-8'}
+    ip = data.pop('container_ip')
+    task = data.pop('container_signal')
+    data = json.dumps({'params': data, 'task': task})
+    requests.post(f"http://{ip}:8001", headers=headers, data=data)
+
+
+@shared_task
 def create_container(data):
     headers = {'content-type': 'application/json', 'Accept-Charset': 'UTF-8'}
     nodes = json.loads(redis_instance.get('/nodes'))['result']
