@@ -59,6 +59,8 @@ def sort_docker_stuff():
                         host = collection['Description']['Hostname']
                         ip = collection['Status']['Addr']
                     # if there is no tag take tags from digest
+                    if endpoints[endpoint] == '/networks':
+                        print(json.loads(redis_instance.get('/networks')))
                     if endpoints[endpoint] == '/images':
 
                         containers = json.loads(redis_instance.get('/containers'))['result']
@@ -366,7 +368,7 @@ def create_service(data):
             mode=service_mode['scheduling_mode'], 
             replicas=service_mode['replicas']
         ),
-        networks=[NetworkAttachmentConfig(target=i) for i in data['networks']]
+        networks=[NetworkAttachmentConfig(target=i.split(":")[2]) for i in data['networks']]
     )
 
     return None
