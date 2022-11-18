@@ -1,10 +1,6 @@
 import React, { Component } from  'react';
 import ImagesService  from  '../services/ImagesService';
-import Card from 'react-bootstrap/Card';
-import Nav from 'react-bootstrap/Nav';
-// import "../../dist/jquery.simple-checkbox-table.js"
-// import Form from 'react-bootstrap/Form';
-
+import Card from 'react-bootstrap/Card'
 
 const  imagesService  =  new  ImagesService();
 
