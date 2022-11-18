@@ -11,7 +11,7 @@ COPY frontend frontend
 COPY frontend/package*.json ./frontend/
 RUN cd frontend && npm install --force --verbose
 RUN cd frontend && npm run build
-
+RUN npm install -g serve
 
 COPY docker-entrypoint.sh .
 RUN ["chmod", "+x", "docker-entrypoint.sh"]
