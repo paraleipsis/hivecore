@@ -1,16 +1,18 @@
 import json
 import requests
 import docker
-from docker.types import TaskTemplate, ContainerSpec, ServiceMode, RestartPolicy, Mount, UpdateConfig, ConfigReference, SecretReference, EndpointSpec, NetworkAttachmentConfig
-import redis
+from docker.types import (TaskTemplate, ContainerSpec, ServiceMode, 
+                          RestartPolicy, Mount, UpdateConfig, 
+                          ConfigReference, SecretReference, 
+                          EndpointSpec, NetworkAttachmentConfig)
 from celery import shared_task
 from requests.exceptions import ConnectionError
 from hurry.filesize import size, si
+from django.conf import settings
 
 
 client = docker.APIClient()
-#redis_instance = redis.StrictRedis()
-redis_instance = redis.StrictRedis(host='redis')
+redis_instance = settings.REDIS_INSTANCE
 
 @shared_task
 def collect_docker_stuff():

@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/4.0/ref/settings/
 """
 
 from pathlib import Path
+import redis
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -29,7 +30,8 @@ ALLOWED_HOSTS = ['127.0.0.1', 'localhost', '0.0.0.0']
 
 CORS_ORIGIN_WHITELIST = [
     'http://localhost:3000',
-    'http://127.0.0.1:3000'
+    'http://127.0.0.1:3000',
+    'http://0.0.0.0:3000'
 ]
 
 # Application definition
@@ -133,15 +135,20 @@ STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-CELERY_BROKER_URL = 'redis://redis:6379/1'
+REDIS_HOST = 'localhost'
+REDIS_PORT = 6379
+REDIS_INSTANCE = redis.StrictRedis(host=REDIS_HOST, port=REDIS_PORT, decode_responses=True)
+
+CELERY_BROKER_URL = f'redis://{REDIS_HOST}:{REDIS_PORT}/1'
+CELERY_BEAT_TIMEOUT = 7
 
 CELERY_BEAT_SCHEDULE = {
     'collect_docker_stuff': {
         'task': 'dockerapp.tasks.collect_docker_stuff',
-        'schedule': 7
+        'schedule': CELERY_BEAT_TIMEOUT
     },
     'sort_docker_stuff': {
         'task': 'dockerapp.tasks.sort_docker_stuff',
-        'schedule': 7
+        'schedule': CELERY_BEAT_TIMEOUT
     }
 }

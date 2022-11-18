@@ -1,19 +1,24 @@
 from rest_framework import serializers
 import json
-from .tasks import redis_instance
+from django.conf import settings
+
+redis_instance = settings.REDIS_INSTANCE
 
 def get_choices(docker_object):
    try:
-      endpoint = json.loads(redis_instance.get(docker_object))['result']
+      if docker_object in ('network_plugins', 'volume_plugins'):
+         endpoint = json.loads(redis_instance.get('/status'))
+      else:
+         endpoint = json.loads(redis_instance.get(docker_object))['result']
    except TypeError:
       return ''
    else:
       if docker_object == '/nodes':
          return [node['host'] for node in endpoint if node['items']['Status']['State'] == 'ready']
       elif docker_object == 'network_plugins':
-         return json.loads(redis_instance.get('/status'))['result'][0]['items']['Plugins']['Network']
+         return endpoint['result'][0]['items']['Plugins']['Network']
       elif docker_object == 'volume_plugins':
-         return json.loads(redis_instance.get('/status'))['result'][0]['items']['Plugins']['Volume']
+         return endpoint['result'][0]['items']['Plugins']['Volume']
       elif docker_object == '/volumes':
          volumes = [vol['items']['Name'] for vol in endpoint]
          volumes.insert(0, "None")
@@ -37,29 +42,6 @@ def get_choices(docker_object):
          config_choices = [':'.join(list(a)) for a in zip(config_name, config_id)]
          config_choices.insert(0, "None")
          return config_choices
-
-# NODES = [node['host'] for node in json.loads(redis_instance.get('/nodes'))['result'] if node['items']['Status']['State'] == 'ready']
-# NETWORK_PLUGINS = json.loads(redis_instance.get('/status'))['result'][0]['items']['Plugins']['Network']
-# VOLUME_PLUGINS = json.loads(redis_instance.get('/status'))['result'][0]['items']['Plugins']['Volume']
-# VOLUMES = [net['items']['Name'] for net in json.loads(redis_instance.get('/volumes'))['result']]
-# VOLUMES.insert(0, "None")
-# NET_NAME = [net['items']['Name'] for net in json.loads(redis_instance.get('/networks'))['result']]
-# NET_ID = [net['items']['Id'] for net in json.loads(redis_instance.get('/networks'))['result']]
-# NET_HOST = [net['host'] for net in json.loads(redis_instance.get('/networks'))['result']]
-# NET_CHOISES = [':'.join(list(a)) for a in zip(NET_NAME, NET_HOST, NET_ID)]
-# NET_CHOISES.insert(0, "None")
-# secret_name = [sec['items']['Spec']['Name'] for sec in json.loads(redis_instance.get('/secrets'))['result']]
-# secret_id = [sec['items']['ID'] for sec in json.loads(redis_instance.get('/secrets'))['result']]
-# SECRET_CHOICES = [':'.join(list(a)) for a in zip(secret_name, secret_id)]
-# SECRET_CHOICES.insert(0, "None")
-# config_name = [conf['items']['Spec']['Name'] for conf in json.loads(redis_instance.get('/configs'))['result']]
-# config_id = [conf['items']['ID'] for conf in json.loads(redis_instance.get('/configs'))['result']]
-# CONFIG_CHOICES = [':'.join(list(a)) for a in zip(config_name, config_id)]
-# CONFIG_CHOICES.insert(0, "None")
-
-
-
-
 
 
 class ImageSerializer(serializers.Serializer):

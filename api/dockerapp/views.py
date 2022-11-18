@@ -1,17 +1,16 @@
 from rest_framework.response import Response
-from rest_framework.viewsets import ViewSet, ModelViewSet, GenericViewSet
-from rest_framework.views import APIView
-from rest_framework.mixins import CreateModelMixin, ListModelMixin
-from .serializers import ContainerSerializer, ImageSerializer, BuildImageSerializer, CreateContainerSerializer, \
-                            CreateNetworkSerializer, NetworkSerializer, CreateVolumeSerializer, VolumesSerializer, \
-                                ConfigsSerializer, CreateConfigSerializer, SecretsSerializer, CreateSecretSerializer, \
-                                    ServicesSerializer, CreateServiceSerializer
-from .tasks import *
-import redis
+from rest_framework.viewsets import ViewSet
+from .serializers import (ContainerSerializer, ImageSerializer, BuildImageSerializer, CreateContainerSerializer, 
+                          CreateNetworkSerializer, NetworkSerializer, CreateVolumeSerializer, VolumesSerializer, 
+                          ConfigsSerializer, CreateConfigSerializer, SecretsSerializer, CreateSecretSerializer, 
+                          ServicesSerializer, CreateServiceSerializer)
+from .tasks import (pull_image, build_image, container_action, 
+                    create_container, create_network, create_volume, 
+                    create_config, create_secret, create_service)
+from django.conf import settings
 import json
 
-redis_instance = redis.StrictRedis(host='redis', decode_responses=True)
-# redis_instance = redis.StrictRedis(decode_responses=True)
+redis_instance = settings.REDIS_INSTANCE
 
 # image list, image pull
 class ImagesViewSet(ViewSet):
