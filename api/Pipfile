@@ -9,6 +9,7 @@ redis = "*"
 celery = "*"
 requests = "*"
 docker = "*"
+hurry.filesize = "*"
 
 [dev-packages]
 

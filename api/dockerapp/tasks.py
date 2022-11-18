@@ -8,9 +8,8 @@ from requests.exceptions import ConnectionError
 from hurry.filesize import size, si
 
 
-# claim ip's
 client = docker.APIClient()
-redis_instance = redis.StrictRedis()
+redis_instance = redis.StrictRedis(host='redis')
 
 @shared_task
 def collect_docker_stuff():
@@ -59,6 +58,7 @@ def sort_docker_stuff():
                         host = collection['Description']['Hostname']
                         ip = collection['Status']['Addr']
                     # if there is no tag take tags from digest
+                    
                     if endpoints[endpoint] == '/images':
 
                         containers = json.loads(redis_instance.get('/containers'))['result']
@@ -71,9 +71,12 @@ def sort_docker_stuff():
                                 collection['Used_by'] = 'unused'
                         
                         try:
-                            collection['Repository'] = collection['RepoDigests'][0][:collection['RepoDigests'][0].index('@')]
+                            if len(collection['RepoDigests']) != 0:
+                                collection['Repository'] = collection['RepoDigests'][0][:collection['RepoDigests'][0].index('@')]
+                            else:
+                                collection['Repository'] = collection['RepoTags'][0][:collection['RepoTags'][0].index(':')]
                         except IndexError:
-                            collection['Repository'] = collection['RepoTags'][0][:collection['RepoTags'][0].index(':')]
+                            collection['Repository'] = '<none>'
 
                         collection['Created'] = collection['Created'][:collection['Created'].index('.')].replace('T', ' ')
 
@@ -366,7 +369,7 @@ def create_service(data):
             mode=service_mode['scheduling_mode'], 
             replicas=service_mode['replicas']
         ),
-        networks=[NetworkAttachmentConfig(target=i) for i in data['networks']]
+        networks=[NetworkAttachmentConfig(target=i.split(":")[2]) for i in data['networks']]
     )
 
     return None

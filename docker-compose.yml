@@ -1,0 +1,34 @@
+version: '3' 
+
+services: 
+  liquorice:
+    build: .
+    container_name: liquorice-server
+    volumes:
+      - .:/api
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /var/lib/docker/volumes:/var/lib/docker/volumes
+    command: ./docker-entrypoint.sh
+    ports: 
+      - "3000:3000"
+      - "7001:7001"
+    depends_on:
+      - redis
+    restart: unless-stopped
+    deploy:
+      mode: replicated
+      replicas: 1
+      placement:
+        constraints: [node.role == manager]
+
+  redis:
+    image: redis:latest
+    container_name: liquorice-redis
+    ports:
+      - 6379:6379
+    restart: always
+    volumes:
+      - liquoricedata:/data
+
+volumes:
+  liquoricedata:  

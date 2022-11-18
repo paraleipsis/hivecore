@@ -10,7 +10,7 @@ from .tasks import *
 import redis
 import json
 
-redis_instance = redis.StrictRedis(decode_responses=True)
+redis_instance = redis.StrictRedis(host='redis', decode_responses=True)
 
 
 # image list, image pull

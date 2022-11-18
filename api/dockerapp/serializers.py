@@ -1,20 +1,77 @@
-from email.policy import default
-from random import choices
-from requests import request
 from rest_framework import serializers
 import json
 from .tasks import redis_instance
 
+def get_choices(docker_object):
+   try:
+      endpoint = json.loads(redis_instance.get(docker_object))['result']
+   except TypeError:
+      return ''
+   else:
+      if docker_object == '/nodes':
+         return [node['host'] for node in endpoint if node['items']['Status']['State'] == 'ready']
+      elif docker_object == 'network_plugins':
+         return json.loads(redis_instance.get('/status'))['result'][0]['items']['Plugins']['Network']
+      elif docker_object == 'volume_plugins':
+         return json.loads(redis_instance.get('/status'))['result'][0]['items']['Plugins']['Volume']
+      elif docker_object == '/volumes':
+         volumes = [vol['items']['Name'] for vol in endpoint]
+         volumes.insert(0, "None")
+         return volumes
+      elif docker_object == '/networks':
+         net_name = [net['items']['Name'] for net in endpoint]
+         net_id = [net['items']['Id'] for net in endpoint]
+         net_host = [net['host'] for net in endpoint]
+         net_choices = [':'.join(list(a)) for a in zip(net_name, net_host, net_id)]
+         net_choices.insert(0, "None")
+         return net_choices
+      elif docker_object == '/secrets':
+         secret_name = [sec['items']['Spec']['Name'] for sec in endpoint]
+         secret_id = [sec['items']['ID'] for sec in endpoint]
+         secret_choices = [':'.join(list(a)) for a in zip(secret_name, secret_id)]
+         secret_choices.insert(0, "None")
+         return secret_choices
+      elif docker_object == '/configs':
+         config_name = [conf['items']['Spec']['Name'] for conf in endpoint]
+         config_id = [conf['items']['ID'] for conf in endpoint]
+         config_choices = [':'.join(list(a)) for a in zip(config_name, config_id)]
+         config_choices.insert(0, "None")
+         return config_choices
+
+# NODES = [node['host'] for node in json.loads(redis_instance.get('/nodes'))['result'] if node['items']['Status']['State'] == 'ready']
+# NETWORK_PLUGINS = json.loads(redis_instance.get('/status'))['result'][0]['items']['Plugins']['Network']
+# VOLUME_PLUGINS = json.loads(redis_instance.get('/status'))['result'][0]['items']['Plugins']['Volume']
+# VOLUMES = [net['items']['Name'] for net in json.loads(redis_instance.get('/volumes'))['result']]
+# VOLUMES.insert(0, "None")
+# NET_NAME = [net['items']['Name'] for net in json.loads(redis_instance.get('/networks'))['result']]
+# NET_ID = [net['items']['Id'] for net in json.loads(redis_instance.get('/networks'))['result']]
+# NET_HOST = [net['host'] for net in json.loads(redis_instance.get('/networks'))['result']]
+# NET_CHOISES = [':'.join(list(a)) for a in zip(NET_NAME, NET_HOST, NET_ID)]
+# NET_CHOISES.insert(0, "None")
+# secret_name = [sec['items']['Spec']['Name'] for sec in json.loads(redis_instance.get('/secrets'))['result']]
+# secret_id = [sec['items']['ID'] for sec in json.loads(redis_instance.get('/secrets'))['result']]
+# SECRET_CHOICES = [':'.join(list(a)) for a in zip(secret_name, secret_id)]
+# SECRET_CHOICES.insert(0, "None")
+# config_name = [conf['items']['Spec']['Name'] for conf in json.loads(redis_instance.get('/configs'))['result']]
+# config_id = [conf['items']['ID'] for conf in json.loads(redis_instance.get('/configs'))['result']]
+# CONFIG_CHOICES = [':'.join(list(a)) for a in zip(config_name, config_id)]
+# CONFIG_CHOICES.insert(0, "None")
+
+
+
+
+
+
 class ImageSerializer(serializers.Serializer):
    image = serializers.CharField(required=True)
-   node = serializers.ChoiceField(required=True, choices=[node['host'] for node in json.loads(redis_instance.get('/nodes'))['result']])
+   node = serializers.ChoiceField(required=True, choices=get_choices('/nodes'))
 
 
 class BuildImageSerializer(serializers.Serializer):
    tag = serializers.CharField(required=False)
    dockerfile_path = serializers.FileField(required=False)
    dockerfile_field = serializers.CharField(style={'base_template': 'textarea.html'}, required=False)
-   node = serializers.ChoiceField(required=True, choices=[node['host'] for node in json.loads(redis_instance.get('/nodes'))['result']])
+   node = serializers.ChoiceField(required=True, choices=get_choices('/nodes'))
 
    def validate(self, data):
       dockerfile_path = data.get('dockerfile_path', None)
@@ -39,7 +96,7 @@ class CreateContainerSerializer(serializers.Serializer):
    ports = serializers.CharField(required=False)
 
    # for agent
-   node = serializers.ChoiceField(required=True, choices=[node['host'] for node in json.loads(redis_instance.get('/nodes'))['result']])
+   node = serializers.ChoiceField(required=True, choices=get_choices('/nodes'))
 
    # container settings
 
@@ -54,13 +111,9 @@ class CreateContainerSerializer(serializers.Serializer):
    volumes = serializers.CharField(required=False)
 
    # network
-   net = [net['items']['Name'] for net in json.loads(redis_instance.get('/networks'))['result']]
-   net_id = [net['items']['Id'] for net in json.loads(redis_instance.get('/networks'))['result']]
-   host = [net['host'] for net in json.loads(redis_instance.get('/networks'))['result']]
-   NET_CHOISES = [':'.join(list(a)) for a in zip(net, host, net_id)]
-   NET_CHOISES.insert(0, "None")
+   
 
-   network = serializers.ChoiceField(required=True, choices=NET_CHOISES)
+   network = serializers.ChoiceField(required=True, choices=get_choices('/networks'))
    hostname = serializers.CharField(required=False)
    domainname = serializers.CharField(required=False)
    mac_address = serializers.CharField(required=False)
@@ -83,10 +136,9 @@ class NetworkSerializer(serializers.Serializer):
 
 class CreateNetworkSerializer(serializers.Serializer):
    name = serializers.CharField(required=True)
-   node = serializers.ChoiceField(required=True, choices=[node['host'] for node in json.loads(redis_instance.get('/nodes'))['result']])
+   node = serializers.ChoiceField(required=True, choices=get_choices('/nodes'))
 
-   network_plugins = json.loads(redis_instance.get('/status'))['result'][0]['items']['Plugins']['Network']
-   driver = serializers.ChoiceField(required=False, choices=network_plugins)
+   driver = serializers.ChoiceField(required=False, choices=get_choices('network_plugins'))
    options = serializers.CharField(style={'base_template': 'textarea.html'}, required=False)
 
    # ipv4 config
@@ -119,10 +171,9 @@ class VolumesSerializer(serializers.Serializer):
 
 class CreateVolumeSerializer(serializers.Serializer):
    name = serializers.CharField(required=True)
-   node = serializers.ChoiceField(required=True, choices=[node['host'] for node in json.loads(redis_instance.get('/nodes'))['result']])
+   node = serializers.ChoiceField(required=True, choices=get_choices('/nodes'))
 
-   volume_plugins = json.loads(redis_instance.get('/status'))['result'][0]['items']['Plugins']['Volume']
-   driver = serializers.ChoiceField(required=False, choices=volume_plugins)
+   driver = serializers.ChoiceField(required=False, choices=get_choices('volume_plugins'))
    driver_opts = serializers.CharField(style={'base_template': 'textarea.html'}, required=False)
 
    labels = serializers.CharField(style={'base_template': 'textarea.html'}, required=False)
@@ -134,7 +185,7 @@ class ConfigsSerializer(serializers.Serializer):
 
 class CreateConfigSerializer(serializers.Serializer):
    name = serializers.CharField(required=True)
-   node = serializers.ChoiceField(required=True, choices=[node['host'] for node in json.loads(redis_instance.get('/nodes'))['result']])
+   node = serializers.ChoiceField(required=True, choices=get_choices('/nodes'))
 
    data_path = serializers.FileField(required=False)
    data_field = serializers.CharField(style={'base_template': 'textarea.html'}, required=False)
@@ -156,7 +207,7 @@ class SecretsSerializer(serializers.Serializer):
 
 class CreateSecretSerializer(serializers.Serializer):
    name = serializers.CharField(required=True)
-   node = serializers.ChoiceField(required=True, choices=[node['host'] for node in json.loads(redis_instance.get('/nodes'))['result']])
+   node = serializers.ChoiceField(required=True, choices=get_choices('/nodes'))
 
    data_path = serializers.FileField(required=False)
    data_field = serializers.CharField(style={'base_template': 'textarea.html'}, required=False)
@@ -178,7 +229,7 @@ class ServicesSerializer(serializers.Serializer):
 
 class CreateServiceSerializer(serializers.Serializer):
    service_name = serializers.CharField(required=True)
-   # node = serializers.ChoiceField(required=True, choices=[node['host'] for node in json.loads(redis_instance.get('/nodes'))['result']])
+   # node = serializers.ChoiceField(required=True, choices=get_choices('/nodes'))
 
    image = serializers.CharField(required=True)
 
@@ -196,15 +247,11 @@ class CreateServiceSerializer(serializers.Serializer):
 
    # volumes
    container_path = serializers.CharField(required=False) # path in container
-   VOL_CHOISES = [net['items']['Name'] for net in json.loads(redis_instance.get('/volumes'))['result']]
-   VOL_CHOISES.insert(0, "None")
-   volume = serializers.ChoiceField(choices=VOL_CHOISES, required=False) # volume name
+   volume = serializers.ChoiceField(choices=get_choices('/volumes'), required=False) # volume name
    read_only = serializers.BooleanField(required=False)
 
    # network
-   NET_CHOISES = [net['items']['Name'] for net in json.loads(redis_instance.get('/networks'))['result']]
-   NET_CHOISES.insert(0, "None")
-   networks = serializers.MultipleChoiceField(choices=NET_CHOISES, required=False, style={'base_template': 'checkbox_multiple.html'})
+   networks = serializers.MultipleChoiceField(choices=get_choices('/networks'), required=False, style={'base_template': 'checkbox_multiple.html'})
 
    # env
    environment = serializers.CharField(style={'base_template': 'textarea.html'}, required=False)
@@ -212,15 +259,9 @@ class CreateServiceSerializer(serializers.Serializer):
    # labels
    labels = serializers.CharField(style={'base_template': 'textarea.html'}, required=False)
 
-   secret = [net['items']['Spec']['Name'] for net in json.loads(redis_instance.get('/secrets'))['result']]
-   secret_id = [net['items']['ID'] for net in json.loads(redis_instance.get('/secrets'))['result']]
-   SEC_CHOISES = [':'.join(list(a)) for a in zip(secret, secret_id)]
-   secrets = serializers.MultipleChoiceField(choices=SEC_CHOISES, style={'base_template': 'checkbox_multiple.html'}, required=False)
+   secrets = serializers.MultipleChoiceField(choices=get_choices('/secrets'), style={'base_template': 'checkbox_multiple.html'}, required=False)
 
-   config = [net['items']['Spec']['Name'] for net in json.loads(redis_instance.get('/configs'))['result']]
-   config_id = [net['items']['ID'] for net in json.loads(redis_instance.get('/configs'))['result']]
-   CONF_CHOISES = [':'.join(list(a)) for a in zip(config, config_id)]
-   configs = serializers.MultipleChoiceField(choices=CONF_CHOISES, style={'base_template': 'checkbox_multiple.html'}, required=False)
+   configs = serializers.MultipleChoiceField(choices=get_choices('/configs'), style={'base_template': 'checkbox_multiple.html'}, required=False)
 
    # restart policy
    restart_condition = serializers.ChoiceField(choices=['none', 'on-failure', 'any'])
