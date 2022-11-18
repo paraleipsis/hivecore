@@ -9,8 +9,8 @@ from hurry.filesize import size, si
 
 
 client = docker.APIClient()
+#redis_instance = redis.StrictRedis()
 redis_instance = redis.StrictRedis(host='redis')
-# redis_instance = redis.StrictRedis()
 
 @shared_task
 def collect_docker_stuff():
