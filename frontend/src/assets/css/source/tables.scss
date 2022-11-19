@@ -63,9 +63,18 @@ td {
 
 // images
 // main images table hosts overflow in sidebar
-.images-main-table-host-body, .images-main-table-tags-header, .images-main-table-host-header .images-main-table-tags-body{
+.images-main-table-host-body, .images-main-table-tags-header, .images-main-table-host-header, .images-main-table-repotags-body {
   position: relative;
   z-index: 1;
+  background: white;
+}
+
+.images-main-table-host-body, .images-main-table-host-header {
+  width: 155px;
+}
+
+.images-main-table-tags-header, .images-main-table-host-header {
+  background: white !important;
 }
 
 // containers

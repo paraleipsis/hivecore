@@ -106,8 +106,11 @@ def sort_docker_stuff():
                             collection['Config']['Entrypoint'] = 'No Entrypoint'
 
                         if not collection['RepoTags']:
-                            for digest in collection['RepoDigests']:
-                                collection['RepoTags'].append(f"{digest[:digest.index('@')]}:<none>")
+                            if not collection['RepoDigests']:
+                                collection['RepoTags'].append("<none>")
+                            else:
+                                for digest in collection['RepoDigests']:
+                                    collection['RepoTags'].append(f"{digest[:digest.index('@')]}:<none>")
 
                     current_info_list.append({'ip': ip, 'host': host, 'type': endpoints[endpoint], 'items': collection})
 

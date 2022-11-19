@@ -1,25 +1,35 @@
 version: '3' 
 
 services: 
-  liquorice:
-    build: .
-    container_name: liquorice-server
-    volumes:
-      - .:/api
-      - /var/run/docker.sock:/var/run/docker.sock
-      - /var/lib/docker/volumes:/var/lib/docker/volumes
+  api:
+    build: ./api
+    container_name: liquorice-api
     command: ./docker-entrypoint.sh
     ports: 
-      - "3000:3000"
       - "7001:7001"
+    stdin_open: true 
+    tty: true 
     depends_on:
       - redis
     restart: unless-stopped
     deploy:
-      mode: replicated
-      replicas: 1
       placement:
         constraints: [node.role == manager]
+    volumes:
+      - ./api:/usr/src/api
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /var/lib/docker/volumes:/var/lib/docker/volumes
+
+  frontend:
+    build: ./frontend
+    container_name: liquorice-frontend
+    command: ./docker-entrypoint.sh
+    ports: 
+      - "3000:3000"
+    stdin_open: true 
+    tty: true 
+    volumes:
+      - ./frontend:/usr/src/frontend
 
   redis:
     image: redis:latest
@@ -29,6 +39,31 @@ services:
     restart: always
     volumes:
       - liquoricedata:/data
+
+  celery:
+    build: ./api
+    container_name: liquorice-celery-worker
+    command: celery -A liquorice worker --loglevel=info
+    depends_on:
+      - redis
+      - api
+    volumes:
+      - ./api:/usr/src/api
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /var/lib/docker/volumes:/var/lib/docker/volumes
+
+  celery-beat:
+    build: ./api
+    container_name: liquorice-celery-beat
+    command: celery -A liquorice beat --loglevel=info
+    depends_on:
+      - redis
+      - api
+      - celery
+    volumes:
+      - ./api:/usr/src/api
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /var/lib/docker/volumes:/var/lib/docker/volumes
 
 volumes:
   liquoricedata:  

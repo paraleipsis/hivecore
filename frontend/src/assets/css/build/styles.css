@@ -70,7 +70,6 @@
   left: 0;
   background-color: black;
   overflow-x: hidden;
-  padding-top: 60px;
   transition: 0.5s;
 }
 
@@ -182,9 +181,18 @@ td {
   width: calc(100% - 1em);
 }
 
-.images-main-table-host-body, .images-main-table-tags-header, .images-main-table-host-header .images-main-table-tags-body {
+.images-main-table-host-body, .images-main-table-tags-header, .images-main-table-host-header, .images-main-table-repotags-body {
   position: relative;
   z-index: 1;
+  background: white;
+}
+
+.images-main-table-host-body, .images-main-table-host-header {
+  width: 155px;
+}
+
+.images-main-table-tags-header, .images-main-table-host-header {
+  background: white !important;
 }
 
 .container-actions {
