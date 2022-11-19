@@ -7,5 +7,5 @@ RUN pip3 install -r requirements.txt
 
 COPY . .
 
-# RUN ["chmod", "+x", "docker-entrypoint.sh"]
-# ENTRYPOINT ["./docker-entrypoint.sh"]
+# RUN ["chmod", "+x", "docker-entrypoint.dev.sh"]
+# ENTRYPOINT ["./docker-entrypoint.dev.sh"]
