@@ -16,7 +16,7 @@ export default function App() {
               Liquorice
           </p>
           <div className="border-top footer-copyright">
-            Copyright 2022 © by paraleipsis
+            Created 2022 © by paraleipsis
           </div>
         </div>
 
