@@ -18,7 +18,9 @@
     "react-router-dom": "^4.3.1",
     "react-scripts": "5.0.1",
     "reactstrap": "^9.1.2",
-    "sass": "^1.56.1"
+    "sass": "^1.56.1",
+    "react-bootstrap-table-next": "3.3.5",
+    "react-bootstrap-table2-paginator": "2.1.0"
   },
   "scripts": {
     "start": "react-scripts start",

@@ -14,31 +14,15 @@ from django.conf import settings
 client = docker.APIClient()
 redis_instance = settings.REDIS_INSTANCE
 
-@shared_task
-def collect_docker_stuff():
-    nodes = client.nodes()
-    res = []
-    headers = {'content-type': 'application/json', 'Accept-Charset': 'UTF-8'}
-    for ip in nodes:
-        try:
-            res.append(
-                {
-                    'ip': str(ip['Status']['Addr']),
-                    'endpoints': json.loads(requests.get(f"http://{ip['Status']['Addr']}:8001", headers=headers).text)
-                    }
-            )
-        except ConnectionError:
-            continue
-
-        redis_instance.set("docker_stuff", json.dumps(res))
-        
-    return None
-
-
-@shared_task
-def sort_docker_stuff():
-    items = json.loads(redis_instance.get('docker_stuff')) # json with info from hosts to list
+def sort_docker_stuff(no_data_error=False):
     endpoints = ['/status', '/containers', '/images', '/networks', '/volumes', '/services', '/nodes', '/swarm', '/configs', '/secrets']
+
+    if no_data_error:
+        for endpoint in range(len(endpoints)): 
+            redis_instance.set(f"{endpoints[endpoint]}", json.dumps({'result': 'Unable to collect data. All hosts is unreacheable'}))
+        return None
+
+    items = json.loads(redis_instance.get('docker_stuff')) # json with info from hosts to list
 
     for endpoint in range(len(endpoints)): # sort by endpoints
         current_info_list = []
@@ -115,6 +99,42 @@ def sort_docker_stuff():
                     current_info_list.append({'ip': ip, 'host': host, 'type': endpoints[endpoint], 'items': collection})
 
         redis_instance.set(f"{endpoints[endpoint]}", json.dumps({'count': len(current_info_list), 'result': current_info_list}))
+
+    return None
+
+@shared_task
+def collect_docker_stuff():
+    nodes = client.nodes()
+    result = []
+    errors = []
+    headers = {'content-type': 'application/json', 'Accept-Charset': 'UTF-8'}
+    for ip in nodes:
+        try:
+            result.append(
+                {
+                    'ip': str(ip['Status']['Addr']),
+                    'endpoints': json.loads(requests.get(f"http://{ip['Status']['Addr']}:8001", headers=headers).text)
+                    }
+            )
+        except ConnectionError:
+            errors.append(
+                {
+                    'ip': str(ip['Status']['Addr']),
+                    'error': 'host unreachable'
+                    }
+            )
+            continue
+
+    if len(result) > 0:
+        redis_instance.set("docker_stuff", json.dumps(result))
+        sort_docker_stuff()
+
+    if len(errors) > 0:
+        no_data_error = False
+        if len(errors) == len(nodes):
+            no_data_error = True
+            sort_docker_stuff(no_data_error)
+        redis_instance.set("hosts_errors", json.dumps(errors))
 
     return None
 

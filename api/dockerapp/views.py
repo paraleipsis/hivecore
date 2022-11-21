@@ -233,3 +233,10 @@ class StatusViewSet(ViewSet):
     def list(self, request, format=None):
         items = json.loads(redis_instance.get('/status'))
         return Response(items)
+
+
+class HostStatusViewSet(ViewSet):
+
+    def list(self, request, format=None):
+        items = json.loads(redis_instance.get('hosts_errors'))
+        return Response(items)

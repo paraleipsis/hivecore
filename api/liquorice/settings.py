@@ -147,8 +147,8 @@ CELERY_BEAT_SCHEDULE = {
         'task': 'dockerapp.tasks.collect_docker_stuff',
         'schedule': CELERY_BEAT_TIMEOUT
     },
-    'sort_docker_stuff': {
-        'task': 'dockerapp.tasks.sort_docker_stuff',
-        'schedule': CELERY_BEAT_TIMEOUT
-    }
+    # 'sort_docker_stuff': {
+    #     'task': 'dockerapp.tasks.sort_docker_stuff',
+    #     'schedule': CELERY_BEAT_TIMEOUT
+    # }
 }

@@ -20,6 +20,7 @@ router.register(r'create_service', views.CreateServiceViewSet, basename='create_
 router.register(r'nodes', views.NodesViewSet, basename='nodes')
 router.register(r'swarm', views.SwarmViewSet, basename='swarm')
 router.register(r'status', views.StatusViewSet, basename='status')
+router.register(r'host_status', views.HostStatusViewSet, basename='host_status')
 
 router.register(r'configs', views.ConfigsViewSet, basename='configs')
 router.register(r'create_config', views.CreateConfigViewSet, basename='create_config')

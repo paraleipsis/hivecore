@@ -160,6 +160,37 @@ td {
   color: white;
 }
 
+#pageDropDown {
+  background-color: white;
+  color: black;
+}
+
+.react-bootstrap-table-pagination-list {
+  z-index: 0;
+}
+
+.page-link {
+  background-color: black;
+  color: white;
+  border: 0;
+}
+
+.pagination {
+  --bs-pagination-border-radius: 0px;
+  --bs-pagination-hover-color: black;
+  --bs-pagination-color: black;
+  --bs-pagination-focus-color: black;
+  --bs-pagination-active-border-color: black;
+  --bs-pagination-active-bg: black;
+  --bs-pagination-focus-box-shadow: 0;
+}
+
+.active > .page-link, .page-link.active {
+  background-color: white;
+  color: black;
+  border-color: white;
+}
+
 .main-table {
   margin-top: 30px;
   width: 100%;

@@ -5,6 +5,9 @@ from django.conf import settings
 redis_instance = settings.REDIS_INSTANCE
 
 def get_choices(docker_object):
+   if json.loads(redis_instance.get('/status'))['result'] == 'Unable to collect data. All hosts is unreacheable':
+      return ''
+
    try:
       if docker_object in ('network_plugins', 'volume_plugins'):
          endpoint = json.loads(redis_instance.get('/status'))

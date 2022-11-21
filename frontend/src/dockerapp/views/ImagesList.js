@@ -2,6 +2,12 @@ import React, { Component } from  'react';
 import ImagesService  from  '../services/ImagesService';
 import Card from 'react-bootstrap/Card'
 
+// paginate table
+import BootstrapTable from "react-bootstrap-table-next";
+import paginationFactory from "react-bootstrap-table2-paginator";
+import "react-bootstrap-table-next/dist/react-bootstrap-table2.min.css";
+// 
+
 const  imagesService  =  new  ImagesService();
 
 class  ImagesList  extends  Component {
@@ -14,18 +20,48 @@ constructor(props) {
 	};
 }
 
+imageDetailsSide(object, cellContent) {
+    return <button onClick={() => {this.openNav(object)}} className='button'>{cellContent}</button>
+}
+
+imagesColumnsMain = [
+{
+    dataField: "repotags",
+    text: "Tags",
+    sort: true
+},
+{
+    dataField: "host",
+    text: "Host",
+    sort: true
+},
+{
+    dataField: "repository",
+    text: "Repository"
+},
+{
+    dataField: "used_by",
+    text: "Container"
+},
+{
+    dataField: "id",
+    text: "ID"
+},
+{
+    dataField: "size",
+    text: "Size"
+},
+{
+    dataField: "created",
+    text: "Created"
+},
+];
+
 componentDidMount() {
 	var self = this;
 	imagesService.getImages().then(function (data) {
 		self.setState({ images:  data.result})
 	});
-
-    // $('.main-table').simpleCheckboxTable({
-    // });
-}
-
-deleteData(id) {
-
 }
 
 
@@ -59,15 +95,17 @@ closeNav() {
     document.getElementById("mySidenav").style.width = "0";
 };
 
-containerActions(status) {
-
-}
 
 render() {
 
-    return (
-            <section className='images-section'>
+    if (this.state.images == 'Unable to collect data. All hosts is unreacheable') {
+        return <section className='images-section'>Unable to collect data. All hosts is unreacheable</section>
+    }
 
+    return (
+            
+            <section className='images-section'>
+            
                 <div className="images--list">
 
                 <div id="mySidenav" className="sidenav">
@@ -245,7 +283,7 @@ render() {
                         </Nav> */}
 
                         {/* main images table */}
-                        <table id="main-table" className="table main-table" cellPadding="0" cellSpacing="0" border="0">
+                        {/* <table id="main-table" className="table main-table" cellPadding="0" cellSpacing="0" border="0">
                             <thead key="thead" className='tbl-header main-table-header'>
                                 <tr className='main-table-row'>
                                     <th className='images-main-table-tags-header'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Tags</th>
@@ -276,7 +314,27 @@ render() {
                                     <td>{c.items.Created}</td>
                                 </tr>)}
                             </tbody>
-                        </table>
+                        </table> */}
+                        
+                         
+                        {/* test paginate table */ }
+                        <BootstrapTable
+                            bootstrap4
+                            keyField="id"
+                            headerClasses = 'tbl-header'
+                            bordered = { false }
+                            data={this.state.images.map(c => ({
+                                repotags: this.imageDetailsSide(c, c.items.RepoTags),
+                                host: c.host,
+                                repository: c.items.Repository,
+                                used_by: c.items.Used_by.slice(0, 12),
+                                id: c.items.Id.slice(c.items.Id.indexOf(':')+1, 19),
+                                size: c.items.Size,
+                                created: c.items.Created
+                            }))}
+                            columns={this.imagesColumnsMain}
+                            pagination={paginationFactory({ sizePerPage: 2 })}
+                        />
 
                         
 
