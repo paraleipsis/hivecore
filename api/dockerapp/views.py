@@ -3,10 +3,12 @@ from rest_framework.viewsets import ViewSet
 from .serializers import (ContainerSerializer, ImageSerializer, BuildImageSerializer, CreateContainerSerializer, 
                           CreateNetworkSerializer, NetworkSerializer, CreateVolumeSerializer, VolumesSerializer, 
                           ConfigsSerializer, CreateConfigSerializer, SecretsSerializer, CreateSecretSerializer, 
-                          ServicesSerializer, CreateServiceSerializer)
+                          ServicesSerializer, CreateServiceSerializer, ImagePruneSerializer, ImagePullSerializer,
+                          ImageSerializer)
 from .tasks import (pull_image, build_image, container_action, 
                     create_container, create_network, create_volume, 
-                    create_config, create_secret, create_service)
+                    create_config, create_secret, create_service,
+                    prune_images)
 from django.conf import settings
 import json
 
@@ -14,16 +16,32 @@ redis_instance = settings.REDIS_INSTANCE
 
 # image list, image pull
 class ImagesViewSet(ViewSet):
-    serializer_class = ImageSerializer
+    def get_serializer_class(self):
+        if self.request.method == 'POST':
+            return ImagePullSerializer
+        if self.request.method == 'DELETE':
+            return ImagePruneSerializer
+        return ImageSerializer
+    # serializer_class = ImageSerializer
 
     # pull images
-    def create(self, request):
-        serializer = ImageSerializer(data=request.data)
+    def post(self, request):
+        serializer = self.get_serializer_class()(data=request.data)
         serializer.is_valid(raise_exception=True)
-        pull_image.delay(serializer.data)
-        return Response(serializer.data)
+        # pull_image.delay(serializer.data)
+        items = json.loads(redis_instance.get('/images'))
+        return Response(items)
+
+    def delete(self, request):
+        serializer = self.get_serializer_class()(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        print(serializer.data)
+        prune_images.delay(serializer.data)
+        items = json.loads(redis_instance.get('/images'))
+        return Response(items)
 
     def list(self, request, format=None):
+        # serializer = self.get_serializer_class()(data=request.data)
         items = json.loads(redis_instance.get('/images'))
         return Response(items)
 

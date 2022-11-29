@@ -1,19 +1,70 @@
 .modal-body {
     color: white;
-    background-color: black;
+    background-color: black;    
+}
+
+.modal-header {
+    border-radius: 0%;
+    text-align: center;
+    width:auto;
+    margin:0 auto
 }
 
 .modal-title {
     color: black;
     background-color: white;
+    display: inline-block;
+    padding-right: 200px;
+}
+
+.btn-close {
+    display: inline-block;
 }
 
 .modal-footer {
     background-color: black;
     color: white;
     border-radius: 0%;
+
+    text-align: center;
+    width: 100%;
+    // margin: auto
+    
+}
+
+.force_checkbox {
+    display: inline-block;
+    padding-right: 50px;
+    margin-left: auto;
+}
+
+.button-modal-cancel {
+    display: inline-block;
+    // padding-right: 50px;
+    // padding-left: 50px;
+}
+
+.button-modal-remove {
+    display: inline-block;
+    padding-left: 50px;
+    margin-right: auto;
+    color: red;
 }
 
 .modal-content {
-    border-radius: 0%;
+    white-space: nowrap;
+    border-radius: 0%; 
+}
+
+.removeConfirm {
+    text-align: center;
+    // width: 100%;
+    width: 100%;
+    max-width: 100%;
+    position: absolute;
+    // left: 50%;
+    top: 30%;
+    transform: translate(-50%, -50%);
+    border-bottom: 1px solid transparent; 
+    border-color: white; 
 }

@@ -14,7 +14,6 @@ export default class ContainersService{
 
 	async signalContainer(container) {
 		const url = `${API_URL}/dockerapp/containers/`;
-		console.log(container)
 		return axios.post(url, container);
 	}
 }

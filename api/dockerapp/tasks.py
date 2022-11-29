@@ -144,7 +144,7 @@ def pull_image(data):
     headers = {'content-type': 'application/json', 'Accept-Charset': 'UTF-8'}
     nodes = json.loads(redis_instance.get('/nodes'))['result']
     ip = [x for x in nodes if x['host'] == data['node']][0]['ip']
-    data = json.dumps({'params': {'image': data['image']}, 'task': 'image_pull'})
+    data = json.dumps({'params': {'image': data['image'] + ':' + data['tag']}, 'task': 'image_pull'})
     requests.post(f"http://{ip}:8001", headers=headers, data=data)  # response code for sending data
     
 
@@ -165,7 +165,6 @@ def build_image(data):
 
 @shared_task
 def container_action(data):
-    print(data)
     headers = {'content-type': 'application/json', 'Accept-Charset': 'UTF-8'}
     ip = data.pop('container_ip')
     task = data.pop('container_signal')
@@ -174,10 +173,24 @@ def container_action(data):
 
 
 @shared_task
+def prune_images(data):
+    headers = {'content-type': 'application/json', 'Accept-Charset': 'UTF-8'}
+    task = data.pop('signal')
+    nodes = json.loads(redis_instance.get('/nodes'))['result']
+    ips = [node['ip'] for node in nodes if node['items']['Status']['State'] == 'ready']
+    data = json.dumps({'params': data, 'task': task})
+    for ip in ips:
+        requests.post(f"http://{ip}:8001", headers=headers, data=data)
+
+
+@shared_task
 def create_container(data):
     headers = {'content-type': 'application/json', 'Accept-Charset': 'UTF-8'}
     nodes = json.loads(redis_instance.get('/nodes'))['result']
     ip = [x for x in nodes if x['host'] == data['node']][0]['ip']
+
+    data['image'] = data['image'] + ':' + data['tag']
+    del data['tag']
 
     if data['network'] != 'None':
         data['network'] = data['network'].split(":")[2] # id from string 'name:host:id'
@@ -226,7 +239,6 @@ def create_container(data):
     del data['restart_policy']
 
     data = json.dumps({'params': {x: data[x] for x in data if x not in "node"}, 'task': 'create_container'})
-
     requests.post(f"http://{ip}:8001", headers=headers, data=data)  # response code for sending data
 
 

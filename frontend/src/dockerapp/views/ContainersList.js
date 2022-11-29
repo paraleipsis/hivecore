@@ -12,6 +12,14 @@ import terminal_button from '../../assets/images/terminal_white.png';
 import remove_button from '../../assets/images/remove_white.png';
 import kill_button from '../../assets/images/kill_white.png';
 
+// paginate table
+import BootstrapTable from "react-bootstrap-table-next";
+// import paginationFactory from "react-bootstrap-table2-paginator";
+import paginationFactory, { PaginationProvider, PaginationListStandalone, SizePerPageDropdownStandalone  } from 'react-bootstrap-table2-paginator';
+import "react-bootstrap-table-next/dist/react-bootstrap-table2.min.css";
+// import 'react-bootstrap-table2-paginator/dist/react-bootstrap-table2-paginator.min.css';
+// 
+
 const  containersService  =  new ContainersService();
 
 class  ContainersList  extends  Component {
@@ -20,7 +28,7 @@ constructor(props) {
 	super(props);
 	this.state  = {
 		containers: [],
-        container_id: '',
+        container: '',
         container_ip: '',
         container_signal: '',
         force_remove: false,
@@ -71,10 +79,10 @@ handleSignal(obj){
 	});
 }
 
-onClickButton = (containers, container_signal) =>{
+onClickButtonModal = (containers, container_signal) =>{
     this.setState({
         openModal: true,
-        container_id: containers.items.Id,
+        container: containers.items.Id,
         container_ip: containers.ip,
         container_signal: container_signal,
     })
@@ -84,18 +92,22 @@ onCloseModal = ()=>{
     this.setState({openModal : false})
 }
 
+handleRefresh = () => {
+    this.componentDidMount();
+};
+
 ButtonAction (button, containers, container_signal) {
     if (container_signal == 'remove_container') {
-        return  <button className='button' id={container_signal} onClick={()=>this.onClickButton(containers, container_signal)}>
+        return  <button className='button' id={container_signal} onClick={()=>{this.onClickButtonModal(containers, container_signal); this.handleRefresh}}>
                     <img src={button} className='action-img'/>
                 </button>
     } else {
         return <button className='button' id={container_signal}
-                onClick={()=>this.handleSignal({
-                    'container_id': containers.items.Id,
+                onClick={()=>{this.handleSignal({
+                    'container': containers.items.Id,
                     'container_ip': containers.ip,
                     'container_signal': container_signal
-                    })}>
+                    }); this.handleRefresh}}>
             <img src={button} className='action-img'/>
         </button>
     }
@@ -128,76 +140,148 @@ containerActions(containers) {
     }
 }
 
+containerDetailsSide(object, cellContentName) {
+    return <button onClick={() => {this.openNav(object)}} className='button'>{cellContentName.length > 20 ? cellContentName.slice(0, 20) + ' ...' : cellContentName}</button>
+}
+
+containerHostStyle(cellContent) {
+    return <span className='images-main-table-host-body'>{cellContent}</span>
+}
+
+containersColumnsMain = [
+{
+    dataField: "name",
+    text: "Name",
+    sort: true,
+    headerClasses: 'images-main-table-tags-header',
+    editCellClasses: 'images-main-table-repotags-body'
+},
+{
+    dataField: "host",
+    text: "Host",
+    sort: true,
+    headerClasses: 'images-main-table-host-header',
+},
+{
+    dataField: "status",
+    text: "Status",
+},
+{
+    dataField: "actions",
+    text: "Actions"
+},
+{
+    dataField: "image",
+    text: "Image"
+},
+{
+    dataField: "ip_address",
+    text: "IP Address"
+},
+{
+    dataField: "ports",
+    text: "Ports"
+},
+{
+    dataField: "created",
+    text: "Created"
+},
+];
+
 render() {
+    if (this.state.containers == 'Unable to collect data. All hosts is unreacheable') {
+        return <section className='images-section'>Unable to collect data. All hosts is unreacheable</section>
+    }
 
     return (
             <section className='containers-section'>
 
-                <Modal show={this.state.openModal} onHide={this.onCloseModal} className="removeConfirm">
+                <Modal show={this.state.openModal} onHide={this.onCloseModal} dialogClassName="removeConfirm">
                     <Modal.Header closeButton>
                         <Modal.Title>Remove container</Modal.Title>
                     </Modal.Header>
-                    <Modal.Body>Are you sure you want to remove container: {this.state.container_id.slice(0, 12)}</Modal.Body>
+                    <Modal.Body>Are you sure you want to remove container: {this.state.container.slice(0, 12)}</Modal.Body>
                     <Modal.Footer>
-                        <div>
-                            <input id="force_checkbox" type="checkbox"/>
-                            Force remove
-                        </div>
-                        <button className='button button-modal' onClick={this.onCloseModal}>
-                            Cancel
-                        </button>
-                        <button className='button button-modal' onClick={() =>{ 
-                            this.onCloseModal(); 
-                            this.handleSignal({
-                                'container_id': this.state.container_id,
-                                'container_ip': this.state.container_ip,
-                                'container_signal': this.state.container_signal,
-                                'force': document.getElementById('force_checkbox').checked,
-                                });}}>
-                            Remove
-                        </button>
+                            <div className='force_checkbox'>
+                                <input id="force_checkbox" type="checkbox"/>
+                                Force remove
+                            </div>
+                            <div className='volumes_checkbox'>
+                                <input id="volumes_checkbox" type="checkbox"/>
+                                Remove the volumes associated with the container
+                            </div>
+                            <button className='button button-modal-cancel' onClick={this.onCloseModal}>
+                                Cancel
+                            </button>
+                            <button className='button button-modal-remove' onClick={() =>{ 
+                                this.onCloseModal(); 
+                                this.handleSignal({
+                                    'container': this.state.container,
+                                    'container_ip': this.state.container_ip,
+                                    'container_signal': this.state.container_signal,
+                                    'force': document.getElementById('force_checkbox').checked,
+                                    'v': document.getElementById('volumes_checkbox').checked,
+                                    });}}>
+                                Remove
+                            </button>
                     </Modal.Footer>
                 </Modal>
 
                 <div id="main" className="containers--list">
 
                         {/* main containers table */}
-                        <table id="main-table" className="table main-table" cellPadding="0" cellSpacing="0" border="0">
-                            <thead key="thead" className='tbl-header main-table-header'>
-                                <tr className='main-table-row'>
-                                    <th className='images-main-table-tags-header'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Name</th>
-                                    <th className='images-main-table-host-header'>Host</th>
-                                    <th className='container-status-th'>Status</th>
-                                    <th className='container-actions'>Actions</th>
-                                    <th className='container-image-th'>Image</th>
-                                    <th>IP Address</th>
-                                    <th>Ports</th>
-                                    <th>Created</th>
-                                </tr>
-                            </thead>
+                        <div>
+                        <PaginationProvider
+                        pagination={ 
+                            paginationFactory({ 
+                                sizePerPage: 3, 
+                                custom: true,
+                                totalSize: this.state.containers.length
+                            })}
+                        >
+                        {
+                            ({
+                            paginationProps,
+                            paginationTableProps
+                            }) => (
+                            <div>
 
-                            <tbody className='tbl-content main-table-content'>
-                                {this.state.containers.map( c  =>
-                                    <tr key={c.items.Id + c.host} className='main-table-row'>
-                                    <td>
-                                        <button onClick={() => {this.openNav(c)}} className='button'>
-                                            {c.items.Name.length > 20 ? c.items.Name.slice(0, 20) + ' ...' : c.items.Name}
-                                        </button>
-                                    </td>
-                                    <td className='images-main-table-host-body'>{c.host}</td>
-                                    <td className='container-status-td'>{c.items.State.Status}</td>
-                                    <td className='container-actions'>
-                                        {this.containerActions(c)}
-                                    </td>
-                                    <td className='container-image-td'>{c.items.Config.Image.indexOf("@") > -1 ? c.items.Config.Image.slice(0, c.items.Config.Image.indexOf('@')) : c.items.Config.Image}</td>
-                                    <td>{Object.values(c.items.NetworkSettings.Networks)[0]['IPAddress'] != '' ? Object.values(c.items.NetworkSettings.Networks)[0]['IPAddress'] : '-'}</td>
-                                    <td>{this.container_ports(c.items.NetworkSettings.Ports)}</td>
-                                    <td>{c.items.Created.replace('T', ' ').slice(0, c.items.Created.indexOf('.'))}</td>
-                                    
-                                </tr>)}
-                            </tbody>
-                        </table>
+                                <BootstrapTable
+                                bootstrap4
+                                keyField="name"
+                                headerClasses = 'tbl-header'
+                                bordered = { false }
+                                data={this.state.containers.map(
+                                    c => ({
+                                        name: this.containerDetailsSide(c, c.items.Name),
+                                        host: this.containerHostStyle(c.host),
+                                        status: c.items.State.Status,
+                                        actions: this.containerActions(c),
+                                        image: c.items.Config.Image.indexOf("@") > -1 ? c.items.Config.Image.slice(0, c.items.Config.Image.indexOf('@')) : c.items.Config.Image,
+                                        ip_address: Object.values(c.items.NetworkSettings.Networks)[0]['IPAddress'] != '' ? Object.values(c.items.NetworkSettings.Networks)[0]['IPAddress'] : '-',
+                                        ports: this.container_ports(c.items.NetworkSettings.Ports),
+                                        created: c.items.Created.replace('T', ' ').slice(0, c.items.Created.indexOf('.')),
+                                        }
+                                    )
+                                )}
+                                columns={this.containersColumnsMain}
+                                { ...paginationTableProps }
+                                />
+
+                                <PaginationListStandalone
+                                    {...paginationProps}
+                                />
+
+                            </div>
+                            )
+                        }
+                        </PaginationProvider>
+                    </div>
+
                 </div>
+                
+                <div className='block'>CONTAINER LIST</div>
+
             </section>
 	);
 

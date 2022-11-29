@@ -1,0 +1,45 @@
+// big table title on right
+.block {
+    font-size: 50px; 
+    color: white; 
+    // text-align: center;
+  
+    margin-top: 120px;
+    display: inline-block;  
+    // position: sticky;
+    // top: 50px;
+    // position: fixed; 
+    // float: right;
+  
+    border-left: 3px solid transparent; 
+    border-color: white; 
+    // width: 300px; 
+    padding:15px;
+}
+
+.tools-title {
+    text-align: left;
+}
+
+// buttons bar
+.tools {
+    text-align: left;
+    // margin-bottom: 10px;
+    border-bottom: 1px solid transparent; 
+    border-color: white; 
+}
+
+.block-pull {
+    float: right;
+}
+
+// pull button hover color change
+#pull-image:hover img {
+    content: url("../../images/pull_image_black.png");
+    // transform: scale(1.1);
+}
+
+#prune-images:hover img {
+    content: url("../../images/remove.png");
+    // transform: scale(1.1);
+}

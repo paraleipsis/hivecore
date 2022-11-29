@@ -5,10 +5,10 @@ from django.conf import settings
 redis_instance = settings.REDIS_INSTANCE
 
 def get_choices(docker_object):
-   if json.loads(redis_instance.get('/status'))['result'] == 'Unable to collect data. All hosts is unreacheable':
-      return ''
-
    try:
+      if json.loads(redis_instance.get('/status'))['result'] == 'Unable to collect data. All hosts is unreacheable':
+         return ''
+
       if docker_object in ('network_plugins', 'volume_plugins'):
          endpoint = json.loads(redis_instance.get('/status'))
       else:
@@ -48,8 +48,17 @@ def get_choices(docker_object):
 
 
 class ImageSerializer(serializers.Serializer):
+   pass
+
+class ImagePullSerializer(serializers.Serializer):
    image = serializers.CharField(required=True)
+   tag = serializers.CharField(required=False, default='latest')
    node = serializers.ChoiceField(required=True, choices=get_choices('/nodes'))
+   signal = serializers.CharField(required=False)
+
+
+class ImagePruneSerializer(serializers.Serializer):
+   signal = serializers.CharField(required=True)
 
 
 class BuildImageSerializer(serializers.Serializer):
@@ -68,16 +77,18 @@ class BuildImageSerializer(serializers.Serializer):
 
 
 class ContainerSerializer(serializers.Serializer):
-   container_id = serializers.CharField(required=True)
+   container = serializers.CharField(required=True)
    container_ip = serializers.CharField(required=True)
    container_signal = serializers.CharField(required=True)
    force = serializers.BooleanField(required=False)
+   v = serializers.BooleanField(required=False)
 
 
 class CreateContainerSerializer(serializers.Serializer):
    # main
    name = serializers.CharField(required=False)
    image = serializers.CharField(required=True)
+   tag = serializers.CharField(required=False, default='latest')
    ports = serializers.CharField(required=False)
 
    # for agent
