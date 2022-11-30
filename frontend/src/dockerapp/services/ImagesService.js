@@ -12,9 +12,10 @@ export default class ImagesService{
 		return data;
 	}  
 
-	async pullImage() {
+	async pullImage(image, tag, node) {
 		const url = `${API_URL}/dockerapp/images/`;
-        const response = await axios.post(url);
+		console.log(image, tag, node)
+        const response = await axios.post(url, { image: image, tag: tag, node: node });
         const data = await response.data;
 		return data;
 	}  

@@ -52,14 +52,16 @@ class ImageSerializer(serializers.Serializer):
 
 class ImagePullSerializer(serializers.Serializer):
    image = serializers.CharField(required=True)
-   tag = serializers.CharField(required=False, default='latest')
+   tag = serializers.CharField(required=False, default='latest', initial='latest', allow_blank=True)
    node = serializers.ChoiceField(required=True, choices=get_choices('/nodes'))
-   signal = serializers.CharField(required=False)
 
+   def validate(self, data):
+        if data.get('tag', None) == '': 
+            data['tag']=  'latest'
+        return data
 
 class ImagePruneSerializer(serializers.Serializer):
    signal = serializers.CharField(required=True)
-
 
 class BuildImageSerializer(serializers.Serializer):
    tag = serializers.CharField(required=False)

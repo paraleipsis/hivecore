@@ -1,10 +1,14 @@
+input {
+    color: black;
+}
+
 // big table title on right
 .block {
     font-size: 50px; 
     color: white; 
     // text-align: center;
   
-    margin-top: 120px;
+    margin-top: 140px;
     display: inline-block;  
     // position: sticky;
     // top: 50px;
@@ -29,8 +33,42 @@
     border-color: white; 
 }
 
+.pull {
+    margin-top: 140px;
+    margin:0 auto;
+    text-align:center;
+    position:relative;
+    width: 55%;
+    // height: 50%;
+    display: flex;
+    justify-content: center;
+}
+
 .block-pull {
     float: right;
+    margin-top: 170px;
+    height: 110px;
+}
+
+.pull-image-block {
+    // padding-left: 150px;
+    float: left;
+    margin-top: 140px;
+    text-align: left;
+    margin-right: 80px;
+    
+}
+
+.input-image {
+    text-align: left;
+    margin-right: 40px;
+    margin-bottom: 10px;
+}
+
+.input-tag {
+    text-align: left;
+    margin-right: 58px;
+    margin-bottom: 10px;
 }
 
 // pull button hover color change

@@ -1,5 +1,6 @@
 from rest_framework.response import Response
 from rest_framework.viewsets import ViewSet
+from rest_framework import status
 from .serializers import (ContainerSerializer, ImageSerializer, BuildImageSerializer, CreateContainerSerializer, 
                           CreateNetworkSerializer, NetworkSerializer, CreateVolumeSerializer, VolumesSerializer, 
                           ConfigsSerializer, CreateConfigSerializer, SecretsSerializer, CreateSecretSerializer, 
@@ -26,19 +27,21 @@ class ImagesViewSet(ViewSet):
 
     # pull images
     def post(self, request):
+        print(request.data)
         serializer = self.get_serializer_class()(data=request.data)
         serializer.is_valid(raise_exception=True)
-        # pull_image.delay(serializer.data)
-        items = json.loads(redis_instance.get('/images'))
-        return Response(items)
+        pull_image.delay(serializer.data)
+        # items = json.loads(redis_instance.get('/images'))
+        # return Response(items)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     def delete(self, request):
         serializer = self.get_serializer_class()(data=request.data)
         serializer.is_valid(raise_exception=True)
-        print(serializer.data)
         prune_images.delay(serializer.data)
-        items = json.loads(redis_instance.get('/images'))
-        return Response(items)
+        # items = json.loads(redis_instance.get('/images'))
+        # return Response(items)
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
     def list(self, request, format=None):
         # serializer = self.get_serializer_class()(data=request.data)

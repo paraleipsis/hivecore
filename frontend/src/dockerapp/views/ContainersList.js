@@ -74,9 +74,7 @@ container_ports(ports) {
 }
 
 handleSignal(obj){
-	containersService.signalContainer(obj).then((response)=>{
-		this.setState({containers:  response.data.result})
-	});
+	containersService.signalContainer(obj)
 }
 
 onClickButtonModal = (containers, container_signal) =>{

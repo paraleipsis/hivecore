@@ -1,15 +1,23 @@
-import React, { Component, useEffect, useState  } from  'react';
+import React, { Component } from  'react';
+
 import ImagesService  from  '../services/ImagesService';
+import NodesService  from  '../services/NodesService';
+
 import Card from 'react-bootstrap/Card'
 import Modal from 'react-bootstrap/Modal';
+import Select from 'react-select'
 import BootstrapTable from "react-bootstrap-table-next";
 import paginationFactory, { PaginationProvider, PaginationListStandalone } from 'react-bootstrap-table2-paginator';
 import "react-bootstrap-table-next/dist/react-bootstrap-table2.min.css";
+
+import $ from 'jquery';
+
 import restart_button from '../../assets/images/restart_white.png';
 import pull_button from '../../assets/images/pull_image_white.png';
 import remove_button from '../../assets/images/remove_white.png';
 
-const  imagesService  =  new  ImagesService();
+const  imagesService = new ImagesService();
+const  nodesService = new NodesService();
 
 class  ImagesList  extends  Component {
 
@@ -18,7 +26,13 @@ constructor(props) {
 	this.state  = {
 		images: [],
         imageDetails: [],
+        nodes: [],
         signal: '',
+        inputImage: '',
+        inputImageError: 'image required',
+        inputTag: '',
+        inputNode: '',
+        inputNodeError: 'node required',
 	};
 }
 
@@ -84,10 +98,54 @@ envColumns = [
 },
 ];
 
+styles_dropdown = {
+    container: provided => ({
+        ...provided,
+        width: 275,
+        // float: 'right',
+        // position: 'relative'
+      }),
+    control: base => ({
+        ...base,
+        color: 'black',
+        backgroundColor: 'white',
+        borderColor: 'black',
+    
+        ':hover': {
+          borderColor: 'white',
+          color: 'black',
+        }
+    }),
+    singleValue: base => ({
+        ...base,
+        color: "black",
+        backgroundColor: 'white',
+    }),
+    dropdownIndicator: base => ({
+        ...base,
+        color: "white",
+        backgroundColor: 'black',
+    }),
+    option: base => ({
+        ...base,
+        color: "black",
+        backgroundColor: 'white',
+
+        ':hover': {
+            backgroundColor: 'black',
+            color: 'white',
+          }
+    }),
+  };
+
 componentDidMount() {
 	var self = this;
 	imagesService.getImages().then(function (data) {
 		self.setState({ images:  data.result})
+	});
+    nodesService.getNodes().then(function (data) {
+        data.result = data.result.filter(host => host.items.Status.State != 'down');
+		self.setState({ nodes:  data.result})
 	});
 }
 
@@ -112,10 +170,32 @@ closeNavPullImage() {
     document.getElementById("pull-sidebar").style.width = "0";
 };
 
-handleSignal(signal){
-	imagesService.pruneImages(signal).then((response)=>{
-		this.setState({images:  response.data.result})
-	});
+imagePullHandler = (e) => {
+    e.preventDefault();
+    this.setState({
+        inputImage: e.target.value,
+    })
+};
+
+imageTagPullHandler = (e) => {
+    e.preventDefault();
+    this.setState({
+        inputTag: e.target.value,
+    })
+};
+
+imageNodeHandler = (e) => {
+    this.setState({
+        inputNode: e.host,
+    })
+}
+
+handlePullImage(image, tag, node) {
+    imagesService.pullImage(image, tag, node)
+}
+
+handleSignal(signal) {
+	imagesService.pruneImages(signal)
 }
 
 onClickButtonModal = (signal) =>{
@@ -127,6 +207,13 @@ onClickButtonModal = (signal) =>{
 
 onCloseModal = ()=>{
     this.setState({openModal : false})
+}
+
+handlePreventFormRefresh = () => {
+    $("form").on('submit', function (e) {
+        e.preventDefault();
+        $.get(window.location, $(this).serialize());
+     });
 }
 
 render() {
@@ -156,10 +243,44 @@ render() {
                             </button>
                     </Modal.Footer>
                 </Modal>
-
                 <div id="pull-sidebar" className="sidenav">
                     <a className="closebtn" onClick={() => {this.closeNavPullImage()}}>&times;</a>
+                    <div className='pull'>
+                    <div className='pull-image-block'>
+                        <form>
+                            <label htmlFor='image' className='input-image'>Image</label>
+                            {(this.inputImageError) && <div style={{color: 'red'}}>{inputImageError}</div>}
+                            <input onChange={e => this.imagePullHandler(e)} value={this.inputImage} type='text' name='image' ></input><br/>
+                            <label htmlFor='tag' className='input-tag'>Tag</label>
+                            <input onChange={e => this.imageTagPullHandler(e)} value={this.inputTag} type='text' name='tag'></input><br/>
+                            <Select 
+                                onChange={e => this.imageNodeHandler(e)}
+                                className="select-host"
+                                classNamePrefix="select-host"
+                                options={this.state.nodes} 
+                                getOptionLabel={(option) => option.host}
+                                name="node"
+                                styles={this.styles_dropdown}
+                                placeholder='Select Node'
+                            /><br/>
+                            <button 
+                            disabled={this.state.inputImage.length<1 || this.state.inputNode.length<1} 
+                            id='pull-image' 
+                            className='button button-pull-image' 
+                            onClick={() => {
+                                this.closeNavPullImage(); 
+                                this.handlePullImage(this.state.inputImage, this.state.inputTag, this.state.inputNode)
+                                }}>
+                                Pull the Image&nbsp;
+                                <img src={pull_button} className='action-img'/>
+                            </button>
+                        </form>
+
+                        {this.handlePreventFormRefresh()}
+
+                        </div>
                     <div className='block block-pull'>PULL IMAGE</div>
+                    </div>
                 </div>
 
                 <div className='tools-title'>IMAGES</div>
