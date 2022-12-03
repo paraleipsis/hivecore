@@ -45,10 +45,14 @@
   transform: scale(1.1);
 }
 
-.button-pull-image {
+.button-pull-image, .button-tag-image {
   padding: 0.8em 1em;
   text-align: center;
   width: 275px;
+  z-index: 0;
+}
+
+.button-image-delete, .button-image-tag {
   z-index: 0;
 }
 
@@ -94,7 +98,7 @@
 .card-info {
   border-radius: 0px;
   border-left: 1px white solid;
-  margin-left: 371px;
+  margin-left: 341px;
   margin-right: auto;
   width: 50%;
   background-color: black;
@@ -113,6 +117,10 @@
 }
 
 #pull-sidebar {
+  z-index: 1000;
+}
+
+#tag-sidebar {
   z-index: 1000;
 }
 
@@ -302,7 +310,20 @@ td {
   display: inline-block;
 }
 
+.button-modal-prune-cancel {
+  display: inline-block;
+  padding-right: 50px;
+  margin-left: auto;
+}
+
 .button-modal-remove {
+  display: inline-block;
+  padding-left: 50px;
+  margin-right: auto;
+  color: red;
+}
+
+.button-modal-prune {
   display: inline-block;
   padding-left: 50px;
   margin-right: auto;
@@ -374,7 +395,7 @@ input {
   border-color: white;
 }
 
-.pull {
+.pull, .tag {
   margin-top: 140px;
   margin: 0 auto;
   text-align: center;
@@ -390,7 +411,13 @@ input {
   height: 110px;
 }
 
-.pull-image-block {
+.block-tag {
+  float: right;
+  margin-top: 150px;
+  height: 110px;
+}
+
+.pull-image-block, .tag-image-block {
   float: left;
   margin-top: 140px;
   text-align: left;
@@ -409,12 +436,22 @@ input {
   margin-bottom: 10px;
 }
 
+.input-repo {
+  text-align: left;
+  margin-right: 9px;
+  margin-bottom: 10px;
+}
+
 #pull-image:hover img {
   content: url("../../images/pull_image_black.png");
 }
 
 #prune-images:hover img {
   content: url("../../images/remove.png");
+}
+
+#tag-image:hover img {
+  content: url("../../images/tag_image_black.png");
 }
 
 body, html {

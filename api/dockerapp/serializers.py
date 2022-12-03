@@ -50,18 +50,37 @@ def get_choices(docker_object):
 class ImageSerializer(serializers.Serializer):
    pass
 
+
 class ImagePullSerializer(serializers.Serializer):
    image = serializers.CharField(required=True)
    tag = serializers.CharField(required=False, default='latest', initial='latest', allow_blank=True)
    node = serializers.ChoiceField(required=True, choices=get_choices('/nodes'))
+   signal = serializers.CharField(required=True)
 
    def validate(self, data):
         if data.get('tag', None) == '': 
             data['tag']=  'latest'
         return data
 
+
+class ImageTagSerializer(serializers.Serializer):
+   image = serializers.CharField(required=True)
+   repository = serializers.CharField(required=True)
+   tag = serializers.CharField(required=False)
+   signal = serializers.CharField(required=True)
+   node = serializers.ChoiceField(required=True, choices=get_choices('/nodes'))
+
+
 class ImagePruneSerializer(serializers.Serializer):
    signal = serializers.CharField(required=True)
+
+
+class ImageDeleteSerializer(serializers.Serializer):
+   image = serializers.CharField(required=True)
+   image_ip = serializers.CharField(required=True)
+   signal = serializers.CharField(required=True)
+   force = serializers.BooleanField(required=False)
+
 
 class BuildImageSerializer(serializers.Serializer):
    tag = serializers.CharField(required=False)

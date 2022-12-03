@@ -33,7 +33,7 @@ input {
     border-color: white; 
 }
 
-.pull {
+.pull, .tag {
     margin-top: 140px;
     margin:0 auto;
     text-align:center;
@@ -50,7 +50,13 @@ input {
     height: 110px;
 }
 
-.pull-image-block {
+.block-tag {
+    float: right;
+    margin-top: 150px;
+    height: 110px;
+}
+
+.pull-image-block, .tag-image-block {
     // padding-left: 150px;
     float: left;
     margin-top: 140px;
@@ -71,6 +77,12 @@ input {
     margin-bottom: 10px;
 }
 
+.input-repo {
+    text-align: left;
+    margin-right: 9px;
+    margin-bottom: 10px;
+}
+
 // pull button hover color change
 #pull-image:hover img {
     content: url("../../images/pull_image_black.png");
@@ -79,5 +91,10 @@ input {
 
 #prune-images:hover img {
     content: url("../../images/remove.png");
+    // transform: scale(1.1);
+}
+
+#tag-image:hover img {
+    content: url("../../images/tag_image_black.png");
     // transform: scale(1.1);
 }

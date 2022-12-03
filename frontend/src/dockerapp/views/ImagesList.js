@@ -15,6 +15,7 @@ import $ from 'jquery';
 import restart_button from '../../assets/images/restart_white.png';
 import pull_button from '../../assets/images/pull_image_white.png';
 import remove_button from '../../assets/images/remove_white.png';
+import tag_button from '../../assets/images/tag_image_white.png';
 
 const  imagesService = new ImagesService();
 const  nodesService = new NodesService();
@@ -33,12 +34,16 @@ constructor(props) {
         inputTag: '',
         inputNode: '',
         inputNodeError: 'node required',
+        inputRepo: '',
+        force_remove: false,
+        image: '',
+        image_ip: '',
+        openModalPrune : false,
+        openModalRemove : false,
+        TagHost: ''
 	};
 }
 
-state = {
-    openModal : false
-}
 
 imageDetailsSide(object, cellContent) {
     return <button onClick={() => {this.openNavDetails(object)}} className='button'>{cellContent}</button>
@@ -81,6 +86,10 @@ imagesColumnsMain = [
 {
     dataField: "created",
     text: "Created"
+},
+{
+    dataField: "action",
+    text: "Action"
 },
 ];
 
@@ -166,21 +175,40 @@ openNavPullImage() {
     document.getElementById("pull-sidebar").style.width = "100%";
 };
 
+openNavTag(image) {
+    this.setState({
+        TagHost: image.host,
+        inputImage: image.items.Id
+    })
+    document.getElementById("tag-sidebar").style.width = "100%";
+};
+
+closeNavTag() {
+    document.getElementById("tag-sidebar").style.width = "0";
+};
+
 closeNavPullImage() {
     document.getElementById("pull-sidebar").style.width = "0";
 };
 
-imagePullHandler = (e) => {
+imageHandler = (e) => {
     e.preventDefault();
     this.setState({
         inputImage: e.target.value,
     })
 };
 
-imageTagPullHandler = (e) => {
+imageTagHandler = (e) => {
     e.preventDefault();
     this.setState({
         inputTag: e.target.value,
+    })
+};
+
+imageRepoHandler = (e) => {
+    e.preventDefault();
+    this.setState({
+        inputRepo: e.target.value,
     })
 };
 
@@ -190,23 +218,57 @@ imageNodeHandler = (e) => {
     })
 }
 
-handlePullImage(image, tag, node) {
-    imagesService.pullImage(image, tag, node)
+handlePullImage(image, tag, node, signal) {
+    imagesService.pullImage(image, tag, node, signal)
 }
 
 handleSignal(signal) {
 	imagesService.pruneImages(signal)
 }
 
-onClickButtonModal = (signal) =>{
+imageAction(image) {
+    return <div>
+        <button id='prune-images' onClick={() => {this.onClickButtonModalDelete(image, 'remove_image')}} className='button button-image-delete'>
+            Remove&nbsp;
+            <img src={remove_button} className='action-img'/>
+        </button>
+        <button id='tag-image' onClick={() => {this.openNavTag(image)}} className='button button-image-tag'>
+            Tag&nbsp;
+            <img src={tag_button} className='action-img'/>
+        </button>
+        </div>
+}
+
+handleDeleteImage(image) {
+	imagesService.deleteImage(image)
+}
+
+handleTagImage(image, tag, repository, node, signal) {
+    imagesService.tagImage(image, tag, repository, node, signal)
+}
+
+onClickButtonModalPrune = (signal) => {
     this.setState({
-        openModal: true,
+        openModalPrune: true,
         signal: signal,
     })
 }
 
-onCloseModal = ()=>{
-    this.setState({openModal : false})
+onClickButtonModalDelete = (image, signal) => {
+    this.setState({
+        openModalRemove: true,
+        signal: signal,
+        image: image.items.Id,
+        image_ip: image.ip,
+    })
+}
+
+onCloseModalRemove = ()=> {
+    this.setState({openModalRemove : false})
+}
+
+onCloseModalPrune = ()=> {
+    this.setState({openModalPrune : false})
 }
 
 handlePreventFormRefresh = () => {
@@ -224,18 +286,45 @@ render() {
     return (
             
             <section className='images-section'>
+                {/* remove image */}
+                <Modal show={this.state.openModalRemove} onHide={this.onCloseModalRemove} dialogClassName="removeConfirm">
+                    <Modal.Header closeButton>
+                        <Modal.Title>Remove image</Modal.Title>
+                    </Modal.Header>
+                    <Modal.Body>Are you sure you want to remove image: {this.state.image.slice(0, 12)}</Modal.Body>
+                    <Modal.Footer>
+                            <div className='force_checkbox'>
+                                <input id="force_checkbox" type="checkbox"/>
+                                Force remove
+                            </div>
+                            <button className='button button-modal-cancel' onClick={this.onCloseModalRemove}>
+                                Cancel
+                            </button>
+                            <button className='button button-modal-remove' onClick={() =>{ 
+                                this.onCloseModalRemove(); 
+                                this.handleDeleteImage({
+                                    'image': this.state.image, 
+                                    'image_ip': this.state.image_ip,
+                                    'signal': 'remove_image',
+                                    'force': document.getElementById('force_checkbox').checked,
+                                    })}}>
+                                Remove
+                            </button>
+                    </Modal.Footer>
+                </Modal>
 
-                <Modal show={this.state.openModal} onHide={this.onCloseModal} dialogClassName="removeConfirm">
+                {/* prune images */}
+                <Modal show={this.state.openModalPrune} onHide={this.onCloseModalPrune} dialogClassName="removeConfirm">
                     <Modal.Header closeButton>
                         <Modal.Title>Prune images</Modal.Title>
                     </Modal.Header>
                     <Modal.Body>Are you sure you want to remove unused images on all hosts</Modal.Body>
                     <Modal.Footer>
-                            <button className='button button-modal-cancel' onClick={this.onCloseModal}>
+                            <button className='button button-modal-prune-cancel' onClick={this.onCloseModalPrune}>
                                 Cancel
                             </button>
-                            <button className='button button-modal-remove' onClick={() =>{ 
-                                this.onCloseModal(); 
+                            <button className='button button-modal-prune' onClick={() =>{ 
+                                this.onCloseModalPrune(); 
                                 this.handleSignal({
                                     'signal': this.state.signal,
                                     });}}>
@@ -243,6 +332,36 @@ render() {
                             </button>
                     </Modal.Footer>
                 </Modal>
+                
+                <div id="tag-sidebar" className="sidenav">
+                    <a className="closebtn" onClick={() => {this.closeNavTag()}}>&times;</a>
+                    <div className='tag'>
+                    <div className='tag-image-block'>
+                        <form>
+                            <label htmlFor='tag' className='input-tag'>Tag</label>
+                            <input onChange={e => this.imageTagHandler(e)} value={this.inputTag} type='text' name='tag'></input><br/>
+                            <label htmlFor='tag' className='input-repo'>Repository</label>
+                            <input onChange={e => this.imageRepoHandler(e)} value={this.inputRepo} type='text' name='repo'></input><br/>
+                            
+                            <button 
+                            disabled={this.state.inputImage.length<1 || this.state.inputRepo.length<1} 
+                            id='tag-image' 
+                            className='button button-tag-image' 
+                            onClick={() => {
+                                this.closeNavTag();  
+                                this.handleTagImage(this.state.inputImage, this.state.inputTag, this.state.inputRepo, this.state.TagHost, 'tag_image')}}>
+                                Tag the Image&nbsp;
+                                <img src={tag_button} className='action-img'/>
+                            </button>
+                        </form>
+
+                        {this.handlePreventFormRefresh()}
+
+                        </div>
+                    <div className='block block-tag'>TAG IMAGE</div>
+                    </div>
+                </div>
+
                 <div id="pull-sidebar" className="sidenav">
                     <a className="closebtn" onClick={() => {this.closeNavPullImage()}}>&times;</a>
                     <div className='pull'>
@@ -250,9 +369,9 @@ render() {
                         <form>
                             <label htmlFor='image' className='input-image'>Image</label>
                             {(this.inputImageError) && <div style={{color: 'red'}}>{inputImageError}</div>}
-                            <input onChange={e => this.imagePullHandler(e)} value={this.inputImage} type='text' name='image' ></input><br/>
+                            <input onChange={e => this.imageHandler(e)} value={this.inputImage} type='text' name='image' ></input><br/>
                             <label htmlFor='tag' className='input-tag'>Tag</label>
-                            <input onChange={e => this.imageTagPullHandler(e)} value={this.inputTag} type='text' name='tag'></input><br/>
+                            <input onChange={e => this.imageTagHandler(e)} value={this.inputTag} type='text' name='tag'></input><br/>
                             <Select 
                                 onChange={e => this.imageNodeHandler(e)}
                                 className="select-host"
@@ -269,7 +388,7 @@ render() {
                             className='button button-pull-image' 
                             onClick={() => {
                                 this.closeNavPullImage(); 
-                                this.handlePullImage(this.state.inputImage, this.state.inputTag, this.state.inputNode)
+                                this.handlePullImage(this.state.inputImage, this.state.inputTag, this.state.inputNode, 'image_pull')
                                 }}>
                                 Pull the Image&nbsp;
                                 <img src={pull_button} className='action-img'/>
@@ -293,7 +412,7 @@ render() {
                         Pull image&nbsp;
                         <img src={pull_button} className='action-img'/>
                     </button>
-                    <button id='prune-images' className='button' onClick={()=>{this.onClickButtonModal('prune_images')}}>
+                    <button id='prune-images' className='button' onClick={()=>{this.onClickButtonModalPrune('prune_images')}}>
                         Prune images&nbsp;
                         <img src={remove_button} className='action-img'/>
                     </button>
@@ -329,7 +448,7 @@ render() {
                                                     </tr>
                                                     <tr>
                                                     <th style={{backgroundColor: 'white'}}>Tags</th>
-                                                    <td>{this.state.imageDetails.items.RepoTags}</td>
+                                                    <td>{this.state.imageDetails.items.RepoTags.join(', ')}</td>
                                                     </tr>
                                                     <tr>
                                                     <th style={{backgroundColor: 'white'}}>Size</th>
@@ -484,13 +603,14 @@ render() {
                                     bordered = { false }
                                     data={this.state.images.map(
                                         c => ({
-                                            repotags: this.imageDetailsSide(c, c.items.RepoTags),
+                                            repotags: this.imageDetailsSide(c, c.items.RepoTags.join(', ')),
                                             host: this.imageHostStyle(c.host),
                                             repository: c.items.Repository,
                                             used_by: c.items.Used_by.slice(0, 12),
                                             id: c.items.Id.slice(c.items.Id.indexOf(':')+1, 19),
                                             size: c.items.Size,
-                                            created: c.items.Created
+                                            created: c.items.Created,
+                                            action: this.imageAction(c)
                                             }
                                         )
                                     )}

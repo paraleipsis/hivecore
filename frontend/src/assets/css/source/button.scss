@@ -45,11 +45,15 @@
     transform: scale(1.1);
 }
 
-.button-pull-image {
+.button-pull-image, .button-tag-image {
     padding: 0.8em 1em;
     text-align: center;
     width: 275px;
     // border-color: white;
     z-index: 0;
     // border-bottom: 1px solid transparent; 
+}
+
+.button-image-delete, .button-image-tag {
+    z-index: 0;
 }

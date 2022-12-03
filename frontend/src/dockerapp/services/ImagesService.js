@@ -12,17 +12,24 @@ export default class ImagesService{
 		return data;
 	}  
 
-	async pullImage(image, tag, node) {
+	async pullImage(image, tag, node, signal) {
 		const url = `${API_URL}/dockerapp/images/`;
-		console.log(image, tag, node)
-        const response = await axios.post(url, { image: image, tag: tag, node: node });
-        const data = await response.data;
-		return data;
+        return axios.post(url, { image: image, tag: tag, node: node, signal: signal });
 	}  
 
 	async pruneImages(signal) {
 		const url = `${API_URL}/dockerapp/images/`;
 		return axios.delete(url, { data: signal });
+	}
+
+	async deleteImage(image) {
+		const url = `${API_URL}/dockerapp/images/`;
+		return axios.delete(url, { data: image });
+	}
+
+	async tagImage(image, tag, repository, node, signal) {
+		const url = `${API_URL}/dockerapp/images/`;
+		return axios.post(url, { image: image, repository: repository, tag: tag, node: node, signal: signal });
 	}
 	
 }

@@ -44,7 +44,20 @@
     // padding-left: 50px;
 }
 
+.button-modal-prune-cancel {
+    display: inline-block;
+    padding-right: 50px;
+    margin-left: auto;
+}
+
 .button-modal-remove {
+    display: inline-block;
+    padding-left: 50px;
+    margin-right: auto;
+    color: red;
+}
+
+.button-modal-prune {
     display: inline-block;
     padding-left: 50px;
     margin-right: auto;

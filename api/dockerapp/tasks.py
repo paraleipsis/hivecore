@@ -144,7 +144,19 @@ def pull_image(data):
     headers = {'content-type': 'application/json', 'Accept-Charset': 'UTF-8'}
     nodes = json.loads(redis_instance.get('/nodes'))['result']
     ip = [x for x in nodes if x['host'] == data['node']][0]['ip']
-    data = json.dumps({'params': {'image': data['image'] + ':' + data['tag']}, 'task': 'image_pull'})
+    task = data.pop('signal')
+    data = json.dumps({'params': {'image': data['image'] + ':' + data['tag']}, 'task': task})
+    requests.post(f"http://{ip}:8001", headers=headers, data=data)  # response code for sending data
+
+
+@shared_task
+def tag_image(data):
+    headers = {'content-type': 'application/json', 'Accept-Charset': 'UTF-8'}
+    nodes = json.loads(redis_instance.get('/nodes'))['result']
+    node_name = data.pop('node')
+    ip = [x for x in nodes if x['host'] == node_name][0]['ip']
+    task = data.pop('signal')
+    data = json.dumps({'params': data, 'task': task})
     requests.post(f"http://{ip}:8001", headers=headers, data=data)  # response code for sending data
     
 
@@ -181,6 +193,15 @@ def prune_images(data):
     data = json.dumps({'params': data, 'task': task})
     for ip in ips:
         requests.post(f"http://{ip}:8001", headers=headers, data=data)
+
+
+@shared_task
+def remove_image(data):
+    headers = {'content-type': 'application/json', 'Accept-Charset': 'UTF-8'}
+    ip = data.pop('image_ip')
+    task = data.pop('signal')
+    data = json.dumps({'params': data, 'task': task})
+    requests.post(f"http://{ip}:8001", headers=headers, data=data)
 
 
 @shared_task
