@@ -7,6 +7,7 @@ import Footer from './components/Footer'
 
 import  ImagesList from './dockerapp/views/ImagesList';
 import  ContainersList from './dockerapp/views/ContainersList';
+import  NetworksList from './dockerapp/views/NetworksList';
 
 import  HomeAnimation from './liquorice/views/home/HomePage';
 
@@ -16,6 +17,7 @@ const BaseLayout = () => (
       <Route path="/" exact component={HomeAnimation} />
       <Route path="/images" exact component={ImagesList} />
       <Route path="/containers" exact component={ContainersList} />
+      <Route path="/networks" exact component={NetworksList} />
     </div>
   </div>
   

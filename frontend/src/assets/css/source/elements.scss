@@ -33,6 +33,10 @@ input {
     border-color: white; 
 }
 
+.tools-container-details {
+    width: 260px;
+}
+
 .pull, .tag {
     margin-top: 140px;
     margin:0 auto;
@@ -83,13 +87,13 @@ input {
     margin-bottom: 10px;
 }
 
-// pull button hover color change
+// button hover color change
 #pull-image:hover img {
     content: url("../../images/pull_image_black.png");
     // transform: scale(1.1);
 }
 
-#prune-images:hover img {
+#remove:hover img {
     content: url("../../images/remove.png");
     // transform: scale(1.1);
 }
@@ -97,4 +101,12 @@ input {
 #tag-image:hover img {
     content: url("../../images/tag_image_black.png");
     // transform: scale(1.1);
+}
+
+#logs-image:hover img {
+    content: url("../../images/logs_black.png");
+}
+
+#stats-image:hover img {
+    content: url("../../images/stats_black.png");
 }

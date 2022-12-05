@@ -46,7 +46,7 @@ function NavBar() {
             <div className="dropdown">
               <button className='button'>Networks</button>
               <div className="dropdown-options">
-                <a href='/images'><button className='button'>Network List</button></a>
+                <a href='/networks'><button className='button'>Network List</button></a>
                 <a href='/build_image'><button className='button'>Create Network</button></a>
                 <a href='/pull_image'><button className='button'>Plugin List</button></a>
               </div>
@@ -57,7 +57,7 @@ function NavBar() {
             <div className="dropdown">
               <button className='button'>Volumes</button>
               <div className="dropdown-options">
-                <a href='/images'><button className='button'>Volume List</button></a>
+                <a href='/volumes'><button className='button'>Volume List</button></a>
                 <a href='/build_image'><button className='button'>Create Volume</button></a>
                 <a href='/pull_image'><button className='button'>Plugin List</button></a>
               </div>

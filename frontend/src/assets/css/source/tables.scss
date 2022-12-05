@@ -1,10 +1,10 @@
-.images-section {
-  // margin-top: 50px;
-}
+// .images-section {
+//   margin-top: 50px;
+// }
 
-.containers-section {
-  // margin-top: 50px;
-}
+// .containers-section {
+//   margin-top: 50px;
+// }
 
 // div for main images table 
 .images--list {
@@ -18,13 +18,18 @@
   float: left;
 }
 
-/* common table style */
-table {
-  // height: 100%;
-  // width: 100%;
-  // table-layout: fixed;
-  // font-size: 20px;
+.networks--list {
+  width: 75%;
+  float: left;
 }
+
+/* common table style */
+// table {
+//   height: 100%;
+//   width: 100%;
+//   table-layout: fixed;
+//   font-size: 20px;
+// }
 
 .tbl-header {
   background-color: white;

@@ -11,14 +11,12 @@ import restart_button from '../../assets/images/restart_white.png';
 import terminal_button from '../../assets/images/terminal_white.png';
 import remove_button from '../../assets/images/remove_white.png';
 import kill_button from '../../assets/images/kill_white.png';
+import logs_button from '../../assets/images/logs_white.png';
+import stats_button from '../../assets/images/stats_white.png';
 
-// paginate table
 import BootstrapTable from "react-bootstrap-table-next";
-// import paginationFactory from "react-bootstrap-table2-paginator";
-import paginationFactory, { PaginationProvider, PaginationListStandalone, SizePerPageDropdownStandalone  } from 'react-bootstrap-table2-paginator';
+import paginationFactory, { PaginationProvider, PaginationListStandalone } from 'react-bootstrap-table2-paginator';
 import "react-bootstrap-table-next/dist/react-bootstrap-table2.min.css";
-// import 'react-bootstrap-table2-paginator/dist/react-bootstrap-table2-paginator.min.css';
-// 
 
 const  containersService  =  new ContainersService();
 
@@ -28,15 +26,13 @@ constructor(props) {
 	super(props);
 	this.state  = {
 		containers: [],
+        containerDetails: [],
         container: '',
         container_ip: '',
         container_signal: '',
         force_remove: false,
+        openModal : false
 	};
-}
-
-state = {
-    openModal : false
 }
 
 componentDidMount() {
@@ -46,12 +42,17 @@ componentDidMount() {
 	});
 }
 
-openNav(info) {
-    document.getElementById("mySidenav").style.width = "100%";
+detailsSide(object, cellContentName) {
+    return <button onClick={() => {this.openNavDetails(object)}} className='button'>{cellContentName.length > 20 ? cellContentName.slice(0, 20) + ' ...' : cellContentName}</button>
+}
+
+openNavDetails(info) {
+    document.getElementById("details-sidebar").style.width = "100%";
+    this.setState({containerDetails: info})
 };
 
-closeNav() {
-    document.getElementById("mySidenav").style.width = "0";
+closeNavDetails() {
+    document.getElementById("details-sidebar").style.width = "0";
 };
 
 container_ports(ports) {
@@ -94,18 +95,19 @@ handleRefresh = () => {
     this.componentDidMount();
 };
 
-ButtonAction (button, containers, container_signal) {
+ButtonAction (button, containers, container_signal, signal_name) {
     if (container_signal == 'remove_container') {
-        return  <button className='button' id={container_signal} onClick={()=>{this.onClickButtonModal(containers, container_signal); this.handleRefresh}}>
+        return  <button className='button button-container-signal' id={container_signal} onClick={()=>{this.onClickButtonModal(containers, container_signal); this.handleRefresh}}>
                     <img src={button} className='action-img'/>
                 </button>
     } else {
-        return <button className='button' id={container_signal}
+        return <button className='button button-container-signal' id={container_signal}
                 onClick={()=>{this.handleSignal({
                     'container': containers.items.Id,
                     'container_ip': containers.ip,
                     'container_signal': container_signal
                     }); this.handleRefresh}}>
+            {signal_name}
             <img src={button} className='action-img'/>
         </button>
     }
@@ -138,11 +140,8 @@ containerActions(containers) {
     }
 }
 
-containerDetailsSide(object, cellContentName) {
-    return <button onClick={() => {this.openNav(object)}} className='button'>{cellContentName.length > 20 ? cellContentName.slice(0, 20) + ' ...' : cellContentName}</button>
-}
 
-containerHostStyle(cellContent) {
+hostStyle(cellContent) {
     return <span className='images-main-table-host-body'>{cellContent}</span>
 }
 
@@ -183,6 +182,31 @@ containersColumnsMain = [
 {
     dataField: "created",
     text: "Created"
+},
+];
+
+labelsColumns = [
+{
+    dataField: "labels",
+    text: "Labels",
+},
+];
+
+envColumns = [
+{
+    dataField: "env",
+    text: "Env",
+},
+];
+
+volumesColumns = [
+{
+    dataField: "host",
+    text: "Path in host",
+},
+{
+    dataField: "container",
+    text: "Path in container",
 },
 ];
 
@@ -227,12 +251,330 @@ render() {
 
                 <div id="main" className="containers--list">
 
+                    <div id="details-sidebar" className="sidenav">
+
+                        <a className="closebtn" onClick={() => {this.closeNavDetails()}}>&times;</a>
+
+                        <Card className='card-info card-image-details'>
+
+                            <Card.Header className='image-info-header'>CONTAINER STATE</Card.Header>
+                            <Card.Body className='image-info'>
+
+                                {/* container details table */}
+                                {
+                                    this.state.containerDetails.length != 0 && (
+                                        <table id="table-details" className="table" >
+                                            <tbody>
+                                                <tr>
+                                                <th style={{backgroundColor: 'white'}}>NAME</th>
+                                                <td>{this.state.containerDetails.items.Name}</td>
+                                                </tr>
+                                                <tr>
+                                                <th style={{backgroundColor: 'white'}}>STATUS</th>
+                                                <td>{this.state.containerDetails.items.State.Status}</td>
+                                                </tr>
+                                                <tr>
+                                                <th style={{backgroundColor: 'white'}}>CREATED</th>
+                                                <td>{this.state.containerDetails.items.Created.replace('T', ' ').slice(0, this.state.containerDetails.items.Created.indexOf('.'))}</td>
+
+                                                </tr>
+                                                {
+                                                    this.state.containerDetails.items.State.Status == 'running' ?
+                                                    <tr>
+                                                    <th style={{backgroundColor: 'white'}}>STARTED AT</th>
+                                                    <td>{this.state.containerDetails.items.State.StartedAt.replace('T', ' ').slice(0, this.state.containerDetails.items.State.StartedAt.indexOf('.'))}</td>
+                                                    </tr> : 
+                                                    <tr>
+                                                    <th style={{backgroundColor: 'white'}}>FINISHED AT</th>
+                                                    <td>{this.state.containerDetails.items.State.FinishedAt.replace('T', ' ').slice(0, this.state.containerDetails.items.State.FinishedAt.indexOf('.'))}</td>
+                                                    </tr>
+                                                }
+                                                <tr>
+                                                <th style={{backgroundColor: 'white'}}>ACTIONS</th>
+                                                <td>{this.containerActions(this.state.containerDetails)}</td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    )
+                                }
+                                <div className='tools-container-details'>
+                                    <table id="table-details" className="table" >
+                                        <tbody>
+                                            <tr>
+                                            <th style={{backgroundColor: 'white'}}>CHECK FOR</th>
+                                            <td>
+                                                <button id='logs-image' className='button' onClick={this.closeNavDetails}>
+                                                    Logs&nbsp;
+                                                    <img src={logs_button} className='action-img'/>
+                                                </button>
+                                                <button id='stats-image' className='button' onClick={this.closeNavDetails}>
+                                                    Stats&nbsp;
+                                                    <img src={stats_button} className='action-img'/>
+                                                </button>
+                                            </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                                
+                            </Card.Body>
+
+                        </Card>
+
+                        <br/>
+                        <br/>
+
+                        <Card className='card-info card-image-details'>
+
+                            <Card.Header className='image-info-header'>CONTAINER DETAILS</Card.Header>
+                            <Card.Body className='image-info'>
+
+                                {/* container details table */}
+                                {
+                                    this.state.containerDetails.length != 0 && (
+                                        <table id="table-details" className="table" >
+                                            <tbody>
+                                            <tr>
+                                                <th style={{backgroundColor: 'white'}}>ID</th>
+                                                <td>{this.state.containerDetails.items.Id}</td>
+                                                </tr>
+                                                <tr>
+                                                <th style={{backgroundColor: 'white'}}>IMAGE</th>
+                                                <td>{this.state.containerDetails.items.Config.Image.indexOf("@") > -1 ? 
+                                                this.state.containerDetails.items.Config.Image.slice(0, this.state.containerDetails.items.Config.Image.indexOf('@')) : 
+                                                this.state.containerDetails.items.Config.Image}</td>
+                                                </tr>
+                                                <tr>
+                                                <th style={{backgroundColor: 'white'}}>PORTS</th>
+                                                <td>{this.container_ports(this.state.containerDetails.items.NetworkSettings.Ports)}</td>
+                                                </tr>
+                                                <tr>
+                                                <th style={{backgroundColor: 'white'}}>CMD</th>
+                                                <td>{this.state.containerDetails.items.Config.Cmd == null ?
+                                                'No CMD' : this.state.containerDetails.items.Config.Cmd.join(' ')}</td>
+                                                </tr>
+                                                <tr>
+                                                <th style={{backgroundColor: 'white'}}>ENTRYPOINT</th>
+                                                <td>{this.state.containerDetails.items.Config.Entrypoint == null ?
+                                                'No Entrypoint' : this.state.containerDetails.items.Config.Entrypoint.join(', ')}</td>
+                                                </tr>
+                                                <tr>
+                                                <th style={{backgroundColor: 'white'}}>WORKDIR</th>
+                                                <td>{this.state.containerDetails.items.Config.WorkingDir == '' ?
+                                                'No Workdir' : this.state.containerDetails.items.Config.WorkingDir}</td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    )
+                                }
+                                
+
+                                {/* container labels table */}
+                                {        
+                                    this.state.containerDetails.length != 0 && (
+                                        this.state.containerDetails.items.Config.Labels != null &&
+                                        Object.keys(this.state.containerDetails.items.Config.Labels).length != 0 ?
+                                        <BootstrapTable
+                                        bootstrap4
+                                        keyField="id"
+                                        headerClasses = 'tbl-header'
+                                        bordered = { false }
+                                        data={
+                                            Object.keys(this.state.containerDetails.items.Config.Labels).map(c => (
+                                                {
+                                                    labels: c + '=' + this.state.containerDetails.items.Config.Labels[c]
+                                                }
+                                            ))
+                                        }
+                                        columns={this.labelsColumns}
+                                        /> : 
+                                        <BootstrapTable
+                                        bootstrap4
+                                        keyField="id"
+                                        headerClasses = 'tbl-header'
+                                        bordered = { false }
+                                        data={
+                                            [
+                                                {labels: 'No labels'}
+                                            ]
+                                        }
+                                        columns={this.labelsColumns}
+                                        />
+                                    ) 
+                                }
+
+                                {/* container Env table */}
+                                {
+                                    this.state.containerDetails.length != 0 && (
+                                        <BootstrapTable
+                                            bootstrap4
+                                            keyField="id"
+                                            headerClasses = 'tbl-header'
+                                            bordered = { false }
+                                            data={
+                                                Object.keys(this.state.containerDetails.items.Config.Env).map(c => (
+                                                    {
+                                                        env: this.state.containerDetails.items.Config.Env[c]
+                                                    }
+                                                ))
+                                            }
+                                            columns={this.envColumns}
+                                        />
+                                    )
+                                }
+                                
+                            
+                            </Card.Body>
+
+                        </Card>
+
+                        <br/>
+                        <br/>
+
+                        <Card className='card-info card-dockerfile-details'>
+
+                            <Card.Header className='image-info-header'>VOLUMES</Card.Header>
+                            <Card.Body className='image-info'>
+
+                                {/* container volumes table */}
+                                {        
+                                    this.state.containerDetails.length != 0 && (
+                                        this.state.containerDetails.items.Mounts != null &&
+                                        this.state.containerDetails.items.Mounts.length != 0 ?
+                                        <BootstrapTable
+                                        bootstrap4
+                                        keyField="id"
+                                        headerClasses = 'tbl-header'
+                                        bordered = { false }
+                                        data={
+                                            this.state.containerDetails.items.Mounts.map(c => (
+                                                {
+                                                    host: c.Source,
+                                                    container: c.Destination
+                                                }
+                                            ))
+                                        }
+                                        columns={this.volumesColumns}
+                                        /> : 
+                                        <BootstrapTable
+                                        bootstrap4
+                                        keyField="id"
+                                        headerClasses = 'tbl-header'
+                                        bordered = { false }
+                                        data={
+                                            [
+                                                {host: 'No Volumes'}
+                                            ]
+                                        }
+                                        columns={[
+                                            {
+                                                dataField: "host",
+                                                text: "Path in host",
+                                            }]}
+                                        />
+                                    ) 
+                                }
+                                
+                                
+                            </Card.Body>
+
+                        </Card>
+
+                        <br/>
+                        <br/>
+
+                        <br/>
+                        <br/>
+
+                        <Card className='card-info card-dockerfile-details'>
+
+                            <Card.Header className='image-info-header'>NETWORKS</Card.Header>
+                            <Card.Body className='image-info'>
+
+                                <div>connect to network button</div>
+
+                                {/* container networks table */}
+                                {        
+                                    this.state.containerDetails.length != 0 && (
+                                        this.state.containerDetails.items.NetworkSettings.Networks != null &&
+                                        this.state.containerDetails.items.NetworkSettings.Networks != 0 ?
+                                        <BootstrapTable
+                                        bootstrap4
+                                        keyField="id"
+                                        headerClasses = 'tbl-header'
+                                        bordered = { false }
+                                        data={
+                                            Object.keys(this.state.containerDetails.items.NetworkSettings.Networks).map(c => (
+                                                {
+                                                    network: c,
+                                                    ip: this.state.containerDetails.items.NetworkSettings.Networks[c].IPAddress == '' ?
+                                                    '-' : this.state.containerDetails.items.NetworkSettings.Networks[c].IPAddress,
+                                                    gateway: this.state.containerDetails.items.NetworkSettings.Networks[c].Gateway == '' ?
+                                                    '-' : this.state.containerDetails.items.NetworkSettings.Networks[c].Gateway,
+                                                    mac: this.state.containerDetails.items.NetworkSettings.Networks[c].MacAddress == '' ?
+                                                    '-' : this.state.containerDetails.items.NetworkSettings.Networks[c].MacAddress,
+                                                    actions: 'leave button',
+                                                }
+                                            ))
+                                        }
+                                        columns={[
+                                            {
+                                                dataField: "network",
+                                                text: "NETWORK",
+                                            },
+                                            {
+                                                dataField: "ip",
+                                                text: "IP ADDRESS",
+                                            },
+                                            {
+                                                dataField: "gateway",
+                                                text: "GATEWAY",
+                                            },
+                                            {
+                                                dataField: "mac",
+                                                text: "MAC ADDRESS",
+                                            },
+                                            {
+                                                dataField: "actions",
+                                                text: "ACTIONS",
+                                            },
+                                            ]}
+                                        /> : 
+                                        <BootstrapTable
+                                        bootstrap4
+                                        keyField="id"
+                                        headerClasses = 'tbl-header'
+                                        bordered = { false }
+                                        data={
+                                            [
+                                                {host: 'No Network'}
+                                            ]
+                                        }
+                                        columns={[
+                                            {
+                                                dataField: "networks",
+                                                text: "Network",
+                                            }]}
+                                        />
+                                    ) 
+                                }
+                                
+                            </Card.Body>
+
+                        </Card>
+
+                        <br/>
+                        <br/>
+
+                    </div>
+
+
                         {/* main containers table */}
-                        <div>
+                    <div>
                         <PaginationProvider
                         pagination={ 
                             paginationFactory({ 
-                                sizePerPage: 3, 
+                                sizePerPage: 5, 
                                 custom: true,
                                 totalSize: this.state.containers.length
                             })}
@@ -251,8 +593,8 @@ render() {
                                 bordered = { false }
                                 data={this.state.containers.map(
                                     c => ({
-                                        name: this.containerDetailsSide(c, c.items.Name),
-                                        host: this.containerHostStyle(c.host),
+                                        name: this.detailsSide(c, c.items.Name),
+                                        host: this.hostStyle(c.host),
                                         status: c.items.State.Status,
                                         actions: this.containerActions(c),
                                         image: c.items.Config.Image.indexOf("@") > -1 ? c.items.Config.Image.slice(0, c.items.Config.Image.indexOf('@')) : c.items.Config.Image,

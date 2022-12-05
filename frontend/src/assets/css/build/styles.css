@@ -52,7 +52,11 @@
   z-index: 0;
 }
 
-.button-image-delete, .button-image-tag {
+.button-delete, .button-image-tag {
+  z-index: 0;
+}
+
+.button-container-signal {
   z-index: 0;
 }
 
@@ -130,6 +134,11 @@
 }
 
 .containers--list {
+  width: 75%;
+  float: left;
+}
+
+.networks--list {
   width: 75%;
   float: left;
 }
@@ -395,6 +404,10 @@ input {
   border-color: white;
 }
 
+.tools-container-details {
+  width: 260px;
+}
+
 .pull, .tag {
   margin-top: 140px;
   margin: 0 auto;
@@ -446,12 +459,20 @@ input {
   content: url("../../images/pull_image_black.png");
 }
 
-#prune-images:hover img {
+#remove:hover img {
   content: url("../../images/remove.png");
 }
 
 #tag-image:hover img {
   content: url("../../images/tag_image_black.png");
+}
+
+#logs-image:hover img {
+  content: url("../../images/logs_black.png");
+}
+
+#stats-image:hover img {
+  content: url("../../images/stats_black.png");
 }
 
 body, html {

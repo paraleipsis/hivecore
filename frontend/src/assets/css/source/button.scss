@@ -54,6 +54,10 @@
     // border-bottom: 1px solid transparent; 
 }
 
-.button-image-delete, .button-image-tag {
+.button-delete, .button-image-tag {
+    z-index: 0;
+}
+
+.button-container-signal {
     z-index: 0;
 }

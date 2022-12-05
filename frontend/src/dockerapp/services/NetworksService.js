@@ -12,5 +12,11 @@ export default class NetworksService{
         const data = await response.data;
 		return data;
 	}  
+
+	async deleteNetwork(network) {
+		const url = `${API_URL}/dockerapp/networks/`;
+		console.log(network)
+		// return axios.delete(url, { data: network });
+	}
 	
 }

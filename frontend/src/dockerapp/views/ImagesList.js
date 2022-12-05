@@ -45,11 +45,11 @@ constructor(props) {
 }
 
 
-imageDetailsSide(object, cellContent) {
+detailsSide(object, cellContent) {
     return <button onClick={() => {this.openNavDetails(object)}} className='button'>{cellContent}</button>
 }
 
-imageHostStyle(cellContent) {
+hostStyle(cellContent) {
     return <span className='images-main-table-host-body'>{cellContent}</span>
 }
 
@@ -226,9 +226,9 @@ handleSignal(signal) {
 	imagesService.pruneImages(signal)
 }
 
-imageAction(image) {
+action(image) {
     return <div>
-        <button id='prune-images' onClick={() => {this.onClickButtonModalDelete(image, 'remove_image')}} className='button button-image-delete'>
+        <button id='remove' onClick={() => {this.onClickButtonModalRemove(image, 'remove_image')}} className='button button-delete'>
             Remove&nbsp;
             <img src={remove_button} className='action-img'/>
         </button>
@@ -239,7 +239,7 @@ imageAction(image) {
         </div>
 }
 
-handleDeleteImage(image) {
+handleRemove(image) {
 	imagesService.deleteImage(image)
 }
 
@@ -254,7 +254,7 @@ onClickButtonModalPrune = (signal) => {
     })
 }
 
-onClickButtonModalDelete = (image, signal) => {
+onClickButtonModalRemove = (image, signal) => {
     this.setState({
         openModalRemove: true,
         signal: signal,
@@ -302,7 +302,7 @@ render() {
                             </button>
                             <button className='button button-modal-remove' onClick={() =>{ 
                                 this.onCloseModalRemove(); 
-                                this.handleDeleteImage({
+                                this.handleRemove({
                                     'image': this.state.image, 
                                     'image_ip': this.state.image_ip,
                                     'signal': 'remove_image',
@@ -412,7 +412,7 @@ render() {
                         Pull image&nbsp;
                         <img src={pull_button} className='action-img'/>
                     </button>
-                    <button id='prune-images' className='button' onClick={()=>{this.onClickButtonModalPrune('prune_images')}}>
+                    <button id='remove' className='button' onClick={()=>{this.onClickButtonModalPrune('prune_images')}}>
                         Prune images&nbsp;
                         <img src={remove_button} className='action-img'/>
                     </button>
@@ -456,7 +456,7 @@ render() {
                                                     </tr>
                                                     <tr>
                                                     <th style={{backgroundColor: 'white'}}>Created</th>
-                                                    <td>{this.state.imageDetails.items.Created}</td>
+                                                    <td>{this.state.imageDetails.items.Created.replace('T', ' ').slice(0, this.state.imageDetails.items.Created.indexOf('.'))}</td>
                                                     </tr>
                                                     <tr>
                                                     <th style={{backgroundColor: 'white'}}>Host</th>
@@ -603,14 +603,14 @@ render() {
                                     bordered = { false }
                                     data={this.state.images.map(
                                         c => ({
-                                            repotags: this.imageDetailsSide(c, c.items.RepoTags.join(', ')),
-                                            host: this.imageHostStyle(c.host),
+                                            repotags: this.detailsSide(c, c.items.RepoTags.join(', ')),
+                                            host: this.hostStyle(c.host),
                                             repository: c.items.Repository,
                                             used_by: c.items.Used_by.slice(0, 12),
                                             id: c.items.Id.slice(c.items.Id.indexOf(':')+1, 19),
                                             size: c.items.Size,
-                                            created: c.items.Created,
-                                            action: this.imageAction(c)
+                                            created: c.items.Created.replace('T', ' ').slice(0, c.items.Created.indexOf('.')),
+                                            action: this.action(c)
                                             }
                                         )
                                     )}

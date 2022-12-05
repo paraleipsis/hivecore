@@ -65,8 +65,6 @@ def sort_docker_stuff(no_data_error=False):
                         except IndexError:
                             collection['Repository'] = '<none>'
 
-                        collection['Created'] = collection['Created'][:collection['Created'].index('.')].replace('T', ' ')
-
                         # convert image size in bytes to mb
                         collection['Size'] = size(collection['Size'], system=si)
 
