@@ -44,8 +44,20 @@ def sort_docker_stuff(no_data_error=False):
                     if endpoints[endpoint] == '/nodes':
                         host = collection['Description']['Hostname']
                         ip = collection['Status']['Addr']
-                    # if there is no tag take tags from digest
                     
+                    if endpoints[endpoint] == '/volumes':
+                        containers = json.loads(redis_instance.get('/containers'))['result']
+                        for container in containers:
+                            volume = collection['Name']
+                            for container_volume in container['items']['Mounts']:
+                                if volume in container_volume.values():
+                                    collection.setdefault('Containers', []).append({
+                                        'container_id': container['items']['Id'],
+                                        'container_name': container['items']['Name'],
+                                        'container_rw': container_volume['RW'],
+                                        'destination': container_volume['Destination']
+                                    })
+                                                    
                     if endpoints[endpoint] == '/images':
 
                         containers = json.loads(redis_instance.get('/containers'))['result']
@@ -87,6 +99,7 @@ def sort_docker_stuff(no_data_error=False):
                         if not collection['Config']['Entrypoint']:
                             collection['Config']['Entrypoint'] = 'No Entrypoint'
 
+                        # if there is no tag take tags from digest
                         if not collection['RepoTags']:
                             if not collection['RepoDigests']:
                                 collection['RepoTags'].append("<none>")

@@ -12,5 +12,11 @@ export default class VolumesService{
         const data = await response.data;
 		return data;
 	}  
+
+	async deleteVolume(volume) {
+		const url = `${API_URL}/dockerapp/volumes/`;
+		console.log(volume)
+		// return axios.delete(url, { data: volume });
+	}
 	
 }

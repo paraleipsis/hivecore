@@ -206,6 +206,10 @@ td {
   z-index: 1;
 }
 
+.images-main-table-tags-header {
+  width: 180px;
+}
+
 .images-main-table-host-body {
   position: relative;
   overflow: hidden;
