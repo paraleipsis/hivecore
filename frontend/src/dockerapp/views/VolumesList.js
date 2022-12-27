@@ -56,7 +56,7 @@ hostStyle(cellContent) {
 
 action(volume) {
     return <div>
-        <button id='remove' onClick={() => {this.onClickButtonModalRemove(volume, 'remove_network')}} className='button button-delete'>
+        <button id='remove' onClick={() => {this.onClickButtonModalRemove(volume, 'remove_volume')}} className='button button-delete'>
             Remove&nbsp;
             <img src={remove_button} className='action-img'/>
         </button>
@@ -67,7 +67,7 @@ onClickButtonModalRemove = (volume, signal) => {
     this.setState({
         openModalRemove: true,
         signal: signal,
-        volume: volume.items.Id,
+        volume: volume.items.Name,
         volume_ip: volume.ip,
     })
 }
@@ -117,14 +117,14 @@ volumesColumnsMain = [
 ];
 
 render() {
-    if (this.state.networks == 'Unable to collect data. All hosts is unreacheable') {
+    if (this.state.volumes == 'Unable to collect data. All hosts is unreacheable') {
         return <section className='images-section'>Unable to collect data. All hosts is unreacheable</section>
     }
 
     return (
-            <section className='networks-section'>
+            <section className='volumes-section'>
 
-                <div id="main" className="networks--list">
+                <div id="main" className="volumes--list">
 
                     {/* remove volume */}
                     <Modal show={this.state.openModalRemove} onHide={this.onCloseModalRemove} dialogClassName="removeConfirm">
@@ -145,7 +145,7 @@ render() {
                                     this.handleRemove({
                                         'volume': this.state.volume, 
                                         'volume_ip': this.state.volume_ip,
-                                        'signal': 'remove_network',
+                                        'signal': 'remove_volume',
                                         'force': document.getElementById('force_checkbox').checked,
                                         })}}>
                                     Remove
@@ -193,10 +193,7 @@ render() {
                                 }
                                 
 
-                                {/* network config table */}
-                                
-
-                                {/* network options table */}
+                                {/* volume options table */}
                                 {                         
                                     this.state.volumeDetails.length != 0 && (
                                         this.state.volumeDetails.items.Options != null &&
@@ -216,7 +213,7 @@ render() {
                                         columns={[
                                             {
                                                 dataField: "options",
-                                                text: "Network Options",
+                                                text: "Volume Options",
                                             },
                                             ]}
                                         /> : 
@@ -366,7 +363,7 @@ render() {
                     </div>
 
 
-                    {/* main networks table */}
+                    {/* main volume table */}
                     <div>
                         <PaginationProvider
                         pagination={ 
@@ -398,7 +395,6 @@ render() {
                                         'Used' : 'Unused',
                                         created: c.items.CreatedAt.replace('T', ' ').slice(0, c.items.CreatedAt.indexOf('+')),
                                         actions: this.action(c),
-                                        test1: 'testing1212',
                                         }
                                     )
                                 )}

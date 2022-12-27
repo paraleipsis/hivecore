@@ -64,10 +64,36 @@ function NavBar() {
             </div>
             </MDBNavbarItem>
 
-            
+            <MDBNavbarItem>
+            <div className="dropdown">
+              <button className='button'>Configs</button>
+              <div className="dropdown-options">
+                <a href='/configs'><button className='button'>Configs List</button></a>
+                <a href='/build_image'><button className='button'>Create Config</button></a>
+              </div>
+            </div>
+            </MDBNavbarItem>
 
-            
-            
+            <MDBNavbarItem>
+            <div className="dropdown">
+              <button className='button'>Secrets</button>
+              <div className="dropdown-options">
+                <a href='/secrets'><button className='button'>Secrets List</button></a>
+                <a href='/build_image'><button className='button'>Create Secret</button></a>
+              </div>
+            </div>
+            </MDBNavbarItem>
+
+            <MDBNavbarItem>
+            <div className="dropdown">
+              <button className='button'>Services</button>
+              <div className="dropdown-options">
+                <a href='/services'><button className='button'>Services List</button></a>
+                <a href='/build_image'><button className='button'>Create Service</button></a>
+              </div>
+            </div>
+            </MDBNavbarItem>
+
           </MDBNavbarNav>
         </MDBCollapse>
       </MDBContainer>

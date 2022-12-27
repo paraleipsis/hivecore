@@ -152,3 +152,14 @@ CELERY_BEAT_SCHEDULE = {
     #     'schedule': CELERY_BEAT_TIMEOUT
     # }
 }
+
+# ASGI_APPLICATION = "liquorice.routing.application"
+# CHANNEL_LAYERS = {
+#     'default': {
+#         'BACKEND': 'channels_redis.core.RedisChannelLayer',
+#         'CONFIG': {
+#             "hosts": [f'redis://{REDIS_HOST}:{REDIS_PORT}/1'],
+#             "symmetric_encryption_keys": [SECRET_KEY],
+#         },
+#     },
+# }

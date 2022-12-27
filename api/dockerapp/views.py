@@ -96,6 +96,7 @@ class ContainersViewSet(ViewSet):
         serializer = ContainerSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         container_action.delay(serializer.data)
+
         items = json.loads(redis_instance.get('/containers'))
         return Response(items)
 

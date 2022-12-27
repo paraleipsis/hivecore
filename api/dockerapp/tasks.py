@@ -192,7 +192,8 @@ def container_action(data):
     ip = data.pop('container_ip')
     task = data.pop('container_signal')
     data = json.dumps({'params': data, 'task': task})
-    requests.post(f"http://{ip}:8001", headers=headers, data=data)
+    response = requests.post(f"http://{ip}:8001", headers=headers, data=data)
+    return response
 
 
 @shared_task

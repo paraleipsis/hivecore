@@ -23,6 +23,26 @@
   float: left;
 }
 
+.volumes--list {
+  width: 75%;
+  float: left;
+}
+
+.configs--list {
+  width: 75%;
+  float: left;
+}
+
+.secrets--list {
+  width: 75%;
+  float: left;
+}
+
+.services--list {
+  width: 75%;
+  float: left;
+}
+
 /* common table style */
 // table {
 //   height: 100%;
@@ -158,6 +178,31 @@ td {
   width: 16px;
   height: 16px;
 }
+
+.ace_gutter-layer, .ace_gutter-cell  {
+  color: black;
+  background-color: white;
+}
+
+.editor {
+  color: white;
+  background-color: black;
+  overflow-y: auto;
+  overflow-x: auto;
+}
+
+.ace_line {
+  pointer-events: auto;
+}
+
+.ace_line:hover {
+  background-color: rgb(129, 129, 129);
+}
+
+.ace_gutter-active-line {
+  background-color: rgb(129, 129, 129);
+}
+
 
 #refresh-element:hover img {
   content: url("../../images/restart.png");

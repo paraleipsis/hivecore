@@ -87,6 +87,11 @@ input {
     margin-bottom: 10px;
 }
 
+.terminal {
+    width: 75%;
+    float: left;
+}
+
 // button hover color change
 #pull-image:hover img {
     content: url("../../images/pull_image_black.png");

@@ -12,5 +12,11 @@ export default class SecretsService{
         const data = await response.data;
 		return data;
 	}  
+
+	async deleteSecret(secret) {
+		const url = `${API_URL}/dockerapp/secrets/`;
+		console.log(secret)
+		// return axios.delete(url, { data: config });
+	}
 	
 }

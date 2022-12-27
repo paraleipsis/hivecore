@@ -2,6 +2,7 @@ import React, { Component, useState  } from  'react';
 import Modal from 'react-bootstrap/Modal';
 import ContainersService  from  '../services/ContainersService';
 import Card from 'react-bootstrap/Card';
+import { Link } from 'react-router-dom';
 
 import start_button from '../../assets/images/start_white.png';
 import stop_button from '../../assets/images/stop_white.png';
@@ -100,6 +101,16 @@ ButtonAction (button, containers, container_signal, signal_name) {
         return  <button className='button button-container-signal' id={container_signal} onClick={()=>{this.onClickButtonModal(containers, container_signal); this.handleRefresh}}>
                     <img src={button} className='action-img'/>
                 </button>
+    } else if (container_signal == 'terminal_container') {
+        return <button className='button button-container-signal' id={container_signal}
+                onClick={()=>{this.handleSignal({
+                    'container': containers.items.Id,
+                    'container_ip': containers.ip,
+                    'container_signal': container_signal
+                    }); window.location.href='/containers/terminal';}}>
+            {signal_name}
+            <img src={button} className='action-img'/>
+        </button>
     } else {
         return <button className='button button-container-signal' id={container_signal}
                 onClick={()=>{this.handleSignal({
