@@ -13,4 +13,9 @@ export default class ConfigsService{
 		return data;
 	}  
 	
+	async deleteConfig(config) {
+		const url = `${API_URL}/dockerapp/configs/`;
+		console.log(config)
+		// return axios.delete(url, { data: config });
+	}
 }

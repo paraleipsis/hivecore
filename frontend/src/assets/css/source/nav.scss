@@ -1,0 +1,28 @@
+// .nav-brand {
+//     color: red;
+// }
+
+.dropdown {
+    display: inline-block;
+    position: relative;
+}
+
+.dropdown-options {
+    display: none;
+    position: absolute;
+    background-color: black;
+    white-space: nowrap;
+}
+
+.dropdown:hover .dropdown-options {
+    display: block;
+}
+
+.dropdown-options button {
+    display: block;
+    text-decoration: none;
+}
+
+.dropdown-options a {
+    text-decoration: none;
+}

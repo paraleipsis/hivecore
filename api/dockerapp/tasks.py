@@ -44,8 +44,20 @@ def sort_docker_stuff(no_data_error=False):
                     if endpoints[endpoint] == '/nodes':
                         host = collection['Description']['Hostname']
                         ip = collection['Status']['Addr']
-                    # if there is no tag take tags from digest
                     
+                    if endpoints[endpoint] == '/volumes':
+                        containers = json.loads(redis_instance.get('/containers'))['result']
+                        for container in containers:
+                            volume = collection['Name']
+                            for container_volume in container['items']['Mounts']:
+                                if volume in container_volume.values():
+                                    collection.setdefault('Containers', []).append({
+                                        'container_id': container['items']['Id'],
+                                        'container_name': container['items']['Name'],
+                                        'container_rw': container_volume['RW'],
+                                        'destination': container_volume['Destination']
+                                    })
+                                                    
                     if endpoints[endpoint] == '/images':
 
                         containers = json.loads(redis_instance.get('/containers'))['result']
@@ -64,8 +76,6 @@ def sort_docker_stuff(no_data_error=False):
                                 collection['Repository'] = collection['RepoTags'][0][:collection['RepoTags'][0].index(':')]
                         except IndexError:
                             collection['Repository'] = '<none>'
-
-                        collection['Created'] = collection['Created'][:collection['Created'].index('.')].replace('T', ' ')
 
                         # convert image size in bytes to mb
                         collection['Size'] = size(collection['Size'], system=si)
@@ -89,6 +99,7 @@ def sort_docker_stuff(no_data_error=False):
                         if not collection['Config']['Entrypoint']:
                             collection['Config']['Entrypoint'] = 'No Entrypoint'
 
+                        # if there is no tag take tags from digest
                         if not collection['RepoTags']:
                             if not collection['RepoDigests']:
                                 collection['RepoTags'].append("<none>")
@@ -144,7 +155,19 @@ def pull_image(data):
     headers = {'content-type': 'application/json', 'Accept-Charset': 'UTF-8'}
     nodes = json.loads(redis_instance.get('/nodes'))['result']
     ip = [x for x in nodes if x['host'] == data['node']][0]['ip']
-    data = json.dumps({'params': {'image': data['image']}, 'task': 'image_pull'})
+    task = data.pop('signal')
+    data = json.dumps({'params': {'image': data['image'] + ':' + data['tag']}, 'task': task})
+    requests.post(f"http://{ip}:8001", headers=headers, data=data)  # response code for sending data
+
+
+@shared_task
+def tag_image(data):
+    headers = {'content-type': 'application/json', 'Accept-Charset': 'UTF-8'}
+    nodes = json.loads(redis_instance.get('/nodes'))['result']
+    node_name = data.pop('node')
+    ip = [x for x in nodes if x['host'] == node_name][0]['ip']
+    task = data.pop('signal')
+    data = json.dumps({'params': data, 'task': task})
     requests.post(f"http://{ip}:8001", headers=headers, data=data)  # response code for sending data
     
 
@@ -165,10 +188,30 @@ def build_image(data):
 
 @shared_task
 def container_action(data):
-    print(data)
     headers = {'content-type': 'application/json', 'Accept-Charset': 'UTF-8'}
     ip = data.pop('container_ip')
     task = data.pop('container_signal')
+    data = json.dumps({'params': data, 'task': task})
+    response = requests.post(f"http://{ip}:8001", headers=headers, data=data)
+    return response
+
+
+@shared_task
+def prune_images(data):
+    headers = {'content-type': 'application/json', 'Accept-Charset': 'UTF-8'}
+    task = data.pop('signal')
+    nodes = json.loads(redis_instance.get('/nodes'))['result']
+    ips = [node['ip'] for node in nodes if node['items']['Status']['State'] == 'ready']
+    data = json.dumps({'params': data, 'task': task})
+    for ip in ips:
+        requests.post(f"http://{ip}:8001", headers=headers, data=data)
+
+
+@shared_task
+def remove_image(data):
+    headers = {'content-type': 'application/json', 'Accept-Charset': 'UTF-8'}
+    ip = data.pop('image_ip')
+    task = data.pop('signal')
     data = json.dumps({'params': data, 'task': task})
     requests.post(f"http://{ip}:8001", headers=headers, data=data)
 
@@ -178,6 +221,9 @@ def create_container(data):
     headers = {'content-type': 'application/json', 'Accept-Charset': 'UTF-8'}
     nodes = json.loads(redis_instance.get('/nodes'))['result']
     ip = [x for x in nodes if x['host'] == data['node']][0]['ip']
+
+    data['image'] = data['image'] + ':' + data['tag']
+    del data['tag']
 
     if data['network'] != 'None':
         data['network'] = data['network'].split(":")[2] # id from string 'name:host:id'
@@ -226,7 +272,6 @@ def create_container(data):
     del data['restart_policy']
 
     data = json.dumps({'params': {x: data[x] for x in data if x not in "node"}, 'task': 'create_container'})
-
     requests.post(f"http://{ip}:8001", headers=headers, data=data)  # response code for sending data
 
 

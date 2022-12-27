@@ -1,0 +1,117 @@
+input {
+    color: black;
+}
+
+// big table title on right
+.block {
+    font-size: 50px; 
+    color: white; 
+    // text-align: center;
+  
+    margin-top: 140px;
+    display: inline-block;  
+    // position: sticky;
+    // top: 50px;
+    // position: fixed; 
+    // float: right;
+  
+    border-left: 3px solid transparent; 
+    border-color: white; 
+    // width: 300px; 
+    padding:15px;
+}
+
+.tools-title {
+    text-align: left;
+}
+
+// buttons bar
+.tools {
+    text-align: left;
+    // margin-bottom: 10px;
+    border-bottom: 1px solid transparent; 
+    border-color: white; 
+}
+
+.tools-container-details {
+    width: 260px;
+}
+
+.pull, .tag {
+    margin-top: 140px;
+    margin:0 auto;
+    text-align:center;
+    position:relative;
+    width: 55%;
+    // height: 50%;
+    display: flex;
+    justify-content: center;
+}
+
+.block-pull {
+    float: right;
+    margin-top: 170px;
+    height: 110px;
+}
+
+.block-tag {
+    float: right;
+    margin-top: 150px;
+    height: 110px;
+}
+
+.pull-image-block, .tag-image-block {
+    // padding-left: 150px;
+    float: left;
+    margin-top: 140px;
+    text-align: left;
+    margin-right: 80px;
+    
+}
+
+.input-image {
+    text-align: left;
+    margin-right: 40px;
+    margin-bottom: 10px;
+}
+
+.input-tag {
+    text-align: left;
+    margin-right: 58px;
+    margin-bottom: 10px;
+}
+
+.input-repo {
+    text-align: left;
+    margin-right: 9px;
+    margin-bottom: 10px;
+}
+
+.terminal {
+    width: 75%;
+    float: left;
+}
+
+// button hover color change
+#pull-image:hover img {
+    content: url("../../images/pull_image_black.png");
+    // transform: scale(1.1);
+}
+
+#remove:hover img {
+    content: url("../../images/remove.png");
+    // transform: scale(1.1);
+}
+
+#tag-image:hover img {
+    content: url("../../images/tag_image_black.png");
+    // transform: scale(1.1);
+}
+
+#logs-image:hover img {
+    content: url("../../images/logs_black.png");
+}
+
+#stats-image:hover img {
+    content: url("../../images/stats_black.png");
+}

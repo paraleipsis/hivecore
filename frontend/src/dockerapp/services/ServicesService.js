@@ -12,5 +12,11 @@ export default class ServicesService{
         const data = await response.data;
 		return data;
 	}  
+
+	async deleteService(service) {
+		const url = `${API_URL}/dockerapp/services/`;
+		console.log(service)
+		// return axios.delete(url, { data: config });
+	}
 	
 }

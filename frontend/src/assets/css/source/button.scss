@@ -1,10 +1,10 @@
 .button {
-    padding: 0.8em 1.8em;
+    padding: 0.5em 0.5em;
     border: 1px solid transparent;
     position: relative;
     overflow: hidden;
     background-color: transparent;
-    text-align: center;
+    text-align: left;
     font-size: 15px;
     transition: .3s;
     z-index: 1;
@@ -43,4 +43,21 @@
 .button_git:hover img {
     content: url("../../images/git_icon_black.png");
     transform: scale(1.1);
+}
+
+.button-pull-image, .button-tag-image {
+    padding: 0.8em 1em;
+    text-align: center;
+    width: 275px;
+    // border-color: white;
+    z-index: 0;
+    // border-bottom: 1px solid transparent; 
+}
+
+.button-delete, .button-image-tag {
+    z-index: 0;
+}
+
+.button-container-signal {
+    z-index: 0;
 }
