@@ -54,7 +54,7 @@ class NodeRead(NodeBase):
         orm_mode = True
 
 
-class EnvironmentRead(EnvironmentBase):
+class EnvironmentDetailsRead(EnvironmentBase):
     id: int
     created_at: datetime
     platform_id: int
