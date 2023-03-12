@@ -1,6 +1,6 @@
 from pydantic import BaseModel, Field
 from datetime import datetime
-from typing import Generic, TypeVar, Optional
+from typing import Generic, TypeVar, Optional, List
 from pydantic.generics import GenericModel
 
 DataT = TypeVar('DataT')
@@ -22,14 +22,68 @@ class PlatformBase(BaseModel):
     type: str
 
 
+class EnvironmentBase(BaseModel):
+    name: str
+    description: str
+
+
+class NodeBase(BaseModel):
+    name: str
+    description: str
+    node_ip: str
+
+
 class PlatformCreate(PlatformBase):
     pass
 
 
-class PlatformRead(PlatformBase):
+class EnvironmentCreate(EnvironmentBase):
+    pass
+
+
+class NodeCreate(NodeBase):
+    pass
+
+
+class NodeRead(NodeBase):
+    id: int
+    created_at: datetime
+    environment_id: int
+
+    class Config:
+        orm_mode = True
+
+
+class EnvironmentRead(EnvironmentBase):
+    id: int
+    created_at: datetime
+    platform_id: int
+    nodes: List[NodeRead] = Field(default_factory=list)
+
+    class Config:
+        orm_mode = True
+
+
+class PlatformEnvironmentRead(EnvironmentBase):
     id: int
     created_at: datetime
 
     class Config:
         orm_mode = True
 
+
+class PlatformsListRead(PlatformBase):
+    id: int
+    created_at: datetime
+
+    class Config:
+        orm_mode = True
+
+
+class PlatformDetailsRead(PlatformBase):
+    id: int
+    created_at: datetime
+    environments: List[PlatformEnvironmentRead] = Field(default_factory=list)
+
+    class Config:
+        orm_mode = True

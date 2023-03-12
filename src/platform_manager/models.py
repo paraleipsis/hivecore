@@ -7,7 +7,7 @@ from database import metadata, Base
 
 
 class Platform(Base):
-    __tablename__ = "platform"
+    __tablename__ = "platforms"
     metadata = metadata
 
     id = Column(Integer, primary_key=True, index=True)
@@ -16,11 +16,11 @@ class Platform(Base):
     type = Column(String, index=True)
     created_at = Column(TIMESTAMP, index=True, default=datetime.utcnow)
 
-    environments = relationship("Environment", back_populates="platform")
+    environments = relationship("Environment", back_populates="platform", passive_deletes='all')
 
 
 class Environment(Base):
-    __tablename__ = "environment"
+    __tablename__ = "environments"
     metadata = metadata
 
     id = Column(Integer, primary_key=True, index=True)
@@ -28,14 +28,14 @@ class Environment(Base):
     description = Column(String, index=True)
     created_at = Column(TIMESTAMP, index=True, default=datetime.utcnow)
 
-    platform_id = Column(Integer, ForeignKey("platform.id"))
+    platform_id = Column(Integer, ForeignKey("platforms.id", ondelete='CASCADE'))
     platform = relationship("Platform", back_populates="environments")
 
     nodes = relationship("Node", back_populates="environment")
 
 
 class Node(Base):
-    __tablename__ = "node"
+    __tablename__ = "nodes"
     metadata = metadata
 
     id = Column(Integer, primary_key=True, index=True)
@@ -44,7 +44,7 @@ class Node(Base):
     description = Column(String, index=True)
     created_at = Column(TIMESTAMP, index=True, default=datetime.utcnow)
 
-    environment_id = Column(Integer, ForeignKey("environment.id"))
+    environment_id = Column(Integer, ForeignKey("environments.id"))
     environment = relationship("Environment", back_populates="nodes")
 
 

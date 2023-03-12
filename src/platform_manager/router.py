@@ -5,12 +5,12 @@ from platform_manager import schemas, models
 from platform_manager import services
 from typing import List
 
-# router = APIRouter(prefix="/docker", tags=["Docker"])
+from platform_manager.exceptions import NotFoundException
 
 router = APIRouter(prefix="/platforms", tags=["Platforms"])
 
 
-@router.get('/', response_model=schemas.GenericResponseModel[List[schemas.PlatformRead]])
+@router.get('/', response_model=schemas.GenericResponseModel[List[schemas.PlatformsListRead]])
 async def get_all_platforms(session: AsyncSession = Depends(get_async_session)):
     try:
         data = await services.get_platforms(session=session)
@@ -30,21 +30,43 @@ async def create_platform(new_platform: schemas.PlatformCreate, session: AsyncSe
         return schemas.GenericResponseModel(data=new_platform)
     except Exception:
         raise HTTPException(status_code=500, detail={
-            "status": "error",
+            "success": False,
             "data": None,
         })
 
 
-@router.get('/{platform_name}-environments')
+@router.delete('/{platform_name}', response_model=schemas.GenericResponseModel[bool])
+async def delete_platform(platform_name: str, session: AsyncSession = Depends(get_async_session)):
+    try:
+        data = await services.delete_platform_by_name(platform_name=platform_name, session=session)
+        if data:
+            return schemas.GenericResponseModel(data=data)
+        else:
+            raise NotFoundException
+    except NotFoundException:
+        raise HTTPException(status_code=404, detail={
+            "success": False,
+            "error_msg": "Platform not found",
+        })
+    except Exception:
+        raise HTTPException(status_code=500, detail={
+            "success": False,
+            "data": None,
+        })
+
+
+@router.get('/{platform_name}-environments', response_model=schemas.GenericResponseModel[schemas.PlatformDetailsRead])
 async def get_all_platform_environments(platform_name: str, session: AsyncSession = Depends(get_async_session)):
     try:
         data = await services.get_platform_by_name(platform_name=platform_name, session=session)
-        return data
+        return schemas.GenericResponseModel(data=data, total=len(data.environments))
     except Exception:
         raise HTTPException(status_code=500, detail={
-            "status": "error",
+            "success": False,
             "data": None,
         })
+
+
 
 
 # @router.post('/{platform_name}-environments', response_model=List[EnvironmentRead])
