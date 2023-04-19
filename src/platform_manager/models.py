@@ -51,14 +51,3 @@ class Node(Base):
 
     _table_args__ = (UniqueConstraint(environment_id, name),)
 
-
-# node = Table(
-#     "node",
-#     metadata,
-#     Column("id", Integer, primary_key=True, index=True),
-#     Column("name", String, index=True, unique=True),
-#     Column("node_ip", String, index=True, unique=True),
-#     Column("description", String, index=True),
-#     Column("created_at", TIMESTAMP, index=True, default=datetime.utcnow),
-#     Column("environment_id", Integer, ForeignKey(environment.c.id)),
-# )

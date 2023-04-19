@@ -253,30 +253,3 @@ async def delete_node(platform_name: str, environment_id: int, node_id: int,
             "success": False,
             "data": None,
         })
-
-
-# @router.delete('/{platform_name}/{environment_id}', response_model=schemas.GenericResponseModel[bool])
-# async def delete_environment(platform_name: str, environment_id: int,
-#                              session: AsyncSession = Depends(get_async_session)):
-#     try:
-#         data = await services.delete_environment_by_id(
-#             platform_name=platform_name,
-#             environment_id=environment_id,
-#             session=session
-#         )
-#         return schemas.GenericResponseModel(data=data)
-#     except NoSuchPlatform:
-#         raise HTTPException(status_code=404, detail={
-#             "success": False,
-#             "error_msg": f"Platform {platform_name} does not exist",
-#         })
-#     except NoSuchEnvironment:
-#         raise HTTPException(status_code=404, detail={
-#             "success": False,
-#             "error_msg": f"Environment with id {environment_id} does not exist",
-#         })
-#     except Exception:
-#         raise HTTPException(status_code=500, detail={
-#             "success": False,
-#             "data": None,
-#         })
