@@ -1,11 +1,11 @@
 from fastapi import FastAPI
-from platform_manager.router import router as router_liquorice
+from platform_manager.router import router as router_hivecore
 # from docker.router import router as router_docker
 from aredis_om import Migrator
 
 app = FastAPI()
 
-app.include_router(router_liquorice)
+app.include_router(router_hivecore)
 
 
 @app.get('/')
