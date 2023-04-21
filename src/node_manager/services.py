@@ -1,13 +1,13 @@
 from typing import Any, Sequence
 
 from sqlalchemy.ext.asyncio import AsyncSession
-from platform_manager import models, schemas
+from node_manager import models, schemas
 from sqlalchemy import insert, select, Row, RowMapping
 from sqlalchemy.orm import selectinload
 
 from sqlalchemy.exc import IntegrityError
 
-from platform_manager.exceptions import NoSuchPlatform, AlreadyExistException, NoSuchEnvironment, NoSuchNode
+from node_manager.exceptions import NoSuchPlatform, AlreadyExistException, NoSuchEnvironment, NoSuchNode
 
 
 async def get_platforms(session: AsyncSession) -> Sequence[Row | RowMapping | Any]:

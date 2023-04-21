@@ -1,11 +1,11 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from database import get_async_session
-from platform_manager import schemas, models
-from platform_manager import services
+from node_manager import schemas, models
+from node_manager import services
 from typing import List
 
-from platform_manager.exceptions import AlreadyExistException, NoSuchPlatform, NoSuchEnvironment, NoSuchNode
+from node_manager.exceptions import AlreadyExistException, NoSuchPlatform, NoSuchEnvironment, NoSuchNode
 
 router = APIRouter(prefix="/platforms", tags=["Platforms"])
 

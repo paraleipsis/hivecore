@@ -1,13 +1,16 @@
 import asyncio
+import gzip
+import json
 import logging
 import sys
-import time
-from typing import MutableMapping, Generator
+from typing import MutableMapping, Union
+from uuid import UUID
 
 import asyncssh
-from asyncssh import SSHClientConnectionOptions
+from asyncssh import SSHClientConnectionOptions, SSHTCPSession, SSHTCPChannel
 
 from rssh_client.rclient.session import ReverseSSHClientSession
+from config import SSH_IDENTIFICATION_URL
 
 
 class ReverseSSHClient:
@@ -27,7 +30,7 @@ class ReverseSSHClient:
         self.reuse_port = reuse_port
         self.max_packet_size = max_packet_size
 
-        self._session = None
+        self.active_connections: MutableMapping[UUID, MutableMapping[str, Union[SSHTCPChannel, SSHTCPSession]]] = {}
         self._loop = asyncio.new_event_loop()
 
         asyncio.set_event_loop(self._loop)
@@ -43,11 +46,38 @@ class ReverseSSHClient:
     async def __open_connection(self, conn: asyncssh.SSHClientConnection) -> None:
         logging.debug("Opening Socket")
 
-        chan, self._session = await conn.create_connection(
-            session_factory=ReverseSSHClientSession,
-            remote_host='',
-            remote_port=int(self.local_port)
-        )
+        try:
+            chan, session = await conn.create_connection(
+                session_factory=ReverseSSHClientSession,
+                remote_host='',
+                remote_port=int(self.local_port)
+            )
+
+            identification_request = await session.get(router=SSH_IDENTIFICATION_URL)
+
+            # TODO: Add check for agent Token and UUID in PostgreSQL database. UUID and Token need to be generated on
+            #  the main server in the node_manager application. Then UUID and Token pass as environment variables to
+            #  the node agent on deployment. For each next request we need to pass in required method a specific
+            #  session (by a host UUID as Path param)
+
+            uuid = identification_request['response']
+
+            self.active_connections[uuid] = {
+                'connection': conn,
+                'channel': chan,
+                'session': session
+            }
+
+            logging.debug(f"Established connection with host: {uuid}")
+
+            await conn.wait_closed()
+
+            del self.active_connections[uuid]
+
+            logging.debug(f"Closed connection with host: {uuid}")
+
+        except Exception as e:
+            logging.exception(f"The connection was not established correctly: {e}")
 
     async def __listen(self) -> None:
         try:
@@ -62,140 +92,11 @@ class ReverseSSHClient:
         except (OSError, asyncssh.Error) as exc:
             sys.exit('Error starting client: ' + str(exc))
 
-    async def get(
-            self,
-            router: str,
-            target_resource: str,
-            data: MutableMapping = None
-    ) -> Generator[MutableMapping, MutableMapping, None]:
+    def disconnect(self, host_uuid: UUID) -> None:
+        self.active_connections[host_uuid]['connection'].close()
 
-        request_id = self._session.send_request(
-            request_type="GET",
-            router=router,
-            target_resource=target_resource,
-            data=data
-        )
+        return None
 
-        try:
-            while self._session._requests[request_id] is None:
-                time.sleep(0.1)
-
-            response = self._session._requests[request_id]
-
-            return response
-        except Exception as e:
-            logging.debug(f"Exception in get request: {e}")
-        finally:
-            del(self._session._requests[request_id])
-
-    def post(
-            self,
-            router: str,
-            target_resource: str,
-            data: MutableMapping = None
-    ) -> Generator[MutableMapping, MutableMapping, None]:
-
-        request_id = self._session.send_request(
-            request_type="POST",
-            router=router,
-            target_resource=target_resource,
-            data=data
-        )
-
-        try:
-            while self._session._requests[request_id] is None:
-                time.sleep(0.1)
-
-            response = self._session._requests[request_id]
-
-            return response
-        except Exception as e:
-            logging.debug(f"Exception in get request: {e}")
-        finally:
-            del (self._session._requests[request_id])
-
-    def update(
-            self,
-            router: str,
-            target_resource: str,
-            data: MutableMapping = None
-    ) -> Generator[MutableMapping, MutableMapping, None]:
-
-        request_id = self._session.send_request(
-            request_type="UPDATE",
-            router=router,
-            target_resource=target_resource,
-            data=data
-        )
-
-        try:
-            while self._session._requests[request_id] is None:
-                time.sleep(0.1)
-
-            response = self._session._requests[request_id]
-
-            return response
-        except Exception as e:
-            logging.debug(f"Exception in get request: {e}")
-        finally:
-            del (self._session._requests[request_id])
-
-    def delete(
-            self,
-            router: str,
-            target_resource: str,
-            data: MutableMapping = None
-    ) -> Generator[MutableMapping, MutableMapping, None]:
-
-        request_id = self._session.send_request(
-            request_type="DELETE",
-            router=router,
-            target_resource=target_resource,
-            data=data
-        )
-
-        try:
-            while self._session._requests[request_id] is None:
-                time.sleep(0.1)
-
-            response = self._session._requests[request_id]
-
-            return response
-        except Exception as e:
-            logging.debug(f"Exception in get request: {e}")
-        finally:
-            del (self._session._requests[request_id])
-
-    async def ws(
-            self,
-            router: str,
-            target_resource: str,
-            data: MutableMapping = None
-    ) -> Generator[MutableMapping, MutableMapping, None]:
-
-        request_id = self._session.send_request(
-            request_type="WS",
-            router=router,
-            target_resource=target_resource,
-            data=data,
-        )
-
-        try:
-            response_id = 0
-            while True:
-                while self._session._requests[request_id] is None:
-                    time.sleep(0.1)
-
-                if self._session._requests[request_id]['id'] == response_id:
-                    continue
-
-                response_id = self._session._requests[request_id]['id']
-
-                response = self._session._requests[request_id]
-
-                yield response
-        except Exception as e:
-            logging.debug(f"Exception in ws connection: {e}")
-        finally:
-            logging.debug("Closing ws connection")
-            del (self._session._requests[request_id])
+    def broadcast(self, message: str):
+        for connection in self.active_connections.values():
+            connection['channel'].write(gzip.compress(json.dumps(message, separators=(',', ':')).encode('utf-8')))

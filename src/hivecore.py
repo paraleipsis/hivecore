@@ -2,7 +2,7 @@ import asyncio
 import logging
 
 from fastapi import FastAPI
-from platform_manager.router import router as router_hivecore
+from node_manager.router import router as router_hivecore
 # from docker.router import router as router_docker
 from rssh_client.hivecore_rssh_client import rssh_client
 
