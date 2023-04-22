@@ -5,10 +5,11 @@ import uuid
 from typing import MutableMapping, Union, Tuple
 
 import asyncssh
-import logging
 import traceback
 
 from aiohttp.http_websocket import WSMessage
+
+from logger.logs import logger
 
 
 class ReverseSSHServerSession(asyncssh.SSHTCPSession):
@@ -22,29 +23,44 @@ class ReverseSSHServerSession(asyncssh.SSHTCPSession):
     def connection_made(self, chan: asyncssh.SSHTCPChannel) -> None:
         """New connection established"""
 
-        logging.debug("Connection incoming")
+        # logging.debug("Connection incoming")
+        logger['debug'].debug(
+            f'Connection incoming ...'
+        )
         self._chan = chan
 
     def connection_lost(self, exc: Exception) -> None:
         """Lost the connection to the client"""
 
-        logging.debug(f"Connection lost\n{exc}")
+        # logging.debug(f"Connection lost\n{exc}")
+        logger['debug'].debug(
+            f"Connection lost\n{exc}"
+        )
 
     def session_started(self) -> None:
         """New session established successfully"""
 
-        logging.debug("Connection successful")
+        # logging.debug("Connection successful")
+        logger['debug'].debug(
+            f"Connection successful"
+        )
 
     def data_received(self, data: bytes, datatype: asyncssh.DataType) -> None:
         """New data coming in"""
 
-        logging.debug(f"Received data: {data}")
+        # logging.debug(f"Received data: {data}")
+        logger['debug'].debug(
+            f"Received data: {json.loads(gzip.decompress(data).decode('utf-8'))}"
+        )
         self._dispatch(data)
 
     def eof_received(self) -> None:
         """Got an EOF, close the channel"""
 
-        logging.debug("EOF")
+        # logging.debug("EOF")
+        logger['debug'].debug(
+            f"EOF"
+        )
         self._chan.exit(0)
 
     def _dispatch(self, data: bytes) -> None:
@@ -52,23 +68,33 @@ class ReverseSSHServerSession(asyncssh.SSHTCPSession):
             request = json.loads(gzip.decompress(data).decode('utf-8'))
 
             if 'id' not in request:
-                logging.info("Malformed request: missing 'id'")
+                logger['debug'].debug(
+                    "Malformed request: missing 'id'"
+                )
                 self._send_response(0, 400, {"message": "Missing 'id'"})
 
             if 'request_type' not in request:
-                logging.info("Malformed request: missing 'request_type'")
+                logger['debug'].debug(
+                    "Malformed request: missing 'request_type'"
+                )
                 self._send_response(request['id'], 400, {"message": "Missing 'request_type'"})
 
             if 'router' not in request:
-                logging.info("Malformed request: missing 'router'")
+                logger['debug'].debug(
+                    "Malformed request: missing 'router'"
+                )
                 self._send_response(request['id'], 400, {"message": "Missing 'router'"})
 
             if request['request_type'] == 'POST' and 'data' not in request['request']:
-                logging.info("Malformed request: missing 'data'")
+                logger['debug'].debug(
+                    "Malformed request: missing 'data'"
+                )
                 self._send_response(request['id'], 400, {"message": "Missing 'data'"})
 
             elif request['request_type'] == 'UPDATE' and 'data' not in request['request']:
-                logging.info("Malformed request: missing 'data'")
+                logger['debug'].debug(
+                    "Malformed request: missing 'data'"
+                )
                 self._send_response(request['id'], 400, {"message": "Missing 'data'"})
 
             if request['request_type'] in self.stream_types:
@@ -79,18 +105,24 @@ class ReverseSSHServerSession(asyncssh.SSHTCPSession):
             return None
 
         except Exception as exc:
-            logging.info(f"Unable to process request: {exc}")
+            logger['error'].error(
+                f"Unable to process request: {exc}"
+            )
             self._send_response(0, 400, {"message": "Unable to process request"})
             return None
 
     async def __process_request(self, request: MutableMapping) -> None:
         if request['request_type'] not in self._callbacks:
-            logging.info(f"No callback found for {request['request_type']}")
+            logger['debug'].debug(
+                f"No callback found for {request['request_type']}"
+            )
             self._send_response(request['id'], 404)
             return None
 
         if request['router'] not in self._callbacks[request['request_type']]:
-            logging.info(f"No callback found for {request['request_type']} on {request['router']}")
+            logger['debug'].debug(
+                f"No callback found for {request['request_type']} on {request['router']}"
+            )
             self._send_response(request['id'], 404)
             return None
 
@@ -111,18 +143,24 @@ class ReverseSSHServerSession(asyncssh.SSHTCPSession):
             )
 
         except Exception as exc:
-            logging.info(f"Internal error when executing {request['request_type']} on {request['resource']}")
+            logger['error'].error(
+                f"Internal error when executing {request['request_type']} on {request['resource']}\n{str(exc)}"
+            )
             self._send_response(request['id'], 500, {"message": str(exc), "traceback": traceback.format_exc()})
             return None
 
     async def __process_stream(self, request: MutableMapping) -> None:
         if request['request_type'] not in self._callbacks:
-            logging.info(f"No request type found for {request['request_type']}")
+            logger['debug'].debug(
+                f"No request type found for {request['request_type']}"
+            )
             self._send_response(request['id'], 404)
             return
 
         if request['router'] not in self._callbacks[request['request_type']]:
-            logging.info(f"No router found for {request['request_type']} on {request['router']}")
+            logger['debug'].debug(
+                f"No callback found for {request['request_type']} on {request['router']}"
+            )
             self._send_response(request['id'], 404)
             return
 
@@ -143,7 +181,9 @@ class ReverseSSHServerSession(asyncssh.SSHTCPSession):
                 )
 
         except Exception as exc:
-            logging.info(f"Internal error when executing {request['request_type']} on {request['resource']}")
+            logger['error'].error(
+                f"Internal error when executing {request['request_type']} on {request['resource']}\n{str(exc)}"
+            )
             self._send_response(request['id'], 500, {"message": str(exc), "traceback": traceback.format_exc()})
 
     def _send_response(
@@ -161,6 +201,8 @@ class ReverseSSHServerSession(asyncssh.SSHTCPSession):
             'response': str(response)
         }
 
-        logging.info(f"{ssh_response_code} response to {request_id}")
+        logger['info'].info(
+            f"{ssh_response_code} response to {request_id}"
+        )
         self._chan.write(gzip.compress(json.dumps(ssh_response, separators=(',', ':')).encode('utf-8')))
         return None

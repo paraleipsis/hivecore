@@ -1,7 +1,8 @@
 import asyncssh
 import sys
-import logging
+
 from rssh.server.session import ReverseSSHServerSession
+from logger.logs import logger
 
 
 class ReverseSSHServerFactory(asyncssh.SSHServer):
@@ -19,7 +20,9 @@ class ReverseSSHServerFactory(asyncssh.SSHServer):
             orig_port: int
     ) -> asyncssh.SSHTCPSession:
 
-        logging.info(f"Connection requested {dest_host} {dest_port} {orig_host} {orig_port}")
+        logger['info'].info(
+            f'Connection requested: destination - {dest_host}:{dest_port}; original - {orig_host}:{orig_port}'
+        )
         return ReverseSSHServerSession(
             callbacks=ReverseSSHServerFactory.callbacks,
             request_types=ReverseSSHServerFactory.REQUEST_TYPES,
@@ -59,7 +62,9 @@ class ReverseSSHServer:
     async def start(self):
         """Make an outbound connection and then become an SSH server on it"""
 
-        logging.info(f"Listening on port {self.remote_port}")
+        logger['info'].info(
+            f"Reverse SSH Server - Listening on port {self.remote_port}"
+        )
 
         try:
             conn = await asyncssh.connect_reverse(
@@ -73,4 +78,7 @@ class ReverseSSHServer:
 
             await conn.wait_closed()
         except (OSError, asyncssh.Error) as exc:
-            sys.exit(f'Reverse SSH connection failed: {exc}')
+            logger['error'].error(
+                f"Reverse SSH connection failed: {exc}"
+            )
+            sys.exit()
