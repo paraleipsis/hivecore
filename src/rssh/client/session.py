@@ -60,9 +60,9 @@ class ReverseSSHClientSession(asyncssh.SSHTCPSession):
 
     def _send_request(
             self,
-            router: str,
             request_type: str,
-            data: MutableMapping,
+            data: MutableMapping = None,
+            router: str = None,
     ) -> str:
 
         # TODO: remove str conversion for UUID in all methods.
@@ -83,6 +83,30 @@ class ReverseSSHClientSession(asyncssh.SSHTCPSession):
         )
 
         return request['id']
+
+    async def _identify(
+            self,
+            data: MutableMapping = None,
+    ) -> MutableMapping:
+
+        request_id = self._send_request(
+            request_type="IDENTIFY",
+            data=data,
+        )
+
+        try:
+            while self._requests[request_id] is None:
+                await asyncio.sleep(0.1)
+
+            response = self._requests[request_id]
+
+            return response
+        except Exception as exc:
+            logger['error'].error(
+                f"Exception in get request: {str(exc)}"
+            )
+        finally:
+            del(self._requests[request_id])
 
     async def get(
             self,
@@ -188,14 +212,14 @@ class ReverseSSHClientSession(asyncssh.SSHTCPSession):
         finally:
             del (self._requests[request_id])
 
-    async def ws(
+    async def stream(
             self,
             router: str,
             data: MutableMapping = None
     ) -> Generator[MutableMapping, MutableMapping, None]:
 
         request_id = self._send_request(
-            request_type="WS",
+            request_type="STREAM",
             router=router,
             data=data,
         )
@@ -216,10 +240,10 @@ class ReverseSSHClientSession(asyncssh.SSHTCPSession):
                 yield response
         except Exception as exc:
             logger['error'].error(
-                f"Exception in ws request: {str(exc)}"
+                f"Exception in stream request: {str(exc)}"
             )
         finally:
             logger['debug'].debug(
-                'Closing ws connection'
+                'Closing stream connection'
             )
             del (self._requests[request_id])

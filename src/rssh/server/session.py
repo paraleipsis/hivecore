@@ -2,23 +2,30 @@ import asyncio
 import gzip
 import json
 import uuid
-from typing import MutableMapping, Union, Tuple
+from typing import MutableMapping, Tuple
 
 import asyncssh
 import traceback
-
-from aiohttp.http_websocket import WSMessage
 
 from logger.logs import logger
 
 
 class ReverseSSHServerSession(asyncssh.SSHTCPSession):
-    def __init__(self, callbacks: MutableMapping, request_types: Tuple, stream_types: Tuple):
+    def __init__(
+            self,
+            callbacks: MutableMapping,
+            request_types: Tuple,
+            stream_types: Tuple,
+            internal_request_types: Tuple,
+            server_uuid: uuid.UUID = None
+    ):
         self._callbacks = callbacks
         self.request_types = request_types
         self.stream_types = stream_types
+        self.internal_request_types = internal_request_types
         self._chan = None
         self._loop = asyncio.get_event_loop()
+        self._server_uuid = server_uuid
 
     def connection_made(self, chan: asyncssh.SSHTCPChannel) -> None:
         """New connection established"""
@@ -101,6 +108,10 @@ class ReverseSSHServerSession(asyncssh.SSHTCPSession):
                 asyncio.run_coroutine_threadsafe(self.__process_stream(request), self._loop)
                 return None
 
+            if request['request_type'] in self.internal_request_types:
+                asyncio.run_coroutine_threadsafe(self.__process_internal_request(request), self._loop)
+                return None
+
             asyncio.run_coroutine_threadsafe(self.__process_request(request), self._loop)
             return None
 
@@ -109,6 +120,30 @@ class ReverseSSHServerSession(asyncssh.SSHTCPSession):
                 f"Unable to process request: {exc}"
             )
             self._send_response(0, 400, {"message": "Unable to process request"})
+            return None
+
+    async def __process_internal_request(self, request: MutableMapping) -> None:
+        response = None
+
+        if request['request_type'] == 'IDENTIFY':
+            if self._server_uuid is None:
+                self._server_uuid = uuid.uuid4()
+            response = {'UUID': str(self._server_uuid)}
+
+        try:
+            self._send_response(
+                request_id=request['id'],
+                ssh_response_code=200,
+                response=response
+            )
+
+            return None
+
+        except Exception as exc:
+            logger['error'].error(
+                f"Internal error when executing {request['request_type']}\n{str(exc)}"
+            )
+            self._send_response(request['id'], 500, {"message": str(exc), "traceback": traceback.format_exc()})
             return None
 
     async def __process_request(self, request: MutableMapping) -> None:
@@ -141,6 +176,8 @@ class ReverseSSHServerSession(asyncssh.SSHTCPSession):
                 ssh_response_code=200,
                 response=response
             )
+
+            return None
 
         except Exception as exc:
             logger['error'].error(
@@ -179,6 +216,7 @@ class ReverseSSHServerSession(asyncssh.SSHTCPSession):
                     ssh_response_code=200,
                     response=response
                 )
+            return None
 
         except Exception as exc:
             logger['error'].error(
@@ -190,7 +228,7 @@ class ReverseSSHServerSession(asyncssh.SSHTCPSession):
             self,
             request_id: float,
             ssh_response_code: int,
-            response: Union[WSMessage, MutableMapping] = None
+            response: MutableMapping = None
     ) -> None:
         """Send a response to the given client request"""
 
@@ -198,7 +236,7 @@ class ReverseSSHServerSession(asyncssh.SSHTCPSession):
             'id': str(uuid.uuid4()),
             'request_id': request_id,
             'ssh_response_code': ssh_response_code,
-            'response': str(response)
+            'response': response
         }
 
         logger['info'].info(

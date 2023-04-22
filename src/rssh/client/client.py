@@ -57,14 +57,14 @@ class ReverseSSHClient:
                 remote_port=int(self.local_port)
             )
 
-            identification_request = await session.get(router='/identification')
+            identification_request = await session._identify()
 
             # TODO: Add check for agent Token and UUID in PostgreSQL database. UUID and Token need to be generated on
             #  the main server in the node_manager application. Then UUID and Token pass as environment variables to
             #  the node agent on deployment. For each next request we need to pass in required method a specific
             #  session (by a host UUID as Path param)
 
-            uuid = identification_request['response']
+            uuid = identification_request['response']['UUID']
 
             self.active_connections[uuid] = {
                 'connection': conn,

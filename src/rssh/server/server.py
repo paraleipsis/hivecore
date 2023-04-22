@@ -1,3 +1,5 @@
+from uuid import UUID
+
 import asyncssh
 import sys
 
@@ -7,8 +9,10 @@ from logger.logs import logger
 
 class ReverseSSHServerFactory(asyncssh.SSHServer):
     REQUEST_TYPES = ('GET', 'POST', 'UPDATE', 'DELETE')
-    STREAM_TYPES = ('WS',)
+    INTERNAL_REQUEST_TYPES = ('IDENTIFY',)
+    STREAM_TYPES = ('STREAM',)
     ALL_TYPES = REQUEST_TYPES + STREAM_TYPES
+    SERVER_UUID = None
 
     callbacks = {request_type: dict() for request_type in ALL_TYPES}
 
@@ -26,7 +30,9 @@ class ReverseSSHServerFactory(asyncssh.SSHServer):
         return ReverseSSHServerSession(
             callbacks=ReverseSSHServerFactory.callbacks,
             request_types=ReverseSSHServerFactory.REQUEST_TYPES,
-            stream_types=ReverseSSHServerFactory.STREAM_TYPES
+            stream_types=ReverseSSHServerFactory.STREAM_TYPES,
+            internal_request_types=ReverseSSHServerFactory.INTERNAL_REQUEST_TYPES,
+            server_uuid=ReverseSSHServerFactory.SERVER_UUID
         )
 
 
@@ -37,7 +43,8 @@ class ReverseSSHServer:
             remote_port: int,
             server_host_keys: str,
             authorized_client_keys: str,
-            encoding: str = None
+            encoding: str = None,
+            server_uuid: UUID = None
     ):
         """Instantiate a reverse SSH server that listens on the given port
         for clients that match the authorized keys"""
@@ -47,6 +54,7 @@ class ReverseSSHServer:
         self._server_host_keys = [server_host_keys]
         self._authorized_client_keys = authorized_client_keys
         self._encoding = encoding
+        ReverseSSHServerFactory.SERVER_UUID = server_uuid
 
     @staticmethod
     def add_callback(request_type: str, resource: str, callback: callable) -> None:
