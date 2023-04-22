@@ -1,8 +1,8 @@
 from fastapi import FastAPI
 
 from node_manager.exc_handlers.exc_handler import init_exc_handlers as node_manager_init_exc_handlers
-from startup_tasks.run_rssh import run_rssh_client
-from router import init_routes
+from core.startup_tasks.run_rssh import run_rssh_client
+from core.router import init_routes
 
 
 def pre_startup(application: FastAPI) -> None:

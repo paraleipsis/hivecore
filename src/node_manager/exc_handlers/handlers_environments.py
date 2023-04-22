@@ -6,7 +6,10 @@ from logger.logs import logger
 from schemas.response_schemas import GenericResponseModel
 
 
-async def environment_not_exists_exception_handler(request: Request, exc: NoSuchEnvironment):
+async def environment_not_exists_exception_handler(
+        request: Request,
+        exc: NoSuchEnvironment
+) -> JSONResponse:
     logger['debug'].debug(
         f'{type(exc).__name__}: {str(exc)}'
     )

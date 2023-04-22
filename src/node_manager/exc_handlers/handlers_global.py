@@ -6,7 +6,10 @@ from node_manager.exc_handlers.exceptions import AlreadyExistException
 from schemas.response_schemas import GenericResponseModel
 
 
-async def global_exception_handler(request: Request, exc: Exception):
+async def global_exception_handler(
+        request: Request,
+        exc: Exception
+) -> JSONResponse:
     logger['error'].error(
         f'{type(exc).__name__}: {str(exc)}'
     )
@@ -16,7 +19,10 @@ async def global_exception_handler(request: Request, exc: Exception):
     )
 
 
-async def connection_refused_exception_handler(request: Request, exc: ConnectionRefusedError):
+async def connection_refused_exception_handler(
+        request: Request,
+        exc: ConnectionRefusedError
+) -> JSONResponse:
     logger['error'].error(
         f'{type(exc).__name__}: {str(exc)}'
     )
@@ -26,7 +32,10 @@ async def connection_refused_exception_handler(request: Request, exc: Connection
     )
 
 
-async def already_exist_exception_handler(request: Request, exc: AlreadyExistException):
+async def already_exist_exception_handler(
+        request: Request,
+        exc: AlreadyExistException
+) -> JSONResponse:
     logger['debug'].debug(
         f'{type(exc).__name__}: {str(exc)}'
     )

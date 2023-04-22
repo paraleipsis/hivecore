@@ -8,7 +8,7 @@ from node_manager.exc_handlers.handlers_nodes import node_not_exists_exception_h
 from node_manager.exc_handlers.handlers_platforms import platform_not_exists_exception_handler
 
 
-def init_exc_handlers(application: FastAPI):
+def init_exc_handlers(application: FastAPI) -> None:
     # globals
     application.add_exception_handler(Exception, global_exception_handler)
     application.add_exception_handler(ConnectionRefusedError, connection_refused_exception_handler)

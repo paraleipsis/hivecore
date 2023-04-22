@@ -5,7 +5,8 @@ from typing import MutableMapping, Generator, Optional
 
 import asyncssh
 import gzip
-import logging
+
+from logger.logs import logger
 
 
 class ReverseSSHClientSession(asyncssh.SSHTCPSession):
@@ -14,34 +15,47 @@ class ReverseSSHClientSession(asyncssh.SSHTCPSession):
         self._requests = None
 
     def connection_made(self, chan: asyncssh.SSHTCPChannel) -> None:
-        logging.debug("Session opened")
+        logger['debug'].debug(
+            'Session opened'
+        )
 
         self._chan = chan
         self._requests = dict()
 
     def connection_lost(self, exc: Optional[Exception]) -> None:
-        logging.debug(f"Connection lost: {exc}")
+        logger['debug'].debug(
+            f"Connection lost: {exc}"
+        )
 
     def session_started(self) -> None:
-        logging.debug("Session successful")
+        logger['debug'].debug(
+            'Session successful'
+        )
 
     def data_received(self, data: bytes, datatype: asyncssh.DataType) -> None:
-        logging.debug(f"Received data: {data}")
+        data = json.loads(gzip.decompress(data).decode('utf-8'))
+
+        logger['debug'].debug(
+            f"Received data: {data}"
+        )
 
         try:
-            data = json.loads(gzip.decompress(data).decode('utf-8'))
-
             if data['request_id'] in self._requests:
                 if callable(self._requests[data['request_id']]):
                     self._requests[data['request_id']](data)
 
                 self._requests[data['request_id']] = data
 
-        except Exception as e:
-            logging.exception(f"There was an error processing the server response: {e}")
+        except Exception as exc:
+            logger['error'].error(
+                f"There was an error processing the server response: {str(exc)}"
+            )
 
     def eof_received(self) -> None:
-        logging.debug("Received EOF")
+        logger['debug'].debug(
+            "Received EOF"
+        )
+
         self._chan.exit(0)
 
     def _send_request(
@@ -63,7 +77,10 @@ class ReverseSSHClientSession(asyncssh.SSHTCPSession):
 
         self._requests[request['id']] = None
         self._chan.write(gzip.compress(json.dumps(request, separators=(',', ':')).encode('utf-8')))
-        logging.debug(f"Request '{request_type}' sent to '{router}' with data '{data}'")
+
+        logger['debug'].debug(
+            f"Request '{request_type}' sent to '{router}' with data '{data}'"
+        )
 
         return request['id']
 
@@ -86,8 +103,10 @@ class ReverseSSHClientSession(asyncssh.SSHTCPSession):
             response = self._requests[request_id]
 
             return response
-        except Exception as e:
-            logging.debug(f"Exception in get request: {e}")
+        except Exception as exc:
+            logger['error'].error(
+                f"Exception in get request: {str(exc)}"
+            )
         finally:
             del(self._requests[request_id])
 
@@ -110,8 +129,10 @@ class ReverseSSHClientSession(asyncssh.SSHTCPSession):
             response = self._requests[request_id]
 
             return response
-        except Exception as e:
-            logging.debug(f"Exception in get request: {e}")
+        except Exception as exc:
+            logger['error'].error(
+                f"Exception in post request: {str(exc)}"
+            )
         finally:
             del (self._requests[request_id])
 
@@ -134,8 +155,10 @@ class ReverseSSHClientSession(asyncssh.SSHTCPSession):
             response = self._requests[request_id]
 
             return response
-        except Exception as e:
-            logging.debug(f"Exception in get request: {e}")
+        except Exception as exc:
+            logger['error'].error(
+                f"Exception in update request: {str(exc)}"
+            )
         finally:
             del (self._requests[request_id])
 
@@ -158,8 +181,10 @@ class ReverseSSHClientSession(asyncssh.SSHTCPSession):
             response = self._requests[request_id]
 
             return response
-        except Exception as e:
-            logging.debug(f"Exception in get request: {e}")
+        except Exception as exc:
+            logger['error'].error(
+                f"Exception in delete request: {str(exc)}"
+            )
         finally:
             del (self._requests[request_id])
 
@@ -189,8 +214,12 @@ class ReverseSSHClientSession(asyncssh.SSHTCPSession):
                 response = self._requests[request_id]
 
                 yield response
-        except Exception as e:
-            logging.debug(f"Exception in ws connection: {e}")
+        except Exception as exc:
+            logger['error'].error(
+                f"Exception in ws request: {str(exc)}"
+            )
         finally:
-            logging.debug("Closing ws connection")
+            logger['debug'].debug(
+                'Closing ws connection'
+            )
             del (self._requests[request_id])

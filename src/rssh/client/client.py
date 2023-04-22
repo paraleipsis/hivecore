@@ -1,7 +1,6 @@
 import asyncio
 import gzip
 import json
-import logging
 import sys
 from typing import MutableMapping, Union
 from uuid import UUID
@@ -10,6 +9,7 @@ import asyncssh
 from asyncssh import SSHClientConnectionOptions, SSHTCPSession, SSHTCPChannel
 
 from rssh.client.session import ReverseSSHClientSession
+from logger.logs import logger
 
 
 class ReverseSSHClient:
@@ -38,12 +38,17 @@ class ReverseSSHClient:
         try:
             self._loop.run_until_complete(self.__listen())
         except (OSError, asyncssh.Error) as exc:
-            sys.exit('Error starting client: ' + str(exc))
+            logger['error'].error(
+                f"Error starting client: {str(exc)}"
+            )
+            sys.exit()
 
         self._loop.run_forever()
 
     async def __open_connection(self, conn: asyncssh.SSHClientConnection) -> None:
-        logging.debug("Opening Socket")
+        logger['debug'].debug(
+            'Opening Socket ...'
+        )
 
         try:
             chan, session = await conn.create_connection(
@@ -67,29 +72,32 @@ class ReverseSSHClient:
                 'session': session
             }
 
-            logging.debug(f"Established connection with host: {uuid}")
+            logger['debug'].debug(
+                f"Established connection with host: {uuid}"
+            )
 
             await conn.wait_closed()
 
             del self.active_connections[uuid]
 
-            logging.debug(f"Closed connection with host: {uuid}")
+            logger['debug'].debug(
+                f"Closed connection with host: {uuid}"
+            )
 
-        except Exception as e:
-            logging.exception(f"The connection was not established correctly: {e}")
+        except Exception as exc:
+            logger['error'].error(
+                f"The connection was not established correctly: {str(exc)}"
+            )
 
     async def __listen(self) -> None:
-        try:
-            await asyncssh.listen_reverse(
-                port=int(self.local_port),
-                client_keys=self.client_keys,
-                known_hosts=None,
-                reuse_port=True,
-                options=SSHClientConnectionOptions(max_pktsize=self.max_packet_size),
-                acceptor=self.__open_connection
-            )
-        except (OSError, asyncssh.Error) as exc:
-            sys.exit('Error starting client: ' + str(exc))
+        await asyncssh.listen_reverse(
+            port=int(self.local_port),
+            client_keys=self.client_keys,
+            known_hosts=None,
+            reuse_port=True,
+            options=SSHClientConnectionOptions(max_pktsize=self.max_packet_size),
+            acceptor=self.__open_connection
+        )
 
     def disconnect(self, host_uuid: UUID) -> None:
         self.active_connections[host_uuid]['connection'].close()
