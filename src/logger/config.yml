@@ -1,0 +1,61 @@
+version: 1
+
+formatters:
+  error:
+    format: '%(levelname)s:    %(asctime)s - [%(filename)s:%(lineno)d] - %(message)s'
+  info:
+    format: '%(levelname)s:    %(asctime)s - %(message)s'
+  debug:
+    format: '%(levelname)s:    %(asctime)s - [%(filename)s:%(lineno)d] - %(message)s'
+
+handlers:
+  console_error:
+    class: logging.StreamHandler
+    level: ERROR
+    formatter: error
+    stream: ext://sys.stdout
+  console_info:
+    class: logging.StreamHandler
+    level: INFO
+    formatter: info
+    stream: ext://sys.stdout
+  console_debug:
+    class: logging.StreamHandler
+    level: DEBUG
+    formatter: debug
+    stream: ext://sys.stdout
+  file_error:
+    class: logging.FileHandler
+    level: ERROR
+    formatter: error
+    # specify a file where to store error logs output
+    filename: logger/logs/errors.log
+  file_info:
+    class: logging.FileHandler
+    level: INFO
+    formatter: info
+    # specify a file where to store info logs output
+    filename: logger/logs/info.log
+  file_debug:
+    class: logging.FileHandler
+    level: DEBUG
+    formatter: debug
+    # specify a file where to store debug logs output
+    filename: logger/logs/debug.log
+
+loggers:
+  errorLogger:
+    level: ERROR
+    # add file_error handler to handlers list to write error logs to a file
+    handlers: [console_error]
+    propagate: no
+  infoLogger:
+    level: INFO
+    # add file_info handler to handlers list to write info logs to a file
+    handlers: [console_info]
+    propagate: no
+  debugLogger:
+    level: DEBUG
+    # add file_debug handler to handlers list to write info logs to a file
+    handlers: [ console_debug ]
+    propagate: no

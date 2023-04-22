@@ -3,7 +3,7 @@ from datetime import datetime
 
 from sqlalchemy.orm import relationship
 
-from database import metadata, Base
+from db.database import metadata, Base
 
 
 class Node(Base):

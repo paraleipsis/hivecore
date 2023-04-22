@@ -1,16 +1,21 @@
-from fastapi import Depends
+from fastapi import Depends, APIRouter
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from database import get_async_session
+from db.database import get_async_session
 from node_manager.schemas import schemas_environments, schemas_platforms
-from core.schemas import core_schemas
+from schemas.response_schemas import GenericResponseModel
 from node_manager.services import service_environments
-from node_manager.api.router import router
+
+
+router = APIRouter(
+    prefix='/platforms/{platform_name}/environments',
+    tags=['Environments']
+)
 
 
 @router.get(
-    '/{platform_name}',
-    response_model=core_schemas.GenericResponseModel[schemas_platforms.PlatformDetailsRead]
+    '/',
+    response_model=GenericResponseModel[schemas_platforms.PlatformDetailsRead]
 )
 async def get_all_environments_request(
         platform_name: str,
@@ -23,8 +28,8 @@ async def get_all_environments_request(
 
 
 @router.post(
-    '/{platform_name}',
-    response_model=core_schemas.GenericResponseModel[schemas_environments.EnvironmentCreate]
+    '/',
+    response_model=GenericResponseModel[schemas_environments.EnvironmentCreate]
 )
 async def create_environment_request(
         platform_name: str,
@@ -39,8 +44,8 @@ async def create_environment_request(
 
 
 @router.delete(
-    '/{platform_name}/{environment_id}',
-    response_model=core_schemas.GenericResponseModel[bool]
+    '/{environment_id}',
+    response_model=GenericResponseModel[bool]
 )
 async def delete_environment_request(
         platform_name: str,

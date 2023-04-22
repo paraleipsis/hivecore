@@ -1,17 +1,22 @@
-from fastapi import Depends
+from fastapi import Depends, APIRouter
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import List
 
-from database import get_async_session
+from db.database import get_async_session
 from node_manager.schemas import schemas_platforms
-from core.schemas import core_schemas
+from schemas.response_schemas import GenericResponseModel
 from node_manager.services import service_platforms
-from node_manager.api.router import router
+
+
+router = APIRouter(
+    prefix='/platforms',
+    tags=['Platforms']
+)
 
 
 @router.get(
     '/',
-    response_model=core_schemas.GenericResponseModel[List[schemas_platforms.PlatformsListRead]]
+    response_model=GenericResponseModel[List[schemas_platforms.PlatformsListRead]]
 )
 async def get_all_platforms_request(session: AsyncSession = Depends(get_async_session)):
     return await service_platforms.get_all_platforms(
@@ -21,7 +26,7 @@ async def get_all_platforms_request(session: AsyncSession = Depends(get_async_se
 
 @router.post(
     '/',
-    response_model=core_schemas.GenericResponseModel[schemas_platforms.PlatformCreate]
+    response_model=GenericResponseModel[schemas_platforms.PlatformCreate]
 )
 async def create_platform_request(
         new_platform: schemas_platforms.PlatformCreate,
@@ -35,7 +40,7 @@ async def create_platform_request(
 
 @router.delete(
     '/{platform_name}',
-    response_model=core_schemas.GenericResponseModel[bool]
+    response_model=GenericResponseModel[bool]
 )
 async def delete_platform_request(
         platform_name: str,

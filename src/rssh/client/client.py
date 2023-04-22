@@ -9,8 +9,7 @@ from uuid import UUID
 import asyncssh
 from asyncssh import SSHClientConnectionOptions, SSHTCPSession, SSHTCPChannel
 
-from rssh_client.rclient.session import ReverseSSHClientSession
-from config import SSH_IDENTIFICATION_URL
+from rssh.client.session import ReverseSSHClientSession
 
 
 class ReverseSSHClient:
@@ -53,7 +52,7 @@ class ReverseSSHClient:
                 remote_port=int(self.local_port)
             )
 
-            identification_request = await session.get(router=SSH_IDENTIFICATION_URL)
+            identification_request = await session.get(router='/identification')
 
             # TODO: Add check for agent Token and UUID in PostgreSQL database. UUID and Token need to be generated on
             #  the main server in the node_manager application. Then UUID and Token pass as environment variables to

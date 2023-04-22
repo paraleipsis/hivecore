@@ -1,7 +1,7 @@
-from redis_om import HashModel, JsonModel, EmbeddedJsonModel, Field
+from redis_om import JsonModel, EmbeddedJsonModel
 from typing import List
 from uuid import UUID
-from database import redis_connection
+from db.database import redis_connection
 
 
 class Node(EmbeddedJsonModel):

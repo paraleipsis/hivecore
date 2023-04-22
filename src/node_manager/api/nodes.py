@@ -1,16 +1,21 @@
-from fastapi import Depends
+from fastapi import Depends, APIRouter
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from database import get_async_session
+from db.database import get_async_session
 from node_manager.schemas import schemas_environments, schemas_nodes
-from core.schemas import core_schemas
+from schemas.response_schemas import GenericResponseModel
 from node_manager.services import service_nodes
-from node_manager.api.router import router
+
+
+router = APIRouter(
+    prefix='/platforms/{platform_name}/environments/{environment_id}/nodes',
+    tags=['Nodes']
+)
 
 
 @router.get(
-    '/{platform_name}/{environment_id}',
-    response_model=core_schemas.GenericResponseModel[schemas_environments.EnvironmentDetailsRead]
+    '/',
+    response_model=GenericResponseModel[schemas_environments.EnvironmentDetailsRead]
 )
 async def get_all_nodes_request(
         platform_name: str,
@@ -25,8 +30,8 @@ async def get_all_nodes_request(
 
 
 @router.get(
-    '/{platform_name}/{environment_id}/{node_id}',
-    response_model=core_schemas.GenericResponseModel[schemas_nodes.NodeRead]
+    '/{node_id}',
+    response_model=GenericResponseModel[schemas_nodes.NodeRead]
 )
 async def get_node_request(
         node_id: int,
@@ -43,8 +48,8 @@ async def get_node_request(
 
 
 @router.post(
-    '/{platform_name}/{environment_id}',
-    response_model=core_schemas.GenericResponseModel[schemas_nodes.NodeCreate]
+    '/',
+    response_model=GenericResponseModel[schemas_nodes.NodeCreate]
 )
 async def create_node_request(
         platform_name: str,
@@ -61,8 +66,8 @@ async def create_node_request(
 
 
 @router.delete(
-    '/{platform_name}/{environment_id}/{node_id}',
-    response_model=core_schemas.GenericResponseModel[bool]
+    '/{node_id}',
+    response_model=GenericResponseModel[bool]
 )
 async def delete_node_request(
         platform_name: str,
