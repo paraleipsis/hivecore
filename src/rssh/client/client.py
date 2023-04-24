@@ -36,11 +36,16 @@ class ReverseSSHClient:
 
     def start(self):
         try:
+            logger['debug'].debug(
+                'Starting Reverse SSH Client ...'
+            )
+
             self._loop.run_until_complete(self.__listen())
         except (OSError, asyncssh.Error) as exc:
             logger['error'].error(
                 f"Error starting client: {str(exc)}"
             )
+
             sys.exit()
 
         self._loop.run_forever()

@@ -12,6 +12,17 @@ async def get_all_platforms(
     return GenericResponseModel(data=data, total=len(data))
 
 
+async def get_platform(
+        platform_name: str,
+        session: AsyncSession
+) -> GenericResponseModel:
+    data = await crud_platforms.get_platform_by_name(
+        platform_name=platform_name,
+        session=session
+    )
+    return GenericResponseModel(data=data, total=1)
+
+
 async def create_platform(
         new_platform: schemas_platforms.PlatformCreate,
         session: AsyncSession

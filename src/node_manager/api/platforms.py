@@ -16,7 +16,7 @@ router = APIRouter(
 
 @router.get(
     '/',
-    response_model=GenericResponseModel[List[schemas_platforms.PlatformsListRead]]
+    response_model=GenericResponseModel[List[schemas_platforms.PlatformRead]]
 )
 async def get_all_platforms_request(session: AsyncSession = Depends(get_async_session)):
     return await service_platforms.get_all_platforms(
@@ -35,6 +35,20 @@ async def create_platform_request(
     return await service_platforms.create_platform(
         session=session,
         new_platform=new_platform
+    )
+
+
+@router.get(
+    '/{platform_name}',
+    response_model=GenericResponseModel[schemas_platforms.PlatformRead]
+)
+async def get_platform_request(
+        platform_name: str,
+        session: AsyncSession = Depends(get_async_session)
+):
+    return await service_platforms.get_platform(
+        session=session,
+        platform_name=platform_name,
     )
 
 

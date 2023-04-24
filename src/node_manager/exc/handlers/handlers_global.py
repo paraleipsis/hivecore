@@ -2,7 +2,7 @@ from starlette.requests import Request
 from starlette.responses import JSONResponse
 
 from logger.logs import logger
-from node_manager.exc_handlers.exceptions import AlreadyExistException
+from node_manager.exc.exceptions import AlreadyExistException
 from schemas.response_schemas import GenericResponseModel
 
 

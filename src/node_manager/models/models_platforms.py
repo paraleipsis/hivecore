@@ -1,7 +1,8 @@
-from sqlalchemy import TIMESTAMP, Column, Integer, String
-from datetime import datetime
+import uuid
 
-from sqlalchemy.orm import relationship
+from sqlalchemy import TIMESTAMP, Column, String
+from sqlalchemy.dialects.postgresql import UUID
+from datetime import datetime
 
 from db.database import metadata, Base
 
@@ -10,10 +11,8 @@ class Platform(Base):
     __tablename__ = "platforms"
     metadata = metadata
 
-    id = Column(Integer, primary_key=True, index=True)
+    id = Column(UUID(as_uuid=True), primary_key=True, index=True, default=uuid.uuid4)
     name = Column(String, index=True, unique=True)
     description = Column(String, index=True)
     type = Column(String, index=True)
     created_at = Column(TIMESTAMP, index=True, default=datetime.utcnow)
-
-    environments = relationship("Environment", back_populates="platform", passive_deletes='all')

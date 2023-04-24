@@ -1,8 +1,10 @@
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 
-from node_manager.exc_handlers.exc_handler import init_exc_handlers as node_manager_init_exc_handlers
+from node_manager.exc.exc_handler import init_exc_handlers as node_manager_init_exc_handlers
 from core.startup_tasks.run_rssh import run_rssh_client
 from core.router import init_routes
+from core import middleware
 
 
 def pre_startup(application: FastAPI) -> None:
@@ -20,8 +22,20 @@ async def shutdown() -> None:
 
 def create_app() -> FastAPI:
     application = FastAPI(
+        title='Hivecore',
+        docs_url='/api/docs',
+        openapi_url='/api/openapi.json',
+        middleware=middleware.utils,
         on_startup=[startup],
         on_shutdown=[shutdown]
+    )
+
+    application.add_middleware(
+        CORSMiddleware,
+        allow_origins=['*'],
+        allow_credentials=True,
+        allow_methods=['*'],
+        allow_headers=['*'],
     )
 
     pre_startup(application)
@@ -30,7 +44,6 @@ def create_app() -> FastAPI:
 
 
 app = create_app()
-
 
 if __name__ == "__main__":
     import uvicorn

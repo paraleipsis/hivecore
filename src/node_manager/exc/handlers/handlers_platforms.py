@@ -1,7 +1,7 @@
 from starlette.requests import Request
 from starlette.responses import JSONResponse
 
-from node_manager.exc_handlers.exceptions import NoSuchPlatform
+from node_manager.exc.exceptions import NoSuchPlatform
 from logger.logs import logger
 from schemas.response_schemas import GenericResponseModel
 

@@ -1,8 +1,7 @@
-from pydantic import BaseModel, Field
-from datetime import datetime
-from typing import List
+from uuid import UUID
 
-from node_manager.schemas.schemas_nodes import NodeRead
+from pydantic import BaseModel
+from datetime import datetime
 
 
 class EnvironmentBase(BaseModel):
@@ -14,19 +13,10 @@ class EnvironmentCreate(EnvironmentBase):
     pass
 
 
-class EnvironmentDetailsRead(EnvironmentBase):
-    id: int
+class EnvironmentRead(EnvironmentBase):
+    id: UUID
     created_at: datetime
-    platform_id: int
-    nodes: List[NodeRead] = Field(default_factory=list)
-
-    class Config:
-        orm_mode = True
-
-
-class PlatformEnvironmentRead(EnvironmentBase):
-    id: int
-    created_at: datetime
+    platform_id: UUID
 
     class Config:
         orm_mode = True

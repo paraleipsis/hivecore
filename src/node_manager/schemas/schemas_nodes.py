@@ -1,3 +1,5 @@
+from uuid import UUID
+
 from pydantic import BaseModel
 from datetime import datetime
 
@@ -13,9 +15,9 @@ class NodeCreate(NodeBase):
 
 
 class NodeRead(NodeBase):
-    id: int
+    id: UUID
     created_at: datetime
-    environment_id: int
+    environment_id: UUID
 
     class Config:
         orm_mode = True

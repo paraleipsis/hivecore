@@ -1,8 +1,7 @@
-from pydantic import BaseModel, Field
-from datetime import datetime
-from typing import List
+from uuid import UUID
 
-from node_manager.schemas.schemas_environments import PlatformEnvironmentRead
+from pydantic import BaseModel
+from datetime import datetime
 
 
 class PlatformBase(BaseModel):
@@ -15,18 +14,9 @@ class PlatformCreate(PlatformBase):
     pass
 
 
-class PlatformsListRead(PlatformBase):
-    id: int
+class PlatformRead(PlatformBase):
+    id: UUID
     created_at: datetime
-
-    class Config:
-        orm_mode = True
-
-
-class PlatformDetailsRead(PlatformBase):
-    id: int
-    created_at: datetime
-    environments: List[PlatformEnvironmentRead] = Field(default_factory=list)
 
     class Config:
         orm_mode = True

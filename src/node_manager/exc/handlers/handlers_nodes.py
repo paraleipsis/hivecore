@@ -1,14 +1,14 @@
 from starlette.requests import Request
 from starlette.responses import JSONResponse
 
-from node_manager.exc_handlers.exceptions import NoSuchEnvironment
+from node_manager.exc.exceptions import NoSuchNode
 from logger.logs import logger
 from schemas.response_schemas import GenericResponseModel
 
 
-async def environment_not_exists_exception_handler(
+async def node_not_exists_exception_handler(
         request: Request,
-        exc: NoSuchEnvironment
+        exc: NoSuchNode
 ) -> JSONResponse:
     logger['debug'].debug(
         f'{type(exc).__name__}: {str(exc)}'

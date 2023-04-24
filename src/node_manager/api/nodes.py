@@ -1,31 +1,34 @@
+from typing import List
+from uuid import UUID
+
 from fastapi import Depends, APIRouter
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from db.database import get_async_session
-from node_manager.schemas import schemas_environments, schemas_nodes
+from node_manager.schemas import schemas_nodes
 from schemas.response_schemas import GenericResponseModel
 from node_manager.services import service_nodes
 
 
 router = APIRouter(
-    prefix='/platforms/{platform_name}/environments/{environment_id}/nodes',
+    prefix='/platforms/{platform_name}/environments/{environment}/nodes',
     tags=['Nodes']
 )
 
 
 @router.get(
     '/',
-    response_model=GenericResponseModel[schemas_environments.EnvironmentDetailsRead]
+    response_model=GenericResponseModel[List[schemas_nodes.NodeRead]]
 )
 async def get_all_nodes_request(
         platform_name: str,
-        environment_id: int,
+        environment: str | UUID,
         session: AsyncSession = Depends(get_async_session)
 ):
     return await service_nodes.get_all_nodes(
         session=session,
         platform_name=platform_name,
-        environment_id=environment_id
+        environment=environment
     )
 
 
@@ -34,16 +37,16 @@ async def get_all_nodes_request(
     response_model=GenericResponseModel[schemas_nodes.NodeRead]
 )
 async def get_node_request(
-        node_id: int,
+        node_id: UUID,
         platform_name: str,
-        environment_id: int,
+        environment: str | UUID,
         session: AsyncSession = Depends(get_async_session)
 ):
     return await service_nodes.get_node(
         session=session,
         node_id=node_id,
         platform_name=platform_name,
-        environment_id=environment_id
+        environment=environment
     )
 
 
@@ -53,14 +56,14 @@ async def get_node_request(
 )
 async def create_node_request(
         platform_name: str,
-        environment_id: int,
+        environment: str | UUID,
         new_node: schemas_nodes.NodeCreate,
         session: AsyncSession = Depends(get_async_session)
 ):
     return await service_nodes.create_node(
         session=session,
         platform_name=platform_name,
-        environment_id=environment_id,
+        environment=environment,
         new_node=new_node
     )
 
@@ -71,13 +74,13 @@ async def create_node_request(
 )
 async def delete_node_request(
         platform_name: str,
-        environment_id: int,
-        node_id: int,
+        environment: str | UUID,
+        node_id: UUID,
         session: AsyncSession = Depends(get_async_session)
 ):
     return await service_nodes.delete_node(
         session=session,
         platform_name=platform_name,
-        environment_id=environment_id,
+        environment=environment,
         node_id=node_id
     )

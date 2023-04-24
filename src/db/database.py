@@ -1,4 +1,4 @@
-from db.config import REDIS_HOST, REDIS_DB, REDIS_PORT, DB_HOST, DB_NAME, DB_PASS, DB_PORT, DB_USER
+from db.config import DB_HOST, DB_NAME, DB_PASS, DB_PORT, DB_USER
 
 from typing import AsyncGenerator
 
@@ -20,14 +20,14 @@ async_session_maker = sessionmaker(engine, class_=AsyncSession, expire_on_commit
 
 
 async def get_async_session() -> AsyncGenerator[AsyncSession, None]:
-    try:
-        async with async_session_maker() as session:
-            yield session
-    except Exception as e:
-        pass
+    async with async_session_maker() as session:
+        yield session
 
 
 # TODO: Replace with Kafka
+
+# from db.config import REDIS_HOST, REDIS_DB, REDIS_PORT
+
 
 # REDIS_URL = f"redis://{REDIS_HOST}:{REDIS_PORT}/{REDIS_DB}"
 
