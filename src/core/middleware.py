@@ -7,6 +7,8 @@ DECODE_FORMAT = "latin-1"
 
 
 async def case_sens_middleware(request: Request, call_next: RequestResponseEndpoint) -> Response:
+    """Make case-insensitive URLs by converting path and query params to lower case."""
+
     raw_query_str = request.scope["query_string"].decode(DECODE_FORMAT).lower()
     request.scope["query_string"] = raw_query_str.encode(DECODE_FORMAT)
 
@@ -14,6 +16,7 @@ async def case_sens_middleware(request: Request, call_next: RequestResponseEndpo
     request.scope["path"] = path
 
     response = await call_next(request)
+
     return response
 
 

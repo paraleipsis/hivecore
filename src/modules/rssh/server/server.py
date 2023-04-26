@@ -3,12 +3,12 @@ from uuid import UUID
 import asyncssh
 import sys
 
-from rssh.server.session import ReverseSSHServerSession
+from modules.rssh.server.session import ReverseSSHServerSession
 from logger.logs import logger
 
 
 class ReverseSSHServerFactory(asyncssh.SSHServer):
-    REQUEST_TYPES = ('GET', 'POST', 'UPDATE', 'DELETE')
+    REQUEST_TYPES = ('GET', 'POST', 'PATCH', 'DELETE')
     INTERNAL_REQUEST_TYPES = ('IDENTIFY',)
     STREAM_TYPES = ('STREAM',)
     ALL_TYPES = REQUEST_TYPES + STREAM_TYPES

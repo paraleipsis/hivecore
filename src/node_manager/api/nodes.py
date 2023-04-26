@@ -6,7 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from db.database import get_async_session
 from node_manager.schemas import schemas_nodes
-from schemas.response_schemas import GenericResponseModel
+from modules.schemas.response_schemas import GenericResponseModel
 from node_manager.services import service_nodes
 
 

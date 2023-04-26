@@ -1,13 +1,6 @@
-import httpx
-
-from typing import List
 from uuid import UUID
 
-from fastapi import Depends, APIRouter
-
-from schemas.response_schemas import GenericResponseModel
-from docker.schemas import schemas_containers
-from docker.services import service_containers
+from fastapi import APIRouter
 
 router = APIRouter(
     prefix='/docker/{node_id}',

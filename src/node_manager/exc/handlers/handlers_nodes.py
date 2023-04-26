@@ -3,7 +3,7 @@ from starlette.responses import JSONResponse
 
 from node_manager.exc.exceptions import NoSuchNode
 from logger.logs import logger
-from schemas.response_schemas import GenericResponseModel
+from modules.schemas.response_schemas import GenericResponseModel
 
 
 async def node_not_exists_exception_handler(

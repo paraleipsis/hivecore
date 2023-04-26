@@ -3,7 +3,14 @@ from node_manager import api as node_manager_api
 from docker import api as docker_api
 
 
-def init_routes(application: FastAPI):
+def init_routes(application: FastAPI) -> None:
+    """Include routes in all apps to core router with prefix '/api'.
+
+       :param application:
+          The :class:`FastAPI` application.
+
+    """
+
     router = APIRouter(
         prefix='/api',
     )
@@ -18,3 +25,5 @@ def init_routes(application: FastAPI):
 
     # main
     application.include_router(router)
+
+    return None

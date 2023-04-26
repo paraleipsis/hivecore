@@ -16,6 +16,7 @@ Base = declarative_base()
 metadata = MetaData()
 
 engine = create_async_engine(DATABASE_URL, poolclass=NullPool)
+
 async_session_maker = sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
 
 

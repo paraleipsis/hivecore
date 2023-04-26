@@ -98,7 +98,7 @@ class ReverseSSHServerSession(asyncssh.SSHTCPSession):
                 )
                 self._send_response(request['id'], 400, {"message": "Missing 'data'"})
 
-            elif request['request_type'] == 'UPDATE' and 'data' not in request['request']:
+            elif request['request_type'] == 'PATCH' and 'data' not in request['request']:
                 logger['debug'].debug(
                     "Malformed request: missing 'data'"
                 )

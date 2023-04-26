@@ -1,0 +1,197 @@
+import asyncio
+import gzip
+import json
+import sys
+from typing import MutableMapping, Union
+from uuid import UUID
+
+import asyncssh
+from asyncssh import SSHClientConnectionOptions, SSHTCPSession, SSHTCPChannel
+
+# fork
+from modules.pubsub.publisher import Publisher
+
+from modules.rssh.client.session import ReverseSSHClientSession
+from logger.logs import logger
+
+
+class ReverseSSHClient:
+    """Object for interacting with the Reverse SSH Client Listener and SSH connections.
+
+       :param local_host:
+           The hostname or address to listen on.
+       :param local_port:
+           The port number to listen on.
+       :param client_keys:
+           The file that contain an SSH private key for the server to use
+           to authenticate itself to the client.
+       :param known_hosts: (optional)
+           The file that contain a list of trusted client host keys.
+       :param reuse_port: (optional)
+           Allow this socket to be bound to the same port other
+           existing sockets are bound to.
+       :param max_packet_size: (optional)
+           Maximum allowed network packet size.
+       :param publisher: (optional)
+           The :class:`Publisher` object used to send messages about new connections.
+       :param pubsub_channel: (optional)
+           The channel to send messages about new connections.
+
+    """
+
+    def __init__(
+            self,
+            local_host: str,
+            local_port: int,
+            client_keys: str,
+            known_hosts: str = None,
+            reuse_port: bool = False,
+            max_packet_size: int = 32768,
+            publisher: Publisher = None,  # fork
+            pubsub_channel: str = None  # fork
+    ):
+        self.local_host = local_host
+        self.local_port = local_port
+        self.client_keys = [client_keys]
+        self.known_hosts = known_hosts
+        self.reuse_port = reuse_port
+        self.max_packet_size = max_packet_size
+
+        self.publisher = publisher  # fork
+        self.pubsub_channel = pubsub_channel  # fork
+
+        self._active_connections: MutableMapping[
+            UUID, MutableMapping[str, Union[SSHTCPChannel, SSHTCPSession]]
+        ] = {}
+        self._loop = asyncio.new_event_loop()
+
+        asyncio.set_event_loop(self._loop)
+
+    def start(self) -> None:
+        """Run the Reverse SSH Client Listener in the event loop indefinitely until interrupt."""
+
+        try:
+            logger['debug'].debug(
+                'Starting Reverse SSH Client ...'
+            )
+
+            self._loop.run_until_complete(self.__listen())
+        except (OSError, asyncssh.Error) as exc:
+            logger['error'].error(
+                f"Error starting client: {str(exc)}"
+            )
+
+            sys.exit()
+
+        self._loop.run_forever()
+
+        return None
+
+    async def __open_connection(self, conn: asyncssh.SSHClientConnection) -> None:
+        """Create a TCP Channel and a TCP Session objects.
+
+           The method sends an identity request to the target host which returns a UUID.
+
+           :class:`SSHTCPChannel`, :class:`SSHTCPSession` and :class:`SSHClientConnection`
+           are added to the _active_connections dictionary under the UUID key.
+
+           A message with information about the created connection is sent to
+           the :class:`PubSub` 'connections' channel and can be useful for other applications.
+
+           :param conn:
+              The :class:`SSHClientConnection` that asyncssh.listen_reverse() method returns.
+
+        """
+
+        logger['debug'].debug(
+            'Opening Socket ...'
+        )
+
+        try:
+            chan, session = await conn.create_connection(
+                session_factory=ReverseSSHClientSession,
+                remote_host='',
+                remote_port=int(self.local_port)
+            )
+
+            identification_request = await session._identify()
+
+            # TODO: Add check for agent Token and UUID in PostgreSQL database. UUID and Token need to be generated on
+            #  the main server in the node_manager application. Then UUID and Token pass as environment variables to
+            #  the node agent on deployment. For each next request we need to pass in required method a specific
+            #  session (by a host UUID as Path param)
+
+            uuid = identification_request['response']['UUID']
+
+            self._active_connections[uuid] = {
+                'connection': conn,
+                'channel': chan,
+                'session': session
+            }
+
+            # fork
+            if self.publisher is not None:
+                msg = {'uuid': uuid, 'connection': conn, 'channel': chan, 'session': session}
+                await self.publisher.publish(channel=self.pubsub_channel, message=msg)
+
+                logger['debug'].debug(
+                    f"Message published to the channel '{self.pubsub_channel}': {msg}"
+                )
+
+            logger['debug'].debug(
+                f"Established connection with host: {uuid}"
+            )
+
+            await conn.wait_closed()
+
+            del self._active_connections[uuid]
+
+            logger['debug'].debug(
+                f"Closed connection with host: {uuid}"
+            )
+
+        except Exception as exc:
+            logger['error'].error(
+                f"The connection was not established correctly: {str(exc)}"
+            )
+
+    async def __listen(self) -> None:
+        """Run the Reverse SSH Client Listener.
+
+           After connection with a host create the :class:`SSHClientConnection` object.
+
+        """
+
+        await asyncssh.listen_reverse(
+            port=int(self.local_port),
+            client_keys=self.client_keys,
+            known_hosts=None,
+            reuse_port=True,
+            options=SSHClientConnectionOptions(max_pktsize=self.max_packet_size),
+            acceptor=self.__open_connection
+        )
+
+    def disconnect(self, host_uuid: UUID) -> None:
+        """Close the SSH Channel.
+
+           :param host_uuid:
+              The UUID of the host the connection to which should be closed.
+
+        """
+
+        self._active_connections[host_uuid]['connection'].close()
+
+        return None
+
+    def broadcast(self, message) -> None:
+        """Send a message to all SSH channels.
+
+           :param message:
+              The object to send.
+
+        """
+
+        for connection in self._active_connections.values():
+            connection['channel'].write(gzip.compress(json.dumps(message, separators=(',', ':')).encode('utf-8')))
+
+        return None
