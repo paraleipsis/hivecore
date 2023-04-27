@@ -9,23 +9,6 @@ from core import middleware
 from core.config import PUBSUB_CHANNELS
 
 
-async def test():
-    from modules.pubsub.pubsub import pb
-    from modules.pubsub.subscriber import Subscriber
-
-    sub = Subscriber(pubsub=pb, channel='connections')
-
-    while True:
-        msg = await sub.get()
-        print(msg)
-
-
-def run_test():
-    import asyncio
-    loop = asyncio.get_event_loop()
-    asyncio.run_coroutine_threadsafe(coro=test(), loop=loop)
-
-
 def pre_startup(application: FastAPI) -> None:
     node_manager_init_exc_handlers(application=application)
     init_routes(application=application)
@@ -34,7 +17,9 @@ def pre_startup(application: FastAPI) -> None:
 async def startup() -> None:
     create_pubsub_channels(PUBSUB_CHANNELS)
     run_rssh_client()
-    run_test()
+
+    from receiver.receiver import run_receiver
+    run_receiver()
 
 
 async def shutdown() -> None:

@@ -6,6 +6,13 @@ from modules.pubsub.pubsub import pb
 
 
 def init_rssh_client() -> ReverseSSHClient:
+    """Initializes the :class:`ReverseSSHClient` object with
+       specific configuration. Loads all environment variables.
+
+       :returns: :class:`ReverseSSHClient`.
+
+    """
+
     rclient = ReverseSSHClient(
         local_host=SSH_CLIENT_LOCAL_HOST,
         local_port=SSH_CLIENT_LOCAL_PORT,
