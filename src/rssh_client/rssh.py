@@ -21,7 +21,7 @@ def init_rssh_client() -> ReverseSSHClient:
         reuse_port=SSH_CLIENT_REUSE_PORT,
         max_packet_size=SSH_CLIENT_MAX_PACKET_SIZE,
         publisher=Publisher(pubsub=pb),
-        pubsub_channel='connections'
+        pubsub_channel='connections',
     )
 
     return rclient

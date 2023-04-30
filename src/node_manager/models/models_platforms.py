@@ -4,7 +4,7 @@ from sqlalchemy import TIMESTAMP, Column, String
 from sqlalchemy.dialects.postgresql import UUID
 from datetime import datetime
 
-from db.database import metadata, Base
+from db.database.database import metadata, Base
 
 
 class Platform(Base):

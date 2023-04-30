@@ -6,7 +6,6 @@ from typing import MutableMapping, Union
 from uuid import UUID
 
 import asyncssh
-from asyncssh import SSHClientConnectionOptions, SSHTCPSession, SSHTCPChannel
 
 # fork
 from modules.pubsub.publisher import Publisher
@@ -61,7 +60,7 @@ class ReverseSSHClient:
         self.pubsub_channel = pubsub_channel  # fork
 
         self._active_connections: MutableMapping[
-            UUID, MutableMapping[str, Union[SSHTCPChannel, SSHTCPSession]]
+            UUID, MutableMapping[str, Union[asyncssh.SSHTCPChannel, asyncssh.SSHTCPSession]]
         ] = {}
         self._loop = asyncio.new_event_loop()
 
@@ -111,7 +110,8 @@ class ReverseSSHClient:
             chan, session = await conn.create_connection(
                 session_factory=ReverseSSHClientSession,
                 remote_host='',
-                remote_port=int(self.local_port)
+                remote_port=self.local_port,
+                max_pktsize=self.max_packet_size
             )
 
             identification_request = await session._identify()
@@ -131,12 +131,7 @@ class ReverseSSHClient:
 
             # fork
             if self.publisher is not None:
-                msg = {'uuid': uuid, 'connection': conn, 'channel': chan, 'session': session}
-                await self.publisher.publish(channel=self.pubsub_channel, message=msg)
-
-                logger['debug'].debug(
-                    f"Message published to the channel '{self.pubsub_channel}': {msg}"
-                )
+                await self.publish_host(uuid, conn, chan, session)
 
             logger['debug'].debug(
                 f"Established connection with host: {uuid}"
@@ -163,12 +158,11 @@ class ReverseSSHClient:
         """
 
         await asyncssh.listen_reverse(
-            port=int(self.local_port),
+            port=self.local_port,
             client_keys=self.client_keys,
             known_hosts=None,
             reuse_port=True,
-            options=SSHClientConnectionOptions(max_pktsize=self.max_packet_size),
-            acceptor=self.__open_connection
+            acceptor=self.__open_connection,
         )
 
     def disconnect(self, host_uuid: UUID) -> None:
@@ -193,5 +187,26 @@ class ReverseSSHClient:
 
         for connection in self._active_connections.values():
             connection['channel'].write(gzip.compress(json.dumps(message, separators=(',', ':')).encode('utf-8')))
+
+        return None
+
+    async def publish_host(
+            self,
+            host_uuid: str,
+            host_connection: asyncssh.SSHClientConnection,
+            host_channel: asyncssh.SSHTCPChannel,
+            host_session: asyncssh.SSHTCPSession
+    ) -> None:
+        msg = {
+            'uuid': host_uuid,
+            'connection': host_connection,
+            'channel': host_channel,
+            'session': host_session
+        }
+        await self.publisher.publish(channel=self.pubsub_channel, message=msg)
+
+        logger['debug'].debug(
+            f"Message published to the channel '{self.pubsub_channel}': {msg}"
+        )
 
         return None

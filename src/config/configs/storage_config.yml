@@ -1,0 +1,9 @@
+KAFKA_HOST: 'localhost'
+KAFKA_PORT: 9093
+KAFKA_FAUST_APP_ID: 'hivecore'
+
+DB_USER: 'postgres'
+DB_PASS: 'postgres'
+DB_HOST: 'localhost'
+DB_PORT: 5432
+DB_NAME: 'postgres'

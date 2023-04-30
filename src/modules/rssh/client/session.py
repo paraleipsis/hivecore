@@ -1,6 +1,7 @@
 import asyncio
 import json
 import uuid
+import sys
 
 from typing import MutableMapping, Generator, Optional
 
@@ -57,11 +58,10 @@ class ReverseSSHClientSession(asyncssh.SSHTCPSession):
            _requests object
 
         """
-
         data = json.loads(gzip.decompress(data).decode('utf-8'))
 
         logger['debug'].debug(
-            f"Received data: {data}"
+            f"Received data: {sys.getsizeof(data)} bytes"
         )
 
         try:
@@ -321,20 +321,25 @@ class ReverseSSHClientSession(asyncssh.SSHTCPSession):
                 while self._requests[request_id] is None:
                     await asyncio.sleep(0.1)
 
-                if self._requests[request_id]['id'] == response_id:
+                while self._requests[request_id]['id'] == response_id:
                     await asyncio.sleep(0.1)
 
                 response_id = self._requests[request_id]['id']
 
                 response = self._requests[request_id]
 
+                if response is None:
+                    break
+
                 yield response
+
+            logger['debug'].debug(
+                'Closing stream connection'
+            )
+            del (self._requests[request_id])
         except Exception as exc:
             logger['error'].error(
                 f"Exception in STREAM request: {str(exc)}"
             )
-        finally:
-            logger['debug'].debug(
-                'Closing stream connection'
-            )
+
             del (self._requests[request_id])

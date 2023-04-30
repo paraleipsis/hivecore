@@ -2,7 +2,7 @@ from fastapi import Depends, APIRouter
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import List
 
-from db.database import get_async_session
+from db.database.session import get_async_session
 from node_manager.schemas import schemas_platforms
 from modules.schemas.response_schemas import GenericResponseModel
 from node_manager.services import service_platforms

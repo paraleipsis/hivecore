@@ -4,9 +4,10 @@ from fastapi.middleware.cors import CORSMiddleware
 from core.startup_tasks.create_channel import create_pubsub_channels
 from node_manager.exc.exc_handler import init_exc_handlers as node_manager_init_exc_handlers
 from core.startup_tasks.run_rssh import run_rssh_client
+from core.startup_tasks.run_node_monitor import run_node_monitor
 from core.router import init_routes
 from core import middleware
-from core.config import PUBSUB_CHANNELS
+from core.config import PUBSUB_CHANNELS, HOST, PORT, LOG_LEVEL, DOCS_URL, OPENAPI_URL
 
 
 def pre_startup(application: FastAPI) -> None:
@@ -17,9 +18,7 @@ def pre_startup(application: FastAPI) -> None:
 async def startup() -> None:
     create_pubsub_channels(PUBSUB_CHANNELS)
     run_rssh_client()
-
-    from receiver.receiver import run_receiver
-    run_receiver()
+    run_node_monitor()
 
 
 async def shutdown() -> None:
@@ -29,8 +28,8 @@ async def shutdown() -> None:
 def create_app() -> FastAPI:
     application = FastAPI(
         title='Hivecore',
-        docs_url='/api/docs',
-        openapi_url='/api/openapi.json',
+        docs_url=DOCS_URL,
+        openapi_url=OPENAPI_URL,
         middleware=middleware.utils,
         on_startup=[startup],
         on_shutdown=[shutdown]
@@ -55,4 +54,9 @@ app = create_app()
 if __name__ == "__main__":
     import uvicorn
 
-    uvicorn.run("hivecore:app", host='0.0.0.0', port=8000, log_level="info")
+    uvicorn.run(
+        "hivecore:app",
+        host=HOST,
+        port=PORT,
+        log_level=LOG_LEVEL
+    )
