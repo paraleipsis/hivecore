@@ -3,7 +3,7 @@ from starlette.responses import JSONResponse
 
 from logger.logs import logger
 from node_manager.exc.exceptions import AlreadyExistException
-from modules.schemas.response_schemas import GenericResponseModel
+from modules.schemas.schemas_response import GenericResponseModel
 
 
 async def global_exception_handler(

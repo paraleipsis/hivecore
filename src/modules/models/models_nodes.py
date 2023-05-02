@@ -1,6 +1,6 @@
 import uuid
 
-from sqlalchemy import TIMESTAMP, Column, String, ForeignKey, UniqueConstraint
+from sqlalchemy import TIMESTAMP, Column, String, ForeignKey, UniqueConstraint, JSON
 from sqlalchemy.dialects.postgresql import UUID
 from datetime import datetime
 
@@ -16,6 +16,7 @@ class Node(Base):
     node_ip = Column(String, index=True)
     description = Column(String, index=True)
     created_at = Column(TIMESTAMP, index=True, default=datetime.utcnow)
+    snapshot = Column(JSON, nullable=True)
 
     environment_id = Column(UUID(as_uuid=True), ForeignKey("environments.id", ondelete='CASCADE'), nullable=False)
 

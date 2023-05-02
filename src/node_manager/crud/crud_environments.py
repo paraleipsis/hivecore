@@ -7,7 +7,7 @@ from sqlalchemy.exc import IntegrityError
 
 from node_manager.utils import title_to_lowercase, is_uuid
 from node_manager.exc.exceptions import AlreadyExistException, NoSuchEnvironment
-from node_manager.models import models_environments
+from modules.models import models_environments
 from node_manager.schemas import schemas_environments
 from node_manager.crud.crud_platforms import get_platform_by_name
 

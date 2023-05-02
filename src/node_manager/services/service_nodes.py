@@ -4,7 +4,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from node_manager.schemas import schemas_nodes
 from node_manager.crud import crud_nodes
-from modules.schemas.response_schemas import GenericResponseModel
+from modules.schemas.schemas_response import GenericResponseModel
 
 
 async def get_all_nodes(

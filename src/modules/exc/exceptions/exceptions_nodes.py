@@ -1,0 +1,2 @@
+class NoSuchNode(Exception):
+    pass

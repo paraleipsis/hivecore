@@ -1,9 +1,9 @@
 from starlette.requests import Request
 from starlette.responses import JSONResponse
 
-from node_manager.exc.exceptions import NoSuchNode
+from modules.exc.exceptions.exceptions_nodes import NoSuchNode
 from logger.logs import logger
-from modules.schemas.response_schemas import GenericResponseModel
+from modules.schemas.schemas_response import GenericResponseModel
 
 
 async def node_not_exists_exception_handler(

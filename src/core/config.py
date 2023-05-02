@@ -1,7 +1,7 @@
 import trafaret as t
 
 from config.utils import load_config
-from config.config import BASE_DIR
+from config.agent_config import BASE_DIR
 
 
 CONFIG_TRAFARET = t.Dict(
@@ -11,8 +11,6 @@ CONFIG_TRAFARET = t.Dict(
         'LOG_LEVEL': t.String,
         'DOCS_URL': t.String,
         'OPENAPI_URL': t.String,
-        'AGENT_HOST': t.String,
-        'AGENT_PORT': t.Int,
         'PUBSUB_CHANNELS': t.List(t.String),
         'NODE_MONITOR_RSSH_HOST_ROUTER': t.String,
     }
@@ -24,9 +22,6 @@ CONF = load_config(
     config_trafaret=CONFIG_TRAFARET
 )
 
-
-AGENT_HOST = CONF['AGENT_HOST']
-AGENT_PORT = CONF['AGENT_PORT']
 
 HOST = CONF['HOST']
 PORT = CONF['PORT']

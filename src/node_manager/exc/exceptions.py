@@ -8,7 +8,3 @@ class NoSuchPlatform(Exception):
 
 class NoSuchEnvironment(Exception):
     pass
-
-
-class NoSuchNode(Exception):
-    pass

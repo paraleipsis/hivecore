@@ -6,8 +6,9 @@ from sqlalchemy import insert, select, Row, RowMapping
 from sqlalchemy.exc import IntegrityError
 
 from node_manager.utils import title_to_lowercase
-from node_manager.exc.exceptions import AlreadyExistException, NoSuchNode
-from node_manager.models import models_nodes
+from node_manager.exc.exceptions import AlreadyExistException
+from modules.exc.exceptions.exceptions_nodes import NoSuchNode
+from modules.models import models_nodes
 from node_manager.schemas import schemas_nodes
 from node_manager.crud.crud_environments import get_environment
 

@@ -128,7 +128,7 @@ class NetworkingConfig(BaseModel):
 class ContainerBase(BaseModel):
     Image: str
     Labels: Optional[Mapping]
-    HostConfig: Optional[HostConfig]
+    HostConfig: Optional[Mapping]
 
 
 class ContainerConfig(BaseModel):
@@ -239,7 +239,7 @@ class ContainerCreate(ContainerBase, ContainerConfig):
     NetworkingConfig: Optional[NetworkingConfig]
 
 
-class ContainerList(ContainerBase):
+class Container(ContainerBase):
     Id: str
     Names: List[str]
     ImageID: str
@@ -247,30 +247,30 @@ class ContainerList(ContainerBase):
     Created: int
     State: str
     Status: str
-    Ports: List[ContainerPorts]
+    Ports: List[Mapping]
     SizeRw: int
     SizeRootFs: int
-    NetworkSettings: ContainerNetworkSettings
-    Mounts: List[ContainerMounts]
+    NetworkSettings: Mapping
+    Mounts: List[Mapping]
 
 
 class ContainerInspect(ContainerBase):
-    AppArmorProfile: str
-    Args: List[str]
-    ContainerConfigs: ContainerConfig = Field(default=None, alias='Config')
-    Created: str
-    Driver: str
-    ExecIDs: List[str]
-    HostnamePath: str
-    HostsPath: str
-    LogPath: str
-    Id: str
-    MountLabel: str
+    AppArmorProfile: Optional[str]
+    Args: Optional[List[str]]
+    ContainerConfigs: Optional[Mapping] = Field(default=None, alias='Config')
+    Created: Optional[str]
+    Driver: Optional[str]
+    ExecIDs: Optional[List[str]]
+    HostnamePath: Optional[str]
+    HostsPath: Optional[str]
+    LogPath: Optional[str]
+    Id: Optional[str]
+    MountLabel: Optional[str]
     Name: str
-    NetworkSettings: ContainerNetworkSettings
-    Path: str
-    ProcessLabel: str
-    ResolvConfPath: str
-    RestartCount: int
-    State: ContainerState
-    Mounts: List[ContainerMounts]
+    NetworkSettings: Optional[Mapping]
+    Path: Optional[str]
+    ProcessLabel: Optional[str]
+    ResolvConfPath: Optional[str]
+    RestartCount: Optional[int]
+    State: Optional[Mapping]
+    Mounts: Optional[List[Mapping]]

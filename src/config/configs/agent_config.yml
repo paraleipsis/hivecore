@@ -1,0 +1,4 @@
+AGENT_HOST: 'localhost'
+AGENT_PORT: 8080
+
+DOCKER_START_CONTAINER: 'docker/containers/{}/start'

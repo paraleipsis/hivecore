@@ -4,10 +4,13 @@ from fastapi.middleware.cors import CORSMiddleware
 from core.startup_tasks.create_channel import create_pubsub_channels
 from node_manager.exc.exc_handler import init_exc_handlers as node_manager_init_exc_handlers
 from core.startup_tasks.run_rssh import run_rssh_client
-from core.startup_tasks.run_node_monitor import run_node_monitor
 from core.router import init_routes
 from core import middleware
 from core.config import PUBSUB_CHANNELS, HOST, PORT, LOG_LEVEL, DOCS_URL, OPENAPI_URL
+from db.broker.broker import run_kafka_producer
+from core.startup_tasks.run_node_monitor import run_node_monitor
+from db.broker.broker import get_kafka_producer
+from rssh_client.rssh import init_rssh_client
 
 
 def pre_startup(application: FastAPI) -> None:
@@ -17,12 +20,17 @@ def pre_startup(application: FastAPI) -> None:
 
 async def startup() -> None:
     create_pubsub_channels(PUBSUB_CHANNELS)
+    init_rssh_client()
     run_rssh_client()
+    await run_kafka_producer()
     run_node_monitor()
 
 
 async def shutdown() -> None:
-    pass
+    kafka_producer = get_kafka_producer()
+    await kafka_producer.stop()
+
+    # TODO: add rssh shutdown
 
 
 def create_app() -> FastAPI:

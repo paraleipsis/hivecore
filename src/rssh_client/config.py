@@ -1,7 +1,7 @@
 import trafaret as t
 
 from config.utils import load_config
-from config.config import BASE_DIR
+from config.agent_config import BASE_DIR
 
 
 CONFIG_TRAFARET = t.Dict(

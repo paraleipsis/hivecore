@@ -5,7 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from node_manager.schemas import schemas_environments
 from node_manager.crud import crud_environments
 from node_manager.utils import is_uuid
-from modules.schemas.response_schemas import GenericResponseModel
+from modules.schemas.schemas_response import GenericResponseModel
 
 
 async def get_all_environments(

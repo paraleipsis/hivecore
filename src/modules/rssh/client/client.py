@@ -2,7 +2,7 @@ import asyncio
 import gzip
 import json
 import sys
-from typing import MutableMapping, Union
+from typing import Union, Dict
 from uuid import UUID
 
 import asyncssh
@@ -59,8 +59,12 @@ class ReverseSSHClient:
         self.publisher = publisher  # fork
         self.pubsub_channel = pubsub_channel  # fork
 
-        self._active_connections: MutableMapping[
-            UUID, MutableMapping[str, Union[asyncssh.SSHTCPChannel, asyncssh.SSHTCPSession]]
+        self._active_connections: Dict[
+            UUID, Dict[str, Union[
+                asyncssh.SSHTCPChannel,
+                asyncssh.SSHTCPSession,
+                asyncssh.SSHClientConnection
+            ]]
         ] = {}
         self._loop = asyncio.new_event_loop()
 
@@ -121,7 +125,7 @@ class ReverseSSHClient:
             #  the node agent on deployment. For each next request we need to pass in required method a specific
             #  session (by a host UUID as Path param)
 
-            uuid = identification_request['response']['UUID']
+            uuid = UUID(identification_request['response']['UUID'])
 
             self._active_connections[uuid] = {
                 'connection': conn,
@@ -190,9 +194,17 @@ class ReverseSSHClient:
 
         return None
 
+    def get_connection(self, host_uuid: UUID) -> Dict[str, Union[
+        asyncssh.SSHTCPChannel,
+        asyncssh.SSHTCPSession,
+        asyncssh.SSHClientConnection
+    ]]:
+        connection = self._active_connections[host_uuid]
+        return connection
+
     async def publish_host(
             self,
-            host_uuid: str,
+            host_uuid: UUID,
             host_connection: asyncssh.SSHClientConnection,
             host_channel: asyncssh.SSHTCPChannel,
             host_session: asyncssh.SSHTCPSession

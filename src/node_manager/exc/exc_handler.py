@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 
-from node_manager.exc.exceptions import (NoSuchPlatform, AlreadyExistException, NoSuchEnvironment, NoSuchNode)
+from modules.exc.exceptions.exceptions_nodes import NoSuchNode
+from node_manager.exc.exceptions import (NoSuchPlatform, AlreadyExistException, NoSuchEnvironment)
 from node_manager.exc.handlers.handlers_environments import environment_not_exists_exception_handler
 from node_manager.exc.handlers.handlers_global import (global_exception_handler,
                                                        connection_refused_exception_handler,

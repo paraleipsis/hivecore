@@ -4,9 +4,6 @@ LOG_LEVEL: 'info'
 DOCS_URL: '/api/docs'
 OPENAPI_URL: '/api/openapi.json'
 
-AGENT_HOST: 'localhost'
-AGENT_PORT: 8080
-
 PUBSUB_CHANNELS: ['connections']
 
 NODE_MONITOR_RSSH_HOST_ROUTER: '/ws_resource'

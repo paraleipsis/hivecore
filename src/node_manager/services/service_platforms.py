@@ -2,7 +2,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from node_manager.schemas import schemas_platforms
 from node_manager.crud import crud_platforms
-from modules.schemas.response_schemas import GenericResponseModel
+from modules.schemas.schemas_response import GenericResponseModel
 
 
 async def get_all_platforms(

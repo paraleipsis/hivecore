@@ -1,8 +1,8 @@
-"""Database creation
+"""update
 
-Revision ID: b99bf56685b2
+Revision ID: 8470f07dd002
 Revises: 
-Create Date: 2023-04-24 16:01:04.404673
+Create Date: 2023-05-01 16:01:53.899186
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = 'b99bf56685b2'
+revision = '8470f07dd002'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -51,6 +51,7 @@ def upgrade() -> None:
     sa.Column('node_ip', sa.String(), nullable=True),
     sa.Column('description', sa.String(), nullable=True),
     sa.Column('created_at', sa.TIMESTAMP(), nullable=True),
+    sa.Column('snapshot', sa.JSON(), nullable=True),
     sa.Column('environment_id', sa.UUID(), nullable=False),
     sa.ForeignKeyConstraint(['environment_id'], ['environments.id'], ondelete='CASCADE'),
     sa.PrimaryKeyConstraint('id'),

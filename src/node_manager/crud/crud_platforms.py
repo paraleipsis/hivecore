@@ -4,7 +4,7 @@ from sqlalchemy import insert, select, Row, RowMapping
 from sqlalchemy.exc import IntegrityError
 
 from node_manager.exc.exceptions import NoSuchPlatform, AlreadyExistException
-from node_manager.models import models_platforms
+from modules.models import models_platforms
 from node_manager.schemas import schemas_platforms
 from node_manager.utils import title_to_lowercase
 

@@ -4,7 +4,7 @@ from typing import List
 
 from db.database.session import get_async_session
 from node_manager.schemas import schemas_platforms
-from modules.schemas.response_schemas import GenericResponseModel
+from modules.schemas.schemas_response import GenericResponseModel
 from node_manager.services import service_platforms
 
 
