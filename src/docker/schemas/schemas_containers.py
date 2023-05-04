@@ -1,21 +1,27 @@
 import ipaddress
 
-from typing import Optional, Mapping, Literal, List
+from typing import Optional, Mapping, Literal, List, Any
 from pydantic import BaseModel, validator, Field
 
 
 class ContainerVolumeBind(BaseModel):
     host_path: str
     container_path: str
-    mode: Optional[Literal['ro', 'rw']]
-    shared_mount: Optional[bool]
+    mode: Optional[Literal["ro", "rw"]] = "rw"
 
 
 class ContainerPortsBind(BaseModel):
-    host_port: str
+    host_port: str | List[str]
     container_port: str
     tcp: Optional[bool] = True
     udp: Optional[bool] = False
+
+
+class EmptyMapping(BaseModel):
+    ...
+
+    class Config:
+        extra = "forbid"
 
 
 class DeviceRequests(BaseModel):
@@ -36,11 +42,8 @@ class RestartPolicy(BaseModel):
 
 
 class LogConfig(BaseModel):
-    Type: Literal[
-        'awslogs', 'fluentd', 'gcplogs', 'gelf', 'journald',
-        'json-file', 'local', 'logentries', 'splunk', 'syslog'
-    ]
-    ConfigLog: Optional[Mapping] = Field(None, alias='Config')
+    Type: str
+    ConfigLog: Optional[Mapping] = Field(None, alias="Config")
 
 
 class HostConfig(BaseModel):
@@ -86,16 +89,16 @@ class HostConfig(BaseModel):
     RestartPolicy: Optional[RestartPolicy]
     AutoRemove: Optional[bool]
     # TODO: add support for dynamic network modes collecting from appropriate host
-    NetworkMode: Optional[Literal['bridge', 'host', 'overlay', 'ipvlan', 'macvlan', 'none']]
+    NetworkMode: Optional[str]
     Devices: Optional[List]
     Ulimits: Optional[List[Mapping]]
     # TODO: add support for dynamic log drivers collecting from appropriate host
-    LogConfig: LogConfig
+    LogConfig: Optional[LogConfig]
     SecurityOpt: Optional[List]
     StorageOpt: Optional[Mapping]
     CgroupParent: Optional[str]
     # TODO: add support for dynamic volume drivers collecting from appropriate host
-    VolumeDriver: Optional[Literal['local']]
+    VolumeDriver: Optional[str]
     ShmSize: Optional[int]
 
 
@@ -104,12 +107,12 @@ class IPAMConfig(BaseModel):
     IPv6Address: Optional[str]
     LinkLocalIPs: Optional[List[str]]
 
-    @validator('IPv4Address')
+    @validator("IPv4Address")
     def ipv4_validation(cls, v):
         ipaddress.IPv4Address(v)
         return v
 
-    @validator('IPv6Address')
+    @validator("IPv6Address")
     def ipv6_validation(cls, v):
         ipaddress.IPv6Address(v)
         return v
@@ -122,13 +125,13 @@ class EndpointConfig(BaseModel):
 
 
 class NetworkingConfig(BaseModel):
-    EndpointsConfig: Mapping[str, EndpointConfig]
+    EndpointsConfig: Optional[Mapping[str, EndpointConfig]]
 
 
 class ContainerBase(BaseModel):
     Image: str
     Labels: Optional[Mapping]
-    HostConfig: Optional[Mapping]
+    HostConfig: Optional[HostConfig]
 
 
 class ContainerConfig(BaseModel):
@@ -142,8 +145,7 @@ class ContainerConfig(BaseModel):
     OpenStdin: Optional[bool]
     StdinOnce: Optional[bool]
     Cmd: Optional[List[str]]
-    # TODO: fix for empty dict
-    Volumes: Optional[Mapping[str, Mapping[str, str]]]
+    Volumes: Optional[Mapping[str, EmptyMapping]]
     WorkingDir: Optional[str]
     NetworkDisabled: Optional[bool]
     MacAddress: Optional[str]
@@ -188,14 +190,14 @@ class ContainerNetworkSettings(BaseModel):
 
 
 class ContainerMounts(BaseModel):
-    Type: Literal['bind', 'volume', 'tmpfs', 'npipe']
+    Type: str
     Name: str
     Source: str
     Destination: str
     Driver: str
     Mode: str
     RW: bool
-    Propagation: Literal['rprivate', 'private', 'rshared', 'shared', 'rslave', 'slave']
+    Propagation: str
 
 
 class ContainerHealthLog(BaseModel):
@@ -206,7 +208,7 @@ class ContainerHealthLog(BaseModel):
 
 
 class ContainerHealth(BaseModel):
-    Status: Literal['healthy', 'unhealthy', 'starting']
+    Status: str
     FailingStreak: int
     Log: Optional[List[ContainerHealthLog]]
 
@@ -231,12 +233,17 @@ class ContainerCreate(ContainerBase, ContainerConfig):
     Env: Optional[Mapping[str, str]]
     Entrypoint: Optional[str]
     # custom Volumes binding: host-agent parses and converts it into Docker binding
-    VolumesBind: Optional[ContainerVolumeBind]
-    # TODO: fix for empty dict
-    ExposedPorts: Optional[Mapping[str, Mapping[str, str]]]
+    VolumesBind: Optional[List[ContainerVolumeBind]]
+    ExposedPorts: Optional[Mapping[str, EmptyMapping]]
     # custom Ports binding: host-agent parses and converts it into Docker binding
-    PortsBind: Optional[ContainerPortsBind]
+    PortsBind: Optional[List[ContainerPortsBind]]
     NetworkingConfig: Optional[NetworkingConfig]
+
+    def dict(self, *args, **kwargs) -> dict[str, Any]:
+        """Override the default dict method to exclude None values in the response."""
+
+        kwargs.pop('exclude_none', None)
+        return super().dict(*args, exclude_none=True, **kwargs)
 
 
 class Container(ContainerBase):
@@ -257,7 +264,7 @@ class Container(ContainerBase):
 class ContainerInspect(ContainerBase):
     AppArmorProfile: Optional[str]
     Args: Optional[List[str]]
-    ContainerConfigs: Optional[Mapping] = Field(default=None, alias='Config')
+    ContainerConfigs: Optional[Mapping] = Field(default=None, alias="Config")
     Created: Optional[str]
     Driver: Optional[str]
     ExecIDs: Optional[List[str]]
@@ -274,3 +281,8 @@ class ContainerInspect(ContainerBase):
     RestartCount: Optional[int]
     State: Optional[Mapping]
     Mounts: Optional[List[Mapping]]
+
+
+class ContainerInspectList(BaseModel):
+    containers: List[ContainerInspect]
+    total: int

@@ -30,7 +30,6 @@ class ReverseSSHServerSession(asyncssh.SSHTCPSession):
     def connection_made(self, chan: asyncssh.SSHTCPChannel) -> None:
         """New connection established"""
 
-        # logging.debug("Connection incoming")
         logger['debug'].debug(
             f'Connection incoming ...'
         )
@@ -39,7 +38,6 @@ class ReverseSSHServerSession(asyncssh.SSHTCPSession):
     def connection_lost(self, exc: Exception) -> None:
         """Lost the connection to the client"""
 
-        # logging.debug(f"Connection lost\n{exc}")
         logger['debug'].debug(
             f"Connection lost\n{exc}"
         )
@@ -47,7 +45,6 @@ class ReverseSSHServerSession(asyncssh.SSHTCPSession):
     def session_started(self) -> None:
         """New session established successfully"""
 
-        # logging.debug("Connection successful")
         logger['debug'].debug(
             f"Connection successful"
         )
@@ -55,7 +52,6 @@ class ReverseSSHServerSession(asyncssh.SSHTCPSession):
     def data_received(self, data: bytes, datatype: asyncssh.DataType) -> None:
         """New data coming in"""
 
-        # logging.debug(f"Received data: {data}")
         logger['debug'].debug(
             f"Received data: {json.loads(gzip.decompress(data).decode('utf-8'))}"
         )
@@ -64,7 +60,6 @@ class ReverseSSHServerSession(asyncssh.SSHTCPSession):
     def eof_received(self) -> None:
         """Got an EOF, close the channel"""
 
-        # logging.debug("EOF")
         logger['debug'].debug(
             f"EOF"
         )
@@ -92,18 +87,13 @@ class ReverseSSHServerSession(asyncssh.SSHTCPSession):
                 )
                 self._send_response(request['id'], 400, {"message": "Missing 'router'"})
 
-            if request['request_type'] == 'POST' and 'data' not in request['request']:
+            elif request['request_type'] == 'UPDATE' and 'data' not in request['data']:
                 logger['debug'].debug(
                     "Malformed request: missing 'data'"
                 )
                 self._send_response(request['id'], 400, {"message": "Missing 'data'"})
 
-            elif request['request_type'] == 'UPDATE' and 'data' not in request['request']:
-                logger['debug'].debug(
-                    "Malformed request: missing 'data'"
-                )
-                self._send_response(request['id'], 400, {"message": "Missing 'data'"})
-
+            # save tasks in dict by request id - client send none by its request id - server close task
             if request['request_type'] in self.stream_types:
                 asyncio.run_coroutine_threadsafe(self.__process_stream(request), self._loop)
                 return None
@@ -117,7 +107,7 @@ class ReverseSSHServerSession(asyncssh.SSHTCPSession):
 
         except Exception as exc:
             logger['error'].error(
-                f"Unable to process request: {exc}"
+                f"Unable to process request: {repr(exc)}"
             )
             self._send_response(0, 400, {"message": "Unable to process request"})
             return None
@@ -163,13 +153,18 @@ class ReverseSSHServerSession(asyncssh.SSHTCPSession):
 
         callback = self._callbacks[request['request_type']][request['router']]
 
-        prepared_request = request['data']
+        kwargs = request['kwargs']
+
+        data = request['data']
+        if data is not None and not isinstance(data, (str, bytes)):
+            data = json.dumps(data)
+
+        params = request['params']
+        if params is not None and not isinstance(params, (str, bytes)):
+            params = json.dumps(params)
 
         try:
-            if prepared_request is None:
-                response = await callback()
-            else:
-                response = await callback(**prepared_request)
+            response = await callback(params=params, data=data, **kwargs)
 
             self._send_response(
                 request_id=request['id'],
@@ -203,14 +198,14 @@ class ReverseSSHServerSession(asyncssh.SSHTCPSession):
 
         callback = self._callbacks[request['request_type']][request['router']]
 
-        prepared_request = request['data']
+        kwargs = request['kwargs']
 
-        # TODO: fix this ugly stuff
-        if prepared_request is None:
-            prepared_request = {}
+        params = request['params']
+        if params is not None and not isinstance(params, (str, bytes)):
+            params = json.dumps(params)
 
         try:
-            async for response in callback(**prepared_request):
+            async for response in callback(params=params, **kwargs):
                 if response is not None:
                     self._send_response(
                         request_id=request['id'],

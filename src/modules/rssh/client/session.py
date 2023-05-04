@@ -86,8 +86,10 @@ class ReverseSSHClientSession(asyncssh.SSHTCPSession):
     def _send_request(
             self,
             request_type: str,
+            params: MutableMapping = None,
             data: MutableMapping = None,
             router: str = None,
+            **kwargs
     ) -> str:
         """Serializes the data into an object, generates
            a request ID and sends it to the channel.
@@ -98,6 +100,8 @@ class ReverseSSHClientSession(asyncssh.SSHTCPSession):
               Host UUID Request: IDENTIFY.
            :param data: (optional)
               The data to send.
+           :param params: (optional)
+              The query params to send.
            :param router: (optional)
               The endpoint to send the request to.
 
@@ -113,19 +117,24 @@ class ReverseSSHClientSession(asyncssh.SSHTCPSession):
             'request_type': request_type,
             'router': router,
             'data': data,
+            'params': params,
+            'kwargs': kwargs
         }
 
         self._requests[request['id']] = None
         self._chan.write(gzip.compress(json.dumps(request, separators=(',', ':')).encode('utf-8')))
 
         logger['debug'].debug(
-            f"Request '{request_type}' sent to '{router}' with data '{data}'"
+            f"Request '{request_type}' sent to '{router}'"
         )
 
         return request['id']
 
-    async def _identify(self) -> MutableMapping:
+    async def _identify(self, params: MutableMapping = None) -> MutableMapping:
         """The identification request to the target host which returns a UUID.
+
+           :param params: (optional)
+              The query params to send.
 
            :returns: :class:`Dict` with key 'UUID' and value UUID string.
 
@@ -133,6 +142,7 @@ class ReverseSSHClientSession(asyncssh.SSHTCPSession):
 
         request_id = self._send_request(
             request_type="IDENTIFY",
+            params=params
         )
 
         try:
@@ -152,14 +162,15 @@ class ReverseSSHClientSession(asyncssh.SSHTCPSession):
     async def get(
             self,
             router: str,
-            data: MutableMapping = None,
+            params: MutableMapping = None,
+            **kwargs
     ) -> MutableMapping:
         """Emulates the HTTP GET request.
 
            :param router:
               The endpoint to send the request to.
-           :param data: (optional)
-              The data to send.
+           :param params: (optional)
+              The query params to send.
 
            :returns: :class:`Dict` with response data.
 
@@ -168,7 +179,8 @@ class ReverseSSHClientSession(asyncssh.SSHTCPSession):
         request_id = self._send_request(
             request_type="GET",
             router=router,
-            data=data,
+            params=params,
+            **kwargs
         )
 
         try:
@@ -188,7 +200,9 @@ class ReverseSSHClientSession(asyncssh.SSHTCPSession):
     async def post(
             self,
             router: str,
-            data: MutableMapping = None
+            data: MutableMapping = None,
+            params: MutableMapping = None,
+            **kwargs
     ) -> Generator[MutableMapping, MutableMapping, None]:
         """Emulates the HTTP POST request.
 
@@ -196,6 +210,8 @@ class ReverseSSHClientSession(asyncssh.SSHTCPSession):
               The endpoint to send the request to.
            :param data: (optional)
               The data to send.
+           :param params: (optional)
+              The query params to send.
 
            :returns: :class:`Dict` with response data.
 
@@ -204,7 +220,9 @@ class ReverseSSHClientSession(asyncssh.SSHTCPSession):
         request_id = self._send_request(
             request_type="POST",
             router=router,
-            data=data
+            data=data,
+            params=params,
+            **kwargs
         )
 
         try:
@@ -224,7 +242,9 @@ class ReverseSSHClientSession(asyncssh.SSHTCPSession):
     async def patch(
             self,
             router: str,
-            data: MutableMapping = None
+            data: MutableMapping = None,
+            params: MutableMapping = None,
+            **kwargs
     ) -> Generator[MutableMapping, MutableMapping, None]:
         """Emulates the HTTP PATCH request.
 
@@ -232,6 +252,8 @@ class ReverseSSHClientSession(asyncssh.SSHTCPSession):
               The endpoint to send the request to.
            :param data: (optional)
               The data to send.
+           :param params: (optional)
+              The query params to send.
 
            :returns: :class:`Dict` with response data.
 
@@ -240,7 +262,9 @@ class ReverseSSHClientSession(asyncssh.SSHTCPSession):
         request_id = self._send_request(
             request_type="PATCH",
             router=router,
-            data=data
+            data=data,
+            params=params,
+            **kwargs
         )
 
         try:
@@ -260,7 +284,9 @@ class ReverseSSHClientSession(asyncssh.SSHTCPSession):
     async def delete(
             self,
             router: str,
-            data: MutableMapping = None
+            data: MutableMapping = None,
+            params: MutableMapping = None,
+            **kwargs
     ) -> Generator[MutableMapping, MutableMapping, None]:
         """Emulates the HTTP DELETE request.
 
@@ -268,6 +294,8 @@ class ReverseSSHClientSession(asyncssh.SSHTCPSession):
               The endpoint to send the request to.
            :param data: (optional)
               The data to send.
+           :param params: (optional)
+              The query params to send.
 
            :returns: :class:`Dict` with response data.
 
@@ -276,7 +304,9 @@ class ReverseSSHClientSession(asyncssh.SSHTCPSession):
         request_id = self._send_request(
             request_type="DELETE",
             router=router,
-            data=data
+            data=data,
+            params=params,
+            **kwargs
         )
 
         try:
@@ -296,14 +326,15 @@ class ReverseSSHClientSession(asyncssh.SSHTCPSession):
     async def stream(
             self,
             router: str,
-            data: MutableMapping = None
+            params: MutableMapping = None,
+            **kwargs
     ) -> Generator[MutableMapping, MutableMapping, None]:
         """Emulates the HTTP STREAM request.
 
            :param router:
               The endpoint to send the request to.
-           :param data: (optional)
-              The data to send.
+           :param params: (optional)
+              The query params to send.
 
            :returns: :class:`Generator` with response data as :class:`Dict`.
 
@@ -312,17 +343,18 @@ class ReverseSSHClientSession(asyncssh.SSHTCPSession):
         request_id = self._send_request(
             request_type="STREAM",
             router=router,
-            data=data,
+            params=params,
+            **kwargs
         )
 
         try:
             response_id = 0
             while True:
                 while self._requests[request_id] is None:
-                    await asyncio.sleep(0.1)
+                    await asyncio.sleep(0.001)
 
                 while self._requests[request_id]['id'] == response_id:
-                    await asyncio.sleep(0.1)
+                    await asyncio.sleep(0.001)
 
                 response_id = self._requests[request_id]['id']
 

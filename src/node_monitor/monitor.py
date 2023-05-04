@@ -9,7 +9,7 @@ from modules.pubsub.subscriber import Subscriber
 from modules.rssh.client.client import ReverseSSHClient
 from logger.logs import logger
 from node_monitor.config import HOST_MONITOR
-from node_monitor.services.services_snapshot_docker import update_node_docker_snapshot
+from node_monitor.services.service_snapshot_docker import update_node_docker_snapshot
 
 
 class NodeMonitor:
@@ -61,9 +61,7 @@ class NodeMonitor:
 
             async for msg in host_ssh_session.stream(
                     router=self.rssh_host_router,
-                    data={
-                        'target_resource': resource_url
-                    }
+                    target_resource=resource_url
             ):
                 snapshot = json.loads(msg['response'])
 

@@ -20,3 +20,4 @@ docs_build
 venv
 docs.zip
 archive.zip
+ws_client_test.py

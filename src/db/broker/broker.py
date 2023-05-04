@@ -52,7 +52,7 @@ async def produce(
 ) -> None:
     try:
         await _kafka_producer.send_and_wait(topic=topic, key=key, value=value)
-        logger['error'].error(
+        logger['debug'].debug(
             f"Kafka Message sent to topic '{topic}'"
         )
     except Exception as exc:

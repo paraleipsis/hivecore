@@ -47,5 +47,5 @@ async def update_node_docker_snapshot_by_id(
         return result
     except Exception as exc:
         logger['error'].error(
-            f"Exception in node update '{node_id}':\n{str(exc)}"
+            f"Exception in node update '{node_id}':\n{repr(exc)}"
         )
