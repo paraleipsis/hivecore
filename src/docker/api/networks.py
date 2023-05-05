@@ -1,4 +1,4 @@
-from typing import List, Optional, Union, MutableMapping
+from typing import List
 from uuid import UUID
 
 from fastapi import APIRouter, Depends
@@ -8,17 +8,19 @@ from starlette.websockets import WebSocket, WebSocketDisconnect
 from db.database.session import get_async_session
 from modules.rssh.client.client import ReverseSSHClient
 from modules.schemas.schemas_response import GenericResponseModel
-from docker.schemas.schemas_images import ImageInspect, ImageCreate
+from docker.schemas.schemas_networks import (NetworkInspect, NetworkCreate, NetworkConnectContainer,
+                                             NetworkDisconnectContainer)
 from modules.websocket.manager import ConnectionManager
 from rssh_client.rssh import get_rssh_client
-from docker.services.service_images import (build_new_image, get_all_images_from_db, get_all_images_from_broker,
-                                            prune_unused_images, pull_new_image, tag_image_repo, remove_image_by_id,
-                                            get_image_from_db, get_image_from_broker)
+from docker.services.service_networks import (get_all_networks_from_db, get_network_from_db,
+                                              get_all_networks_from_broker, get_network_from_broker,
+                                              remove_network_by_id, create_new_network, prune_unused_networks,
+                                              connect_container_to_network, disconnect_container_from_network)
 
 
 router = APIRouter(
-    prefix='/docker/{node_id}/images',
-    tags=['Docker Images']
+    prefix='/docker/{node_id}/networks',
+    tags=['Docker Networks']
 )
 
 websocket_manager = ConnectionManager()
@@ -26,45 +28,45 @@ websocket_manager = ConnectionManager()
 
 @router.get(
     '/json',
-    response_model=GenericResponseModel[List[ImageInspect]]
+    response_model=GenericResponseModel[List[NetworkInspect]]
 )
-async def get_all_images_request(
+async def get_all_networks_request(
         node_id: UUID,
         session: AsyncSession = Depends(get_async_session)
 ):
-    return await get_all_images_from_db(
+    return await get_all_networks_from_db(
         node_id=node_id,
         session=session
     )
 
 
 @router.get(
-    '/{image_id}/json',
-    response_model=GenericResponseModel[ImageInspect]
+    '/{network_id}/json',
+    response_model=GenericResponseModel[NetworkInspect]
 )
-async def get_image_request(
+async def get_network_request(
         node_id: UUID,
-        image_id: str,
+        network_id: str,
         session: AsyncSession = Depends(get_async_session)
 ):
-    return await get_image_from_db(
+    return await get_network_from_db(
         node_id=node_id,
         session=session,
-        images_id=image_id
+        network_id=network_id
     )
 
 
 @router.websocket(
     '/ws',
 )
-async def get_all_images_ws(
+async def get_all_networks_ws(
         websocket: WebSocket,
         node_id: UUID,
         session: AsyncSession = Depends(get_async_session)
 ):
     await websocket_manager.connect(websocket=websocket)
     try:
-        initial_snapshot = await get_all_images_from_db(
+        initial_snapshot = await get_all_networks_from_db(
             node_id=node_id,
             session=session
         )
@@ -72,9 +74,9 @@ async def get_all_images_ws(
             message=initial_snapshot.dict(),
             websocket=websocket
         )
-        async for images in get_all_images_from_broker(node_id=node_id):
+        async for networks in get_all_networks_from_broker(node_id=node_id):
             await websocket_manager.send_json(
-                message=images.dict(),
+                message=networks.dict(),
                 websocket=websocket
             )
     except WebSocketDisconnect:
@@ -84,31 +86,31 @@ async def get_all_images_ws(
 
 
 @router.websocket(
-    '/{image_id}/ws',
+    '/{network_id}/ws',
 )
-async def get_image_ws(
+async def get_network_ws(
         websocket: WebSocket,
         node_id: UUID,
-        image_id: str,
+        network_id: str,
         session: AsyncSession = Depends(get_async_session)
 ):
     await websocket_manager.connect(websocket=websocket)
     try:
-        initial_snapshot = await get_image_from_db(
+        initial_snapshot = await get_network_from_db(
             node_id=node_id,
             session=session,
-            images_id=image_id
+            network_id=network_id
         )
         await websocket_manager.send_json(
             message=initial_snapshot.dict(),
             websocket=websocket
         )
-        async for image in get_image_from_broker(
+        async for network in get_network_from_broker(
                 node_id=node_id,
-                image_id=image_id
+                network_id=network_id
         ):
             await websocket_manager.send_json(
-                message=image.dict(),
+                message=network.dict(),
                 websocket=websocket
             )
     except WebSocketDisconnect:
@@ -118,35 +120,31 @@ async def get_image_ws(
 
 
 @router.delete(
-    '/{image_id}',
+    '/{network_id}',
     response_model=GenericResponseModel
 )
-async def remove_image_request(
+async def remove_network_request(
         node_id: UUID,
-        image_id: str,
-        force: bool = False,
-        noprune: bool = False,
+        network_id: str,
         rssh_client: ReverseSSHClient = Depends(get_rssh_client)
 ):
-    return await remove_image_by_id(
+    return await remove_network_by_id(
         host_uuid=node_id,
-        image_id=image_id,
+        network_id=network_id,
         rssh_client=rssh_client,
-        noprune=noprune,
-        force=force,
     )
 
 
 @router.post(
-    '/build',
+    '/create',
     response_model=GenericResponseModel
 )
-async def build_image_request(
+async def create_network_request(
         node_id: UUID,
-        config: ImageCreate,
+        config: NetworkCreate,
         rssh_client: ReverseSSHClient = Depends(get_rssh_client)
 ):
-    return await build_new_image(
+    return await create_new_network(
         host_uuid=node_id,
         rssh_client=rssh_client,
         config=config
@@ -157,53 +155,47 @@ async def build_image_request(
     '/prune',
     response_model=GenericResponseModel
 )
-async def prune_images_request(
+async def prune_networks_request(
         node_id: UUID,
         rssh_client: ReverseSSHClient = Depends(get_rssh_client)
 ):
-    return await prune_unused_images(
+    return await prune_unused_networks(
         rssh_client=rssh_client,
         host_uuid=node_id
     )
 
 
 @router.post(
-    '/pull',
+    '/{network_id}/connect',
     response_model=GenericResponseModel
 )
-async def pull_image_request(
+async def connect_network_request(
         node_id: UUID,
-        from_image: str,
-        auth: Optional[Union[MutableMapping, str, bytes]] = None,
-        tag: str = None,
-        repo: str = None,
+        network_id: str,
+        config: NetworkConnectContainer,
         rssh_client: ReverseSSHClient = Depends(get_rssh_client)
 ):
-    return await pull_new_image(
+    return await connect_container_to_network(
         rssh_client=rssh_client,
         host_uuid=node_id,
-        from_image=from_image,
-        tag=tag,
-        repo=repo,
-        auth=auth
+        network_id=network_id,
+        config=config
     )
 
 
 @router.post(
-    '/{image_id}/tag',
+    '/{network_id}/disconnect',
     response_model=GenericResponseModel
 )
-async def tag_image_request(
+async def disconnect_network_request(
         node_id: UUID,
-        image_id: str,
-        repo: str,
-        tag: str = None,
+        network_id: str,
+        config: NetworkDisconnectContainer,
         rssh_client: ReverseSSHClient = Depends(get_rssh_client)
 ):
-    return await tag_image_repo(
+    return await disconnect_container_from_network(
         rssh_client=rssh_client,
         host_uuid=node_id,
-        image_id=image_id,
-        repo=repo,
-        tag=tag
+        network_id=network_id,
+        config=config
     )

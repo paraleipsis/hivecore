@@ -56,8 +56,8 @@ async def conn():
     '''
 
     params = {'force': 'true'}
-    async with session.get(
-            'http://127.0.0.1:8000/api/docker/37bb75c4-1ea3-4294-b2e4-4551a060a801/images/d7263124ba1e/json',
+    async with session.delete(
+            'http://127.0.0.1:8000/api/docker/37bb75c4-1ea3-4294-b2e4-4551a060a801/networks/f21',
             # params=params
     ) as resp:
         print(await resp.text())
