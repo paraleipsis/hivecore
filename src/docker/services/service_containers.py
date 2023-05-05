@@ -38,7 +38,7 @@ async def get_container_from_db(
         node_id: UUID,
         container_id: str,
         session: AsyncSession
-) -> GenericResponseModel[List[ContainerInspect]]:
+) -> GenericResponseModel[ContainerInspect]:
     crud_container = await get_docker_container(
         node_id=node_id,
         session=session,
@@ -201,7 +201,6 @@ async def kill_container_by_id(
 
 
 async def remove_container_by_id(
-        container_id: str,
         host_uuid: UUID,
         rssh_client: ReverseSSHClient,
         **kwargs
@@ -209,7 +208,6 @@ async def remove_container_by_id(
     host_ssh_session = rssh_client.get_connection(host_uuid=host_uuid)['session']
     response = await remove_container(
         ssh_session=host_ssh_session,
-        container_id=container_id,
         **kwargs
     )
 

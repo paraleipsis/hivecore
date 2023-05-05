@@ -1,0 +1,2 @@
+class NoSuchEnvironment(Exception):
+    pass

@@ -3,7 +3,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import insert, select, Row, RowMapping
 from sqlalchemy.exc import IntegrityError
 
-from node_manager.exc.exceptions import NoSuchPlatform, AlreadyExistException
+from modules.exc.exceptions.exceptions import AlreadyExistException
+from modules.exc.exceptions.exceptions_platforms import NoSuchPlatform
 from modules.models import models_platforms
 from node_manager.schemas import schemas_platforms
 from node_manager.utils import title_to_lowercase

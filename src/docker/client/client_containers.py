@@ -1,4 +1,4 @@
-from typing import Dict, Generator, Optional, Union, Mapping
+from typing import Dict, Generator
 
 from asyncssh import SSHTCPSession
 
@@ -12,20 +12,14 @@ from docker.schemas.schemas_containers import ContainerCreate
 async def run_container(
         ssh_session: SSHTCPSession,
         config: ContainerCreate,
-        name: Optional[str] = None,
-        auth: Optional[Union[Mapping, str, bytes]] = None
+        **kwargs
 ) -> Dict:
-    params = {
-        'name': name,
-        'auth': auth
-    }
-
     data = config.dict()
 
     response = await ssh_session.post(
         router='/post_resource',
         target_resource=f'{AGENT_URL}/{DOCKER_CONTAINER}/{DOCKER_CONTAINER_RUN}',
-        params=params,
+        params=kwargs,
         data=data
     )
 
@@ -107,19 +101,12 @@ async def kill_container(
 async def remove_container(
         ssh_session: SSHTCPSession,
         container_id: str,
-        v: bool = False,
-        link: bool = False,
-        force: bool = False
+        **kwargs
 ) -> Dict:
-    params = {
-        'v': v,
-        'link': link,
-        'force': force
-    }
     response = await ssh_session.delete(
         router='/delete_resource',
         target_resource=f'{AGENT_URL}/{DOCKER_CONTAINER}/{container_id}',
-        params=params
+        params=kwargs
     )
 
     return response
@@ -139,12 +126,10 @@ async def prune_containers(
 async def logs_container(
         ssh_session: SSHTCPSession,
         container_id: str,
-        params: Dict = None
 ) -> Generator[Dict, Dict, None]:
     async for msg in ssh_session.stream(
             router='/ws_resource',
             target_resource=f'{AGENT_URL}/{DOCKER_CONTAINER}/{container_id}/{DOCKER_CONTAINER_LOGS}',
-            params=params
     ):
         yield msg
 
@@ -152,11 +137,9 @@ async def logs_container(
 async def stats_container(
         ssh_session: SSHTCPSession,
         container_id: str,
-        params: Dict = None
 ) -> Generator[Dict, Dict, None]:
     async for msg in ssh_session.stream(
             router='/ws_resource',
             target_resource=f'{AGENT_URL}/{DOCKER_CONTAINER}/{container_id}/{DOCKER_CONTAINER_STATS}',
-            params=params
     ):
         yield msg

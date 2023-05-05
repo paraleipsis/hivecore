@@ -160,8 +160,6 @@ class ReverseSSHServerSession(asyncssh.SSHTCPSession):
             data = json.dumps(data)
 
         params = request['params']
-        if params is not None and not isinstance(params, (str, bytes)):
-            params = json.dumps(params)
 
         try:
             response = await callback(params=params, data=data, **kwargs)
@@ -201,8 +199,6 @@ class ReverseSSHServerSession(asyncssh.SSHTCPSession):
         kwargs = request['kwargs']
 
         params = request['params']
-        if params is not None and not isinstance(params, (str, bytes)):
-            params = json.dumps(params)
 
         try:
             async for response in callback(params=params, **kwargs):

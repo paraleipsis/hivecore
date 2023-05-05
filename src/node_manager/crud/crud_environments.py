@@ -6,7 +6,8 @@ from sqlalchemy import insert, select, Row, RowMapping
 from sqlalchemy.exc import IntegrityError
 
 from node_manager.utils import title_to_lowercase, is_uuid
-from node_manager.exc.exceptions import AlreadyExistException, NoSuchEnvironment
+from modules.exc.exceptions.exceptions import AlreadyExistException
+from modules.exc.exceptions.exceptions_environments import NoSuchEnvironment
 from modules.models import models_environments
 from node_manager.schemas import schemas_environments
 from node_manager.crud.crud_platforms import get_platform_by_name

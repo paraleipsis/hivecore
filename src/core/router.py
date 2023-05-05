@@ -1,6 +1,6 @@
 from fastapi import FastAPI, APIRouter
-from node_manager import api as node_manager_api
-from docker import api as docker_api
+from docker.api import (containers, images)
+from node_manager.api import (environments, nodes, platforms)
 
 
 def init_routes(application: FastAPI) -> None:
@@ -16,12 +16,13 @@ def init_routes(application: FastAPI) -> None:
     )
 
     # node_manager
-    router.include_router(node_manager_api.platforms.router)
-    router.include_router(node_manager_api.environments.router)
-    router.include_router(node_manager_api.nodes.router)
+    router.include_router(platforms.router)
+    router.include_router(environments.router)
+    router.include_router(nodes.router)
 
     # docker
-    router.include_router(docker_api.containers.router)
+    router.include_router(containers.router)
+    router.include_router(images.router)
 
     # main
     application.include_router(router)

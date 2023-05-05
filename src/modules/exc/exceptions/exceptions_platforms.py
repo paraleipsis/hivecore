@@ -1,0 +1,2 @@
+class NoSuchPlatform(Exception):
+    pass

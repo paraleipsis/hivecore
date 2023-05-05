@@ -1,0 +1,2 @@
+class NoSuchDockerObject(Exception):
+    pass

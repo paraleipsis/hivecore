@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from core.startup_tasks.create_channel import create_pubsub_channels
-from node_manager.exc.exc_handler import init_exc_handlers as node_manager_init_exc_handlers
+from modules.exc.exc_handler import init_exc_handlers
 from core.startup_tasks.run_rssh import run_rssh_client
 from core.router import init_routes
 from core import middleware
@@ -14,7 +14,7 @@ from rssh_client.rssh import init_rssh_client
 
 
 def pre_startup(application: FastAPI) -> None:
-    node_manager_init_exc_handlers(application=application)
+    init_exc_handlers(application=application)
     init_routes(application=application)
 
 

@@ -1,6 +1,14 @@
 import hashlib
 import json
-from typing import Any
+from typing import Any, Mapping
+
+
+def clean_map(obj: Mapping[Any, Any]) -> Mapping[Any, Any]:
+    """
+    Return a new copied dictionary without the keys with ``None`` values from
+    the given Mapping object.
+    """
+    return {k: v for k, v in obj.items() if v is not None}
 
 
 def get_hash_of_obj(obj: Any) -> str:
