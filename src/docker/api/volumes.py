@@ -1,4 +1,4 @@
-from typing import List, Optional, Union, MutableMapping
+from typing import List
 from uuid import UUID
 
 from fastapi import APIRouter, Depends
@@ -8,17 +8,17 @@ from starlette.websockets import WebSocket, WebSocketDisconnect
 from db.database.session import get_async_session
 from modules.rssh.client.client import ReverseSSHClient
 from modules.schemas.schemas_response import GenericResponseModel
-from docker.schemas.schemas_images import ImageInspect, ImageCreate
+from docker.schemas.schemas_volumes import (VolumeInspect, VolumeCreate)
 from modules.websocket.manager import ConnectionManager
 from rssh_client.rssh import get_rssh_client
-from docker.services.service_images import (build_new_image, get_all_images_from_db, get_all_images_from_broker,
-                                            prune_unused_images, pull_new_image, tag_image_repo, remove_image_by_id,
-                                            get_image_from_db, get_image_from_broker)
+from docker.services.service_volumes import (get_all_volumes_from_db, get_volume_from_db, get_all_volumes_from_broker,
+                                             get_volume_from_broker, remove_volume_by_id, create_new_volume,
+                                             prune_unused_volumes)
 
 
 router = APIRouter(
-    prefix='/docker/{node_id}/images',
-    tags=['Docker Images']
+    prefix='/docker/{node_id}/volumes',
+    tags=['Docker Volumes']
 )
 
 websocket_manager = ConnectionManager()
@@ -26,45 +26,45 @@ websocket_manager = ConnectionManager()
 
 @router.get(
     '/json',
-    response_model=GenericResponseModel[List[ImageInspect]]
+    response_model=GenericResponseModel[List[VolumeInspect]]
 )
-async def get_all_images_request(
+async def get_all_volumes_request(
         node_id: UUID,
         session: AsyncSession = Depends(get_async_session)
 ):
-    return await get_all_images_from_db(
+    return await get_all_volumes_from_db(
         node_id=node_id,
         session=session
     )
 
 
 @router.get(
-    '/{image_id}/json',
-    response_model=GenericResponseModel[ImageInspect]
+    '/{volume_id}/json',
+    response_model=GenericResponseModel[VolumeInspect]
 )
-async def get_image_request(
+async def get_volume_request(
         node_id: UUID,
-        image_id: str,
+        volume_id: str,
         session: AsyncSession = Depends(get_async_session)
 ):
-    return await get_image_from_db(
+    return await get_volume_from_db(
         node_id=node_id,
         session=session,
-        image_id=image_id
+        volume_id=volume_id
     )
 
 
 @router.websocket(
     '/ws',
 )
-async def get_all_images_ws(
+async def get_all_volumes_ws(
         websocket: WebSocket,
         node_id: UUID,
         session: AsyncSession = Depends(get_async_session)
 ):
     await websocket_manager.connect(websocket=websocket)
     try:
-        initial_snapshot = await get_all_images_from_db(
+        initial_snapshot = await get_all_volumes_from_db(
             node_id=node_id,
             session=session
         )
@@ -72,9 +72,9 @@ async def get_all_images_ws(
             message=initial_snapshot.dict(),
             websocket=websocket
         )
-        async for images in get_all_images_from_broker(node_id=node_id):
+        async for volumes in get_all_volumes_from_broker(node_id=node_id):
             await websocket_manager.send_json(
-                message=images.dict(),
+                message=volumes.dict(),
                 websocket=websocket
             )
     except WebSocketDisconnect:
@@ -84,31 +84,31 @@ async def get_all_images_ws(
 
 
 @router.websocket(
-    '/{image_id}/ws',
+    '/{volume_id}/ws',
 )
-async def get_image_ws(
+async def get_volume_ws(
         websocket: WebSocket,
         node_id: UUID,
-        image_id: str,
+        volume_id: str,
         session: AsyncSession = Depends(get_async_session)
 ):
     await websocket_manager.connect(websocket=websocket)
     try:
-        initial_snapshot = await get_image_from_db(
+        initial_snapshot = await get_volume_from_db(
             node_id=node_id,
             session=session,
-            image_id=image_id
+            volume_id=volume_id
         )
         await websocket_manager.send_json(
             message=initial_snapshot.dict(),
             websocket=websocket
         )
-        async for image in get_image_from_broker(
+        async for volume in get_volume_from_broker(
                 node_id=node_id,
-                image_id=image_id
+                volume_id=volume_id
         ):
             await websocket_manager.send_json(
-                message=image.dict(),
+                message=volume.dict(),
                 websocket=websocket
             )
     except WebSocketDisconnect:
@@ -118,35 +118,31 @@ async def get_image_ws(
 
 
 @router.delete(
-    '/{image_id}',
+    '/{volume_id}',
     response_model=GenericResponseModel
 )
-async def remove_image_request(
+async def remove_volume_request(
         node_id: UUID,
-        image_id: str,
-        force: bool = False,
-        noprune: bool = False,
+        volume_id: str,
         rssh_client: ReverseSSHClient = Depends(get_rssh_client)
 ):
-    return await remove_image_by_id(
+    return await remove_volume_by_id(
         host_uuid=node_id,
-        image_id=image_id,
+        volume_id=volume_id,
         rssh_client=rssh_client,
-        noprune=noprune,
-        force=force,
     )
 
 
 @router.post(
-    '/build',
+    '/create',
     response_model=GenericResponseModel
 )
-async def build_image_request(
+async def create_volume_request(
         node_id: UUID,
-        config: ImageCreate,
+        config: VolumeCreate,
         rssh_client: ReverseSSHClient = Depends(get_rssh_client)
 ):
-    return await build_new_image(
+    return await create_new_volume(
         host_uuid=node_id,
         rssh_client=rssh_client,
         config=config
@@ -157,53 +153,11 @@ async def build_image_request(
     '/prune',
     response_model=GenericResponseModel
 )
-async def prune_images_request(
+async def prune_volumes_request(
         node_id: UUID,
         rssh_client: ReverseSSHClient = Depends(get_rssh_client)
 ):
-    return await prune_unused_images(
+    return await prune_unused_volumes(
         rssh_client=rssh_client,
         host_uuid=node_id
-    )
-
-
-@router.post(
-    '/pull',
-    response_model=GenericResponseModel
-)
-async def pull_image_request(
-        node_id: UUID,
-        from_image: str,
-        auth: Optional[Union[MutableMapping, str, bytes]] = None,
-        tag: str = None,
-        repo: str = None,
-        rssh_client: ReverseSSHClient = Depends(get_rssh_client)
-):
-    return await pull_new_image(
-        rssh_client=rssh_client,
-        host_uuid=node_id,
-        from_image=from_image,
-        tag=tag,
-        repo=repo,
-        auth=auth
-    )
-
-
-@router.post(
-    '/{image_id}/tag',
-    response_model=GenericResponseModel
-)
-async def tag_image_request(
-        node_id: UUID,
-        image_id: str,
-        repo: str,
-        tag: str = None,
-        rssh_client: ReverseSSHClient = Depends(get_rssh_client)
-):
-    return await tag_image_repo(
-        rssh_client=rssh_client,
-        host_uuid=node_id,
-        image_id=image_id,
-        repo=repo,
-        tag=tag
     )
