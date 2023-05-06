@@ -1,5 +1,5 @@
 import json
-from typing import List, Generator, Dict
+from typing import List, Generator
 from uuid import UUID
 
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -12,6 +12,7 @@ from docker.client.client_containers import (start_container, stop_container, re
                                              run_container)
 from docker.crud.crud_containers import get_all_docker_containers, get_docker_container
 from docker.schemas.schemas_containers import ContainerInspect, ContainerInspectList
+from docker.schemas.schemas_containers_stats import ContainerStats
 from modules.rssh.client.client import ReverseSSHClient
 from modules.schemas.schemas_docker_snapshot import DockerSnapshot
 from modules.schemas.schemas_response import GenericResponseModel
@@ -264,15 +265,15 @@ async def stats_container_by_id(
         host_uuid: UUID,
         container_id: str,
         rssh_client: ReverseSSHClient,
-) -> Generator[Dict, Dict, None]:
+) -> Generator[ContainerStats, ContainerStats, None]:
     host_ssh_session = rssh_client.get_connection(host_uuid=host_uuid)['session']
 
     async for msg in stats_container(
             container_id=container_id,
             ssh_session=host_ssh_session
     ):
-        msg = json.loads(msg['response'])
-        yield msg
+        stats = ContainerStats(**json.loads(msg['response']))
+        yield stats
 
 
 # async def terminal_container_by_id(

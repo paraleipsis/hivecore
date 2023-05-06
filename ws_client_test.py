@@ -6,7 +6,7 @@ import asyncio
 
 async def ws():
     session = aiohttp.ClientSession()
-    async with session.ws_connect('http://127.0.0.1:8000/api/docker/37bb75c4-1ea3-4294-b2e4-4551a060a801/images/ws') as ws:
+    async with session.ws_connect('http://127.0.0.1:8000/api/docker/37bb75c4-1ea3-4294-b2e4-4551a060a801/system/df/ws') as ws:
         async for msg in ws:
             print(msg.data)
 
@@ -57,7 +57,7 @@ async def conn():
 
     params = {'force': 'true'}
     async with session.get(
-            'http://127.0.0.1:8000/api/docker/37bb75c4-1ea3-4294-b2e4-4551a060a801/volumes/b4c/json',
+            'http://127.0.0.1:8000/api/docker/37bb75c4-1ea3-4294-b2e4-4551a060a801/system/df/json',
             # params=params
     ) as resp:
         print(await resp.text())
@@ -73,5 +73,5 @@ async def conn():
     # ) as resp:
     #     print(await resp.text())
 
-asyncio.run(conn())
+asyncio.run(ws())
 

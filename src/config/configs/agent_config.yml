@@ -32,3 +32,15 @@ DOCKER_VOLUME: 'docker/volumes'
 
 DOCKER_VOLUME_CREATE: 'create'
 DOCKER_VOLUME_PRUNE: 'prune'
+
+DOCKER_PLUGIN: 'docker/plugins'
+
+DOCKER_PLUGIN_INSTALL: 'install'
+DOCKER_PLUGIN_ENABLE: 'enable'
+DOCKER_PLUGIN_DISABLE: 'disable'
+
+DOCKER_SYSTEM: 'docker/system'
+
+DOCKER_SYSTEM_EVENTS: 'events'
+DOCKER_SYSTEM_PRUNE: 'prune'
+DOCKER_SYSTEM_AUTH: 'auth'

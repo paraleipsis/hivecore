@@ -3,7 +3,7 @@ import json
 import uuid
 import sys
 
-from typing import MutableMapping, Generator, Optional
+from typing import MutableMapping, Generator, Optional, Any
 
 import asyncssh
 import gzip
@@ -86,8 +86,8 @@ class ReverseSSHClientSession(asyncssh.SSHTCPSession):
     def _send_request(
             self,
             request_type: str,
-            params: MutableMapping = None,
-            data: MutableMapping = None,
+            params: Any = None,
+            data: Any = None,
             router: str = None,
             **kwargs
     ) -> str:
@@ -162,7 +162,7 @@ class ReverseSSHClientSession(asyncssh.SSHTCPSession):
     async def get(
             self,
             router: str,
-            params: MutableMapping = None,
+            params: Any = None,
             **kwargs
     ) -> MutableMapping:
         """Emulates the HTTP GET request.
@@ -200,8 +200,8 @@ class ReverseSSHClientSession(asyncssh.SSHTCPSession):
     async def post(
             self,
             router: str,
-            data: MutableMapping = None,
-            params: MutableMapping = None,
+            data: Any = None,
+            params: Any = None,
             **kwargs
     ) -> Generator[MutableMapping, MutableMapping, None]:
         """Emulates the HTTP POST request.
@@ -242,8 +242,8 @@ class ReverseSSHClientSession(asyncssh.SSHTCPSession):
     async def patch(
             self,
             router: str,
-            data: MutableMapping = None,
-            params: MutableMapping = None,
+            data: Any = None,
+            params: Any = None,
             **kwargs
     ) -> Generator[MutableMapping, MutableMapping, None]:
         """Emulates the HTTP PATCH request.
@@ -284,8 +284,8 @@ class ReverseSSHClientSession(asyncssh.SSHTCPSession):
     async def delete(
             self,
             router: str,
-            data: MutableMapping = None,
-            params: MutableMapping = None,
+            data: Any = None,
+            params: Any = None,
             **kwargs
     ) -> Generator[MutableMapping, MutableMapping, None]:
         """Emulates the HTTP DELETE request.
@@ -326,7 +326,7 @@ class ReverseSSHClientSession(asyncssh.SSHTCPSession):
     async def stream(
             self,
             router: str,
-            params: MutableMapping = None,
+            params: Any = None,
             **kwargs
     ) -> Generator[MutableMapping, MutableMapping, None]:
         """Emulates the HTTP STREAM request.

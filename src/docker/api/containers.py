@@ -314,7 +314,7 @@ async def stats_container_request(
                 host_uuid=node_id
         ):
             await websocket_manager.send_json(
-                message=message,
+                message=message.dict(),
                 websocket=websocket
             )
     except WebSocketDisconnect:

@@ -4,30 +4,30 @@ from pydantic import BaseModel
 
 
 class ContainerPidsStats(BaseModel):
-    current: int
+    current: Optional[int]
 
 
 class ContainerNetworksStats(BaseModel):
-    rx_bytes: int
-    rx_dropped: int
-    rx_errors: int
-    rx_packets: int
-    tx_bytes: int
-    tx_dropped: int
-    tx_errors: int
-    tx_packets: int
+    rx_bytes: Optional[int]
+    rx_dropped: Optional[int]
+    rx_errors: Optional[int]
+    rx_packets: Optional[int]
+    tx_bytes: Optional[int]
+    tx_dropped: Optional[int]
+    tx_errors: Optional[int]
+    tx_packets: Optional[int]
 
 
 class ContainerMemoryStatsStats(BaseModel):
-    cache: int
+    cache: Optional[int]
 
 
 class ContainerMemoryStats(BaseModel):
     stats: Optional[ContainerMemoryStatsStats]
     max_usage: Optional[int]
-    usage: int
+    usage: Optional[int]
     failcnt: Optional[int]
-    limit: int
+    limit: Optional[int]
 
 
 class ContainerCPUUsage(BaseModel):
@@ -44,16 +44,16 @@ class ContainerThrottlingData(BaseModel):
 
 
 class ContainerCPUStats(BaseModel):
-    cpu_usage: ContainerCPUUsage
-    system_cpu_usage: int
-    online_cpus: int
-    throttling_data: ContainerThrottlingData
+    cpu_usage: Optional[ContainerCPUUsage]
+    system_cpu_usage: Optional[int]
+    online_cpus: Optional[int]
+    throttling_data: Optional[ContainerThrottlingData]
 
 
 class ContainerStats(BaseModel):
-    read: str
-    pids_stats: ContainerPidsStats
+    read: Optional[str]
+    pids_stats: Optional[ContainerPidsStats]
     networks: Mapping[str, ContainerNetworksStats]
-    memory_stats: ContainerMemoryStats
-    cpu_stats: ContainerCPUStats
-    precpu_stats: ContainerCPUStats
+    memory_stats: Optional[ContainerMemoryStats]
+    cpu_stats: Optional[ContainerCPUStats]
+    precpu_stats: Optional[ContainerCPUStats]
