@@ -13,4 +13,3 @@ def title_to_lowercase(title: str) -> str:
     lowercase_title = title.lower()
 
     return lowercase_title
-

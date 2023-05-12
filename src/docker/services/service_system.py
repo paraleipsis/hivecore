@@ -4,7 +4,7 @@ from uuid import UUID
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from db.broker.broker import consume
-from db.config import DOCKER_KAFKA_TOPIC
+from db.storage_config import DOCKER_PLATFORM_NAME
 from docker.crud.crud_system import (get_docker_system_info, get_docker_system_df, get_docker_version)
 from docker.client.client_system import (docker_login, docker_events, prune_system)
 from docker.schemas.schemas_system import (SystemDF, SystemVersion, SystemInfo)
@@ -64,7 +64,7 @@ async def get_system_info_from_broker(
     None
 ]:
     info_data = ''
-    async for message in consume(topic=DOCKER_KAFKA_TOPIC):
+    async for message in consume(topic=DOCKER_PLATFORM_NAME):
         if message.key == str(node_id):
             snapshot = DockerSnapshot(**message.value)
             info = snapshot.docker.system
@@ -85,7 +85,7 @@ async def get_system_df_from_broker(
     None
 ]:
     df_data = ''
-    async for message in consume(topic=DOCKER_KAFKA_TOPIC):
+    async for message in consume(topic=DOCKER_PLATFORM_NAME):
         if message.key == str(node_id):
             snapshot = DockerSnapshot(**message.value)
             df = snapshot.docker.df

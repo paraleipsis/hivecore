@@ -5,5 +5,3 @@ DOCS_URL: '/api/docs'
 OPENAPI_URL: '/api/openapi.json'
 
 PUBSUB_CHANNELS: ['connections']
-
-NODE_MONITOR_RSSH_HOST_ROUTER: '/ws_resource'

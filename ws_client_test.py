@@ -1,4 +1,6 @@
+import hashlib
 import json
+import os
 
 import aiohttp
 import asyncio
@@ -57,7 +59,7 @@ async def conn():
 
     params = {'force': 'true'}
     async with session.get(
-            'http://127.0.0.1:8000/api/docker/37bb75c4-1ea3-4294-b2e4-4551a060a801/system/df/json',
+            'http://127.0.0.1:8000/api/docker/37bb75c4-1ea3-4294-b2e4-4551a060a801/containers/json',
             # params=params
     ) as resp:
         print(await resp.text())
@@ -73,5 +75,7 @@ async def conn():
     # ) as resp:
     #     print(await resp.text())
 
-asyncio.run(ws())
+# asyncio.run(conn())
 
+
+print(hashlib.sha256(os.urandom(32)).hexdigest())

@@ -1,15 +1,17 @@
 import asyncio
-import json
 from asyncio import AbstractEventLoop
 
 from typing import Dict
 
-from db.broker.broker import produce
+from asyncssh import SSHTCPSession
+
+from modules.client.request_handler import ClientRequestHandler
 from modules.pubsub.subscriber import Subscriber
 from modules.rssh.client.client import ReverseSSHClient
 from logger.logs import logger
-from node_monitor.config import HOST_MONITOR
-from node_monitor.services.service_snapshot_docker import update_node_docker_snapshot
+from node_monitor.monitor_config import (ACTIVE_PLATFORMS_URL, ACTIVE_PLATFORMS_RSSH_ROUTER)
+from node_monitor.handlers.docker import DockerNodeHandler
+from node_monitor.services.service_node import delete_all_associations
 
 
 class NodeMonitor:
@@ -17,80 +19,96 @@ class NodeMonitor:
             self,
             ssh_client: ReverseSSHClient,
             subscriber: Subscriber,
-            rssh_host_router: str,
-            event_loop: AbstractEventLoop = None
+            event_loop: AbstractEventLoop = None,
+            active_platforms_url: str = ACTIVE_PLATFORMS_URL,
+            active_platforms_rssh_router: str = ACTIVE_PLATFORMS_RSSH_ROUTER,
     ):
         self.ssh_client = ssh_client
         self.subscriber = subscriber
-        self.rssh_host_router = rssh_host_router
+        self.active_platforms_url = active_platforms_url
+        self.active_platforms_rssh_router = active_platforms_rssh_router
+        self.platforms_handlers = {
+            'docker': DockerNodeHandler
+        }
 
         if event_loop is None:
             self._loop = asyncio.get_running_loop()
         else:
             self._loop = event_loop
 
+        self.monitor_task = None
+
     async def _conn_monitor(self) -> None:
         try:
             while True:
                 host_ssh_data = await self.subscriber.get()
-                for v in HOST_MONITOR.values():
-                    if v['active']:
-                        asyncio.run_coroutine_threadsafe(
-                            coro=self._receiver(
-                                ssh_data=host_ssh_data,
-                                resource_url=v['url'],
-                                kafka_topic=v['kafka_topic'],
-                            ),
-                            loop=self._loop
-                        )
+                host_active_platforms = await self.get_active_platforms(
+                    ssh_session=host_ssh_data['session']
+                )
+                await self._run_node_handlers(
+                    node_uuid=host_ssh_data['uuid'],
+                    ssh_session=host_ssh_data['session'],
+                    ssh_conn=host_ssh_data['connection'],
+                    active_platforms=host_active_platforms['data']
+                )
         except Exception as exc:
-            logger['debug'].debug(
-                f'Exception in ssh connections monitoring:\n{str(exc)}'
+            logger['error'].error(
+                f'Error monitoring ssh connections:\n{str(exc)}'
             )
 
         return None
 
-    async def _receiver(
+    async def _run_node_handlers(
             self,
-            ssh_data: Dict,
-            resource_url: str,
-            kafka_topic: str,
-    ) -> None:
-        try:
-            host_ssh_session = ssh_data['session']
-
-            async for msg in host_ssh_session.stream(
-                    router=self.rssh_host_router,
-                    target_resource=resource_url
-            ):
-                snapshot = json.loads(msg['response'])
-
-                await update_node_docker_snapshot(
-                    node_id=ssh_data['uuid'],
-                    new_snapshot=snapshot
+            active_platforms: Dict[str, bool],
+            **ssh_params
+    ):
+        for platform in active_platforms:
+            try:
+                handler = self.platforms_handlers[platform]
+                handler_instance = handler(**ssh_params)
+                asyncio.run_coroutine_threadsafe(
+                    coro=handler_instance.run_handler(),
+                    loop=self._loop
+                )
+            except Exception as exc:
+                logger['error'].error(
+                    f'Error starting {platform} receiver:\n{repr(exc)}'
                 )
 
-                await produce(
-                    topic=kafka_topic,
-                    key=str(ssh_data['uuid']),
-                    value=snapshot
-                )
-        except Exception as exc:
-            logger['debug'].debug(
-                f'Exception in host data stream:\n{str(exc)}'
-            )
+    async def get_active_platforms(
+            self,
+            ssh_session: SSHTCPSession
+    ) -> Dict:
+        active_platforms = await ssh_session.get(
+            router=self.active_platforms_rssh_router,
+            target_resource=self.active_platforms_url
+        )
 
-        return None
+        return active_platforms['response']
 
     def run_monitor(self) -> None:
         try:
-            asyncio.run_coroutine_threadsafe(
+            self.monitor_task = asyncio.run_coroutine_threadsafe(
                 coro=self._conn_monitor(),
                 loop=self._loop
             )
         except Exception as exc:
             logger['debug'].debug(
-                f'Error starting Node Monitor:\n{str(exc)}'
+                f'Error starting Node Monitor:\n{repr(exc)}'
             )
 
         return None
+
+    @staticmethod
+    async def cleanup():
+        async with ClientRequestHandler() as client:
+            await delete_all_associations(client=client)
+
+    async def stop_monitor(self):
+        logger['debug'].debug(
+            f'Closing Node Monitor ...'
+        )
+
+        await self.cleanup()
+        self.monitor_task.cancel()

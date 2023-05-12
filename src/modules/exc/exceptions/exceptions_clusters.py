@@ -1,0 +1,2 @@
+class NoSuchCluster(Exception):
+    pass

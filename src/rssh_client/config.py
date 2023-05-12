@@ -17,7 +17,7 @@ CONFIG_TRAFARET = t.Dict(
 
 
 CONF = load_config(
-    file=BASE_DIR / 'configs' / 'rssh_client_config.yml',
+    file=BASE_DIR / 'rssh_client_config.yml',
     config_trafaret=CONFIG_TRAFARET
 )
 

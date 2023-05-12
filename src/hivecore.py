@@ -6,11 +6,12 @@ from modules.exc.exc_handler import init_exc_handlers
 from core.startup_tasks.run_rssh import run_rssh_client
 from core.router import init_routes
 from core import middleware
-from core.config import PUBSUB_CHANNELS, HOST, PORT, LOG_LEVEL, DOCS_URL, OPENAPI_URL
+from config.server_config import PUBSUB_CHANNELS, HOST, PORT, LOG_LEVEL, DOCS_URL, OPENAPI_URL
 from db.broker.broker import run_kafka_producer
-from core.startup_tasks.run_node_monitor import run_node_monitor
+from core.startup_tasks.run_node_monitor import run_node_monitor, get_node_monitor
 from db.broker.broker import get_kafka_producer
 from rssh_client.rssh import init_rssh_client
+from rssh_client.rssh import get_rssh_client
 
 
 def pre_startup(application: FastAPI) -> None:
@@ -27,10 +28,14 @@ async def startup() -> None:
 
 
 async def shutdown() -> None:
+    node_monitor = get_node_monitor()
+    await node_monitor.stop_monitor()
+
+    rssh_client = get_rssh_client()
+    await rssh_client.stop_listener()
+
     kafka_producer = get_kafka_producer()
     await kafka_producer.stop()
-
-    # TODO: add rssh shutdown
 
 
 def create_app() -> FastAPI:

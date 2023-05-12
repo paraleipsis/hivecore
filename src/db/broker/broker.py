@@ -5,12 +5,10 @@ from typing import Optional, Dict
 from aiokafka import AIOKafkaProducer, AIOKafkaConsumer
 
 from db.broker.utils import key_serializer, value_serializer, key_deserializer, value_deserializer
-from db.config import KAFKA_HOST, KAFKA_PORT
+from db.storage_config import KAFKA_HOST, KAFKA_PORT
 from logger.logs import logger
 
 KAFKA_URL = f"{KAFKA_HOST}:{KAFKA_PORT}"
-
-# _kafka_loop = asyncio.get_running_loop()
 
 _kafka_producer: Optional[AIOKafkaProducer] = None
 

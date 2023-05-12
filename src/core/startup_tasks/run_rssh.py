@@ -8,9 +8,12 @@ from logger.logs import logger
 def run_rssh_client() -> None:
     """Run the Reverse SSH Client Listener in a separate thread."""
 
-    loop = asyncio.get_event_loop()
     rssh_client = get_rssh_client()
-    loop.run_in_executor(None, rssh_client.start)
+    loop = asyncio.get_event_loop()
+    asyncio.run_coroutine_threadsafe(
+        coro=rssh_client.start_listener(),
+        loop=loop
+    )
 
     logger['info'].info(
         f'Reverse SSH Client running on {SSH_CLIENT_LOCAL_HOST}:{SSH_CLIENT_LOCAL_PORT}'

@@ -1,4 +1,4 @@
-from db.config import DB_HOST, DB_NAME, DB_PASS, DB_PORT, DB_USER
+from db.storage_config import DB_HOST, DB_NAME, DB_PASS, DB_PORT, DB_USER
 
 from sqlalchemy import MetaData
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
@@ -13,6 +13,14 @@ Base = declarative_base()
 
 metadata = MetaData()
 
-engine = create_async_engine(url=DATABASE_URL, poolclass=NullPool)
+engine = create_async_engine(
+    url=DATABASE_URL,
+    poolclass=NullPool
+)
 
-async_session_maker = sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
+# noinspection PyTypeChecker
+async_session_maker = sessionmaker(
+    bind=engine,
+    class_=AsyncSession,
+    expire_on_commit=False
+)

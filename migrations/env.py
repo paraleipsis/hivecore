@@ -7,8 +7,8 @@ from sqlalchemy import engine_from_config, pool
 
 sys.path.append(os.path.join(sys.path[0], 'src'))
 
-from db.config import DB_HOST, DB_NAME, DB_PASS, DB_PORT, DB_USER
-from modules.models import *
+from db.storage_config import DB_HOST, DB_NAME, DB_PASS, DB_PORT, DB_USER
+from node_manager.models import *
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.

@@ -13,14 +13,16 @@ CONFIG_TRAFARET = t.Dict(
         'DB_HOST': t.String,
         'DB_PORT': t.String,
         'DB_NAME': t.String,
-        'DOCKER_KAFKA_TOPIC': t.String,
+        'DOCKER_PLATFORM_NAME': t.String,
+        'SWARM_PLATFORM_NAME': t.String,
         'DOCKER_KAFKA_PARTITIONS': t.Int,
+        'SWARM_KAFKA_PARTITIONS': t.Int,
     }
 )
 
 
 CONF = load_config(
-    file=BASE_DIR / 'configs' / 'storage_config.yml',
+    file=BASE_DIR / 'storage_config.yml',
     config_trafaret=CONFIG_TRAFARET
 )
 
@@ -34,5 +36,8 @@ DB_HOST = CONF['DB_HOST']
 DB_PORT = CONF['DB_PORT']
 DB_NAME = CONF['DB_NAME']
 
-DOCKER_KAFKA_TOPIC = CONF['DOCKER_KAFKA_TOPIC']
+DOCKER_PLATFORM_NAME = CONF['DOCKER_PLATFORM_NAME']
+SWARM_PLATFORM_NAME = CONF['SWARM_PLATFORM_NAME']
+
 DOCKER_KAFKA_PARTITIONS = CONF['DOCKER_KAFKA_PARTITIONS']
+SWARM_KAFKA_PARTITIONS = CONF['SWARM_KAFKA_PARTITIONS']

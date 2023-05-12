@@ -4,7 +4,7 @@ from uuid import UUID
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from db.broker.broker import consume
-from db.config import DOCKER_KAFKA_TOPIC
+from db.storage_config import DOCKER_PLATFORM_NAME
 from docker.crud.crud_plugins import (get_all_docker_plugins, get_docker_plugin)
 from docker.client.client_plugins import (install_plugin, remove_plugin, enable_plugin, disable_plugin)
 from docker.schemas.schemas_plugins import PluginInspect, PluginInspectList
@@ -55,7 +55,7 @@ async def get_all_plugins_from_broker(
     None
 ]:
     plugins_data = ''
-    async for message in consume(topic=DOCKER_KAFKA_TOPIC):
+    async for message in consume(topic=DOCKER_PLATFORM_NAME):
         if message.key == str(node_id):
             snapshot = DockerSnapshot(**message.value)
             plugins = snapshot.docker.plugins
@@ -78,7 +78,7 @@ async def get_plugin_from_broker(
     None
 ]:
     plugin_data = ''
-    async for message in consume(topic=DOCKER_KAFKA_TOPIC):
+    async for message in consume(topic=DOCKER_PLATFORM_NAME):
         if message.key == str(node_id):
             snapshot = DockerSnapshot(**message.value)
             all_plugins = PluginInspectList(

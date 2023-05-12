@@ -1,2 +1,12 @@
-DOCKER_MONITOR: True
+ACTIVE_PLATFORMS_RSSH_ROUTER: '/get_resource'
+ACTIVE_PLATFORMS_URL: 'agent/platforms/active'
+
+SNAPSHOT_RSSH_ROUTER: '/ws_resource'
 DOCKER_SNAPSHOT_URL: 'report/snapshot/docker'
+SWARM_SNAPSHOT_URL: 'report/snapshot/swarm'
+
+NODES_URL: 'api/nodes'
+
+NODE_STATUS_URL: 'status'
+NODE_PLATFORM_URL: 'platforms'
+NODE_SNAPSHOT_URL: 'snapshots'

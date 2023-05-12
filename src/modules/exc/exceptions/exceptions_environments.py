@@ -1,2 +1,0 @@
-class NoSuchEnvironment(Exception):
-    pass

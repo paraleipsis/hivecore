@@ -4,7 +4,7 @@ from uuid import UUID
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from db.broker.broker import consume
-from db.config import DOCKER_KAFKA_TOPIC
+from db.storage_config import DOCKER_PLATFORM_NAME
 from docker.crud.crud_networks import (get_all_docker_networks, get_docker_network)
 from docker.client.client_networks import (create_network, remove_network, connect_network,
                                            disconnect_network, prune_networks)
@@ -56,7 +56,7 @@ async def get_all_networks_from_broker(
     None
 ]:
     networks_data = ''
-    async for message in consume(topic=DOCKER_KAFKA_TOPIC):
+    async for message in consume(topic=DOCKER_PLATFORM_NAME):
         if message.key == str(node_id):
             snapshot = DockerSnapshot(**message.value)
             networks = snapshot.docker.networks
@@ -79,7 +79,7 @@ async def get_network_from_broker(
     None
 ]:
     network_data = ''
-    async for message in consume(topic=DOCKER_KAFKA_TOPIC):
+    async for message in consume(topic=DOCKER_PLATFORM_NAME):
         if message.key == str(node_id):
             snapshot = DockerSnapshot(**message.value)
             all_networks = NetworkInspectList(

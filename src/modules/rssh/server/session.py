@@ -209,19 +209,19 @@ class ReverseSSHServerSession(asyncssh.SSHTCPSession):
                         response=response
                     )
                 else:
-                    self._send_response(
-                        request_id=request['id'],
-                        ssh_response_code=200,
-                        response=None
-                    )
-
-            return None
+                    return None
 
         except Exception as exc:
             logger['error'].error(
                 f"Internal error when executing {request['request_type']} on {request['resource']}\n{str(exc)}"
             )
             self._send_response(request['id'], 500, {"message": str(exc), "traceback": traceback.format_exc()})
+        finally:
+            self._send_response(
+                request_id=request['id'],
+                ssh_response_code=200,
+                response=None
+            )
 
     def _send_response(
             self,

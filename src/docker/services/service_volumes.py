@@ -4,7 +4,7 @@ from uuid import UUID
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from db.broker.broker import consume
-from db.config import DOCKER_KAFKA_TOPIC
+from db.storage_config import DOCKER_PLATFORM_NAME
 from docker.crud.crud_volumes import (get_all_docker_volumes, get_docker_volume)
 from docker.client.client_volumes import (create_volume, remove_volume, prune_volumes)
 from docker.schemas.schemas_volumes import VolumeInspect, VolumeInspectList
@@ -55,7 +55,7 @@ async def get_all_volumes_from_broker(
     None
 ]:
     volumes_data = ''
-    async for message in consume(topic=DOCKER_KAFKA_TOPIC):
+    async for message in consume(topic=DOCKER_PLATFORM_NAME):
         if message.key == str(node_id):
             snapshot = DockerSnapshot(**message.value)
             volumes = snapshot.docker.volumes
@@ -78,7 +78,7 @@ async def get_volume_from_broker(
     None
 ]:
     volume_data = ''
-    async for message in consume(topic=DOCKER_KAFKA_TOPIC):
+    async for message in consume(topic=DOCKER_PLATFORM_NAME):
         if message.key == str(node_id):
             snapshot = DockerSnapshot(**message.value)
             all_volumes = VolumeInspectList(

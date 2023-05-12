@@ -5,7 +5,7 @@ from uuid import UUID
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from db.broker.broker import consume
-from db.config import DOCKER_KAFKA_TOPIC
+from db.storage_config import DOCKER_PLATFORM_NAME
 from docker.client.client_containers import (start_container, stop_container, restart_container,
                                              pause_container, unpause_container, kill_container,
                                              prune_containers, remove_container, logs_container, stats_container,
@@ -60,7 +60,7 @@ async def get_all_containers_from_broker(
     None
 ]:
     containers_data = ''
-    async for message in consume(topic=DOCKER_KAFKA_TOPIC):
+    async for message in consume(topic=DOCKER_PLATFORM_NAME):
         if message.key == str(node_id):
             snapshot = DockerSnapshot(**message.value)
             containers = snapshot.docker.containers
@@ -83,7 +83,7 @@ async def get_container_from_broker(
     None
 ]:
     container_data = ''
-    async for message in consume(topic=DOCKER_KAFKA_TOPIC):
+    async for message in consume(topic=DOCKER_PLATFORM_NAME):
         if message.key == str(node_id):
             snapshot = DockerSnapshot(**message.value)
             all_containers = ContainerInspectList(

@@ -1,28 +1,36 @@
+from typing import Optional
+
 from logger.logs import logger
 from modules.pubsub.pubsub import pb
 from rssh_client.rssh import get_rssh_client
 from modules.pubsub.subscriber import Subscriber
 from node_monitor.monitor import NodeMonitor
-from core.config import NODE_MONITOR_RSSH_HOST_ROUTER
 from db.broker.broker import get_kafka_loop
 
+_monitor: Optional[NodeMonitor] = None
 
-def run_node_monitor() -> None:
+
+def get_node_monitor():
+    return _monitor
+
+
+def run_node_monitor() -> NodeMonitor:
     """Run hosts monitoring in a separate thread."""
+
+    global _monitor
 
     sub = Subscriber(pubsub=pb, channel='connections')
 
-    monitor = NodeMonitor(
-        rssh_host_router=NODE_MONITOR_RSSH_HOST_ROUTER,
+    _monitor = NodeMonitor(
         ssh_client=get_rssh_client(),
         subscriber=sub,
         event_loop=get_kafka_loop()
     )
 
-    monitor.run_monitor()
+    _monitor.run_monitor()
 
     logger['info'].info(
         f'Node Monitor is running'
     )
 
-    return None
+    return _monitor

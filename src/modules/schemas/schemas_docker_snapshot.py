@@ -16,8 +16,8 @@ class DockerObjectsSnapshot(BaseModel):
     df: DockerObject
     version: DockerObject
     plugins: DockerObject
-    swarm_mode: Literal['active', 'inactive']
-    swarm_role: Optional[Literal['manager', 'worker']] = Field(None)
+    swarm_mode: Literal['active', 'inactive', 'pending']
+    swarm_role: Optional[Literal['manager', 'worker', None]] = Field(None)
 
 
 class SwarmObjectsSnapshot(BaseModel):
@@ -31,4 +31,7 @@ class SwarmObjectsSnapshot(BaseModel):
 
 class DockerSnapshot(BaseModel):
     docker: DockerObjectsSnapshot
-    swarm: Optional[SwarmObjectsSnapshot] = Field(None)
+
+
+class SwarmSnapshot(BaseModel):
+    swarm: SwarmObjectsSnapshot

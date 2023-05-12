@@ -1,9 +1,8 @@
 import logging.config
 from typing import Dict
+from pathlib import Path
 
 import yaml
-
-from pathlib import Path
 
 
 def load_config() -> Dict:
@@ -13,7 +12,7 @@ def load_config() -> Dict:
 
     """
 
-    with open(Path(__file__).resolve().parent / 'config.yml', 'r') as f:
+    with open(Path(__file__).resolve().parent / 'logger_config.yml', 'r') as f:
         config = yaml.safe_load(f.read())
         logging.config.dictConfig(config)
 

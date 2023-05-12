@@ -1,11 +1,8 @@
-import pathlib
-
 import trafaret as t
 
+from config.config import BASE_DIR
 from config.utils import load_config
 
-
-BASE_DIR = pathlib.Path(__file__).parent
 
 CONFIG_TRAFARET = t.Dict(
     {
@@ -48,7 +45,7 @@ CONFIG_TRAFARET = t.Dict(
 
 
 CONF = load_config(
-    file=BASE_DIR / 'configs' / 'agent_config.yml',
+    file=BASE_DIR / 'agent_config.yml',
     config_trafaret=CONFIG_TRAFARET
 )
 

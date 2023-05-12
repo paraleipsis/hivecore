@@ -4,7 +4,7 @@ from uuid import UUID
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from db.broker.broker import consume
-from db.config import DOCKER_KAFKA_TOPIC
+from db.storage_config import DOCKER_PLATFORM_NAME
 from docker.crud.crud_images import (get_all_docker_images, get_docker_image)
 from docker.client.client_images import (build_image, prune_images, pull_image, tag_image, remove_image)
 from docker.schemas.schemas_images import ImageInspect, ImageInspectList
@@ -55,7 +55,7 @@ async def get_all_images_from_broker(
     None
 ]:
     images_data = ''
-    async for message in consume(topic=DOCKER_KAFKA_TOPIC):
+    async for message in consume(topic=DOCKER_PLATFORM_NAME):
         if message.key == str(node_id):
             snapshot = DockerSnapshot(**message.value)
             images = snapshot.docker.images
@@ -78,7 +78,7 @@ async def get_image_from_broker(
     None
 ]:
     image_data = ''
-    async for message in consume(topic=DOCKER_KAFKA_TOPIC):
+    async for message in consume(topic=DOCKER_PLATFORM_NAME):
         if message.key == str(node_id):
             snapshot = DockerSnapshot(**message.value)
             all_images = ImageInspectList(

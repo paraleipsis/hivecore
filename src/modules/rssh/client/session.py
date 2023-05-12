@@ -40,7 +40,7 @@ class ReverseSSHClientSession(asyncssh.SSHTCPSession):
 
     def connection_lost(self, exc: Optional[Exception]) -> None:
         logger['debug'].debug(
-            f"Connection lost: {exc}"
+            f"Connection lost: {repr(exc)}"
         )
 
     def session_started(self) -> None:
@@ -360,7 +360,7 @@ class ReverseSSHClientSession(asyncssh.SSHTCPSession):
 
                 response = self._requests[request_id]
 
-                if response is None:
+                if response['response'] is None:
                     break
 
                 yield response

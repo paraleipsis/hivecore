@@ -6,8 +6,9 @@ from uuid import UUID
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from modules.exc.exceptions.exceptions_docker import DockerSnapshotDoesNotExist
 from modules.exc.exceptions.exceptions_nodes import NoSuchNode
-from modules.models import models_nodes
+from node_manager.models import models_nodes
 
 
 async def get_docker_snapshot(
@@ -26,6 +27,11 @@ async def get_docker_snapshot(
     if not node:
         raise NoSuchNode(f'Node with id {node_id} does not exist')
 
-    deserialized_snapshot = json.loads(node.snapshot)
+    snapshot = node.docker_snapshot
+
+    if not snapshot:
+        raise DockerSnapshotDoesNotExist(f"Docker snapshot for Node '{node_id}' does not exist")
+
+    deserialized_snapshot = json.loads(snapshot)
 
     return deserialized_snapshot
