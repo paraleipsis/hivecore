@@ -18,13 +18,14 @@ class NodeBase(BaseModel):
 
 
 class NodeCreate(NodeBase):
-    pass
+    token_expire: Optional[int] = 0
 
 
 class NodeRead(NodeBase):
     id: UUID
     created_at: datetime
     active: bool = False
+    token: str
 
     class Config:
         orm_mode = True

@@ -1,4 +1,4 @@
-from typing import Any, Sequence, Union
+from typing import Any, Sequence, Union, Dict
 from uuid import UUID
 
 from sqlalchemy.exc import IntegrityError
@@ -6,10 +6,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import insert, select, update, Row, RowMapping, delete
 from sqlalchemy.orm import selectinload
 
+from modules.exc.exceptions.exceptions import AlreadyExistException
 from modules.exc.exceptions.exceptions_nodes import NoSuchNode, PlatformNodeLinkError
 from modules.schemas.schemas_docker_snapshot import DockerSnapshot, SwarmSnapshot
 from node_manager.models import models_nodes, Node, platform_nodes, Snapshot
-from node_manager.schemas import schemas_nodes
 
 
 async def get_nodes(
@@ -39,19 +39,22 @@ async def get_node_by_id(
 
 
 async def add_new_node(
-        new_node: schemas_nodes.NodeCreate,
+        new_node: Dict,
         session: AsyncSession
 ) -> Node:
     query = insert(
         models_nodes.Node
     ).values(
-        **new_node.dict()
+        **new_node
     ).returning(
         models_nodes.Node.id
     )
 
-    result = await session.execute(query)
-    await session.commit()
+    try:
+        result = await session.execute(query)
+        await session.commit()
+    except IntegrityError:
+        raise AlreadyExistException(f"Node with name '{new_node['name']}' already exist")
 
     node_id = result.scalar()
     node = await get_node_by_id(node_id=node_id, session=session)
@@ -88,9 +91,15 @@ async def change_status(
         models_nodes.Node.id == node_id
     ).values(
         active=new_status
+    ).returning(
+        models_nodes.Node.id
     )
 
-    await session.execute(query_nodes)
+    result = await session.execute(query_nodes)
+    node = result.scalar()
+    if node is None:
+        raise NoSuchNode(f'Node with id {node_id} does not exist')
+
     await session.commit()
 
     return True

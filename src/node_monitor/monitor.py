@@ -107,7 +107,7 @@ class NodeMonitor:
 
     async def stop_monitor(self):
         logger['debug'].debug(
-            f'Closing Node Monitor ...'
+            'Closing Node Monitor ...'
         )
 
         await self.cleanup()

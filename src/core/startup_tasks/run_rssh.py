@@ -1,7 +1,7 @@
 import asyncio
 
 from rssh_client.rssh import get_rssh_client
-from rssh_client.config import SSH_CLIENT_LOCAL_HOST, SSH_CLIENT_LOCAL_PORT
+from rssh_client.rssh_config import SSH_CLIENT_LOCAL_HOST, SSH_CLIENT_LOCAL_PORT
 from logger.logs import logger
 
 

@@ -1,3 +1,3 @@
 import pathlib
 
-BASE_DIR = pathlib.Path(__file__).parent / 'configs'
+CONFIGS_BASE_DIR = pathlib.Path(__file__).parent / 'configs'

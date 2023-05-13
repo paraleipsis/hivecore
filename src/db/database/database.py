@@ -9,14 +9,13 @@ from sqlalchemy.pool import NullPool
 
 DATABASE_URL = f"postgresql+asyncpg://{DB_USER}:{DB_PASS}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
 
-Base = declarative_base()
-
-metadata = MetaData()
-
 engine = create_async_engine(
     url=DATABASE_URL,
     poolclass=NullPool
 )
+
+Base = declarative_base()
+metadata = MetaData()
 
 # noinspection PyTypeChecker
 async_session_maker = sessionmaker(

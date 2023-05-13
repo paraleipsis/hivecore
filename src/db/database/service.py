@@ -5,11 +5,12 @@ from logger.logs import logger
 async def init_models():
     try:
         async with engine.begin() as conn:
+            print(Base.metadata.tables.values())
             await conn.run_sync(Base.metadata.drop_all)
             await conn.run_sync(Base.metadata.create_all)
 
             logger['info'].info(
-                f"Database models have been successfully initialized"
+                "Database models have been successfully initialized"
             )
     except Exception as exc:
         logger['error'].error(

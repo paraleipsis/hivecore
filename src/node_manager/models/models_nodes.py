@@ -1,28 +1,12 @@
 import uuid
 
-from sqlalchemy import TIMESTAMP, Column, String, ForeignKey, UniqueConstraint, JSON, BOOLEAN, Integer, Table
+from sqlalchemy import TIMESTAMP, Column, String, ForeignKey, BOOLEAN, Table
 from sqlalchemy.dialects.postgresql import UUID
 from datetime import datetime
 
 from sqlalchemy.orm import relationship
 
 from db.database.database import metadata, Base
-
-# class Node(Base):
-#     __tablename__ = "nodes"
-#     metadata = metadata
-#
-#     id = Column(UUID(as_uuid=True), primary_key=True, index=True, default=uuid.uuid4)
-#     active = Column(BOOLEAN, nullable=False)
-#     name = Column(String, index=True)
-#     description = Column(String, index=True)
-#     created_at = Column(TIMESTAMP, index=True, default=datetime.utcnow)
-#     docker_snapshot = Column(JSON, nullable=True)
-#     swarm_snapshot = Column(JSON, nullable=True)
-#
-#     environment_id = Column(UUID(as_uuid=True), ForeignKey("environments.id", ondelete='CASCADE'), nullable=False)
-#
-#     _table_args__ = (UniqueConstraint(environment_id, name),)
 
 
 platform_nodes = Table("platform_nodes", metadata,
@@ -42,10 +26,11 @@ class Node(Base):
 
     id = Column(UUID(as_uuid=True), primary_key=True, index=True, default=uuid.uuid4)
     active = Column(BOOLEAN, default=False)
-    name = Column(String, index=True)
+    name = Column(String, index=True, unique=True)
     description = Column(String, index=True)
     created_at = Column(TIMESTAMP, index=True, default=datetime.utcnow)
     server_ipv4 = Column(String, index=True, nullable=False)
+    token = Column(String, index=True, nullable=False)
 
     platforms = relationship('Platform', secondary=platform_nodes, back_populates="nodes")
     clusters = relationship('Cluster', secondary=cluster_nodes, back_populates="nodes")

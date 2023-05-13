@@ -1,7 +1,9 @@
 import trafaret as t
 
-from config.config import BASE_DIR
+from config.config import CONFIGS_BASE_DIR
 from config.utils import load_config
+
+CONFIG_FILE = 'agent_config.yml'
 
 
 CONFIG_TRAFARET = t.Dict(
@@ -45,7 +47,7 @@ CONFIG_TRAFARET = t.Dict(
 
 
 CONF = load_config(
-    file=BASE_DIR / 'agent_config.yml',
+    file=CONFIGS_BASE_DIR / CONFIG_FILE,
     config_trafaret=CONFIG_TRAFARET
 )
 

@@ -1,10 +1,16 @@
 from typing import List
 
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from auth.auth import create_access_token
 from modules.exc.exceptions.exceptions_nodes import NodeSnapshotError
 from node_manager.crud import crud_nodes
 from modules.schemas.schemas_response import GenericResponseModel
 from node_manager.crud.crud_nodes import (create_or_update_snapshot, delete_snapshot, get_snapshot,
                                           delete_node_snapshots, delete_all_snapshots, delete_all_node_platforms_links)
+from node_manager.manager_config import SSH_PUBLIC_KEY
+from node_manager.schemas import schemas_nodes
+from node_manager.schemas.schemas_node_auth import TokenData
 from node_manager.schemas.schemas_nodes import NodeRead, NodePlatformRead, NodeSnapshotRead
 from node_manager.schemas.schemas_platforms import PlatformRead
 
@@ -30,10 +36,27 @@ async def get_node(
 
 
 async def create_node(
-        **kwargs
+        new_node: schemas_nodes.NodeCreate,
+        session: AsyncSession
+
 ) -> GenericResponseModel[NodeRead]:
+    node = new_node.dict()
+    token_expire = node.pop('token_expire')
+
+    token_data = TokenData(
+        node_name=new_node.name,
+        server_pub_key=SSH_PUBLIC_KEY
+    )
+    token = create_access_token(
+        data=token_data.dict(),
+        expire=token_expire
+    )
+
+    node['token'] = token
+
     node = await crud_nodes.add_new_node(
-        **kwargs
+        new_node=node,
+        session=session
     )
 
     return GenericResponseModel(data=node)

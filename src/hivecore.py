@@ -20,6 +20,10 @@ def pre_startup(application: FastAPI) -> None:
 
 
 async def startup() -> None:
+    # generate ssh keys for server
+    # -> write private key to /rssh_client/.ssh/id_rsa -> stored as env in 'rssh_client_config.yml' file
+    # -> write public key to /config/configs/rssh_client_config.yml as SSH_CLIENT_PUBLIC_KEY string
+
     create_pubsub_channels(PUBSUB_CHANNELS)
     init_rssh_client()
     run_rssh_client()

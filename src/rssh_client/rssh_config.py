@@ -1,30 +1,47 @@
 import trafaret as t
 
 from config.utils import load_config
-from config.agent_config import BASE_DIR
+from config.agent_config import CONFIGS_BASE_DIR
+
+CONFIG_FILE = 'rssh_client_config.yml'
+SSH_CONFIG_FILE = 'ssh_keys_config.yml'
 
 
 CONFIG_TRAFARET = t.Dict(
     {
         'SSH_CLIENT_LOCAL_HOST': t.String,
         'SSH_CLIENT_LOCAL_PORT': t.Int,
-        'SSH_CLIENT_CLIENT_KEYS': t.String,
         'SSH_CLIENT_KNOWN_HOSTS': t.String,
         'SSH_CLIENT_REUSE_PORT': t.Bool,
         'SSH_CLIENT_MAX_PACKET_SIZE': t.Int,
+        'SSH_ALG_NAME': t.String,
+    }
+)
+
+
+SSH_CONFIG_TRAFARET = t.Dict(
+    {
+        'SSH_PRIVATE_KEY_PATH': t.String,
+        'SSH_PUBLIC_KEY_PATH': t.String,
     }
 )
 
 
 CONF = load_config(
-    file=BASE_DIR / 'rssh_client_config.yml',
+    file=CONFIGS_BASE_DIR / CONFIG_FILE,
     config_trafaret=CONFIG_TRAFARET
 )
 
+SSH_CONF = load_config(
+    file=CONFIGS_BASE_DIR / SSH_CONFIG_FILE,
+    config_trafaret=SSH_CONFIG_TRAFARET
+)
 
 SSH_CLIENT_LOCAL_HOST = CONF['SSH_CLIENT_LOCAL_HOST']
 SSH_CLIENT_LOCAL_PORT = CONF['SSH_CLIENT_LOCAL_PORT']
-SSH_CLIENT_CLIENT_KEYS = CONF['SSH_CLIENT_CLIENT_KEYS']
+SSH_CLIENT_PRIVATE_KEY_PATH = CONFIGS_BASE_DIR.parent / SSH_CONF['SSH_PRIVATE_KEY_PATH']
+SSH_CLIENT_PUBLIC_KEY_PATH = CONFIGS_BASE_DIR.parent / SSH_CONF['SSH_PUBLIC_KEY_PATH']
 SSH_CLIENT_KNOWN_HOSTS = CONF['SSH_CLIENT_KNOWN_HOSTS']
 SSH_CLIENT_REUSE_PORT = CONF['SSH_CLIENT_REUSE_PORT']
 SSH_CLIENT_MAX_PACKET_SIZE = CONF['SSH_CLIENT_MAX_PACKET_SIZE']
+SSH_ALG_NAME = CONF['SSH_ALG_NAME']

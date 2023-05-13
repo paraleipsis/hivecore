@@ -125,7 +125,7 @@ class ReverseSSHClientSession(asyncssh.SSHTCPSession):
         self._chan.write(gzip.compress(json.dumps(request, separators=(',', ':')).encode('utf-8')))
 
         logger['debug'].debug(
-            f"Request '{request_type}' sent to '{router}'"
+            f"Request '{request_type}' sent to router '{router}'"
         )
 
         return request['id']

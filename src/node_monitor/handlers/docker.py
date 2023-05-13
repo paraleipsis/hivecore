@@ -143,14 +143,14 @@ class DockerNodeHandler:
                 await self._snapshot_handler()
             finally:
                 logger['debug'].debug(
-                    f'Stopping node Docker handler. Cleanup DB ...'
+                    'Stopping node Docker handler. Cleanup DB ...'
                 )
 
                 try:
                     self.ssh_conn.close()
                 except Exception as exc:
                     logger['debug'].debug(
-                        f'Node Monitor: SSH connection already closed'
+                        f'Node Monitor: SSH connection already closed:\n{repr(exc)}'
                     )
 
                 await self._on_node_disconnect()

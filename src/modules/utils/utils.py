@@ -20,3 +20,10 @@ def is_equal(old_object: Any, new_object: Any) -> bool:
     new_hash = get_hash_of_obj(new_object)
 
     return old_hash == new_hash
+
+
+def read_file(path: str) -> Any:
+    with open(file=path, mode='r') as f:
+        data = f.read()
+
+    return data

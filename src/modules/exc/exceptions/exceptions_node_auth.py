@@ -1,0 +1,2 @@
+class NodeAuthError(Exception):
+    pass

@@ -22,14 +22,3 @@ class Platform(Base):
     created_at = Column(TIMESTAMP, index=True, default=datetime.utcnow)
 
     nodes = relationship('Node', secondary=platform_nodes, back_populates="platforms")
-
-
-# class Docker(Base):
-#     __tablename__ = "docker"
-#     metadata = metadata
-#
-#     id = Column(UUID(as_uuid=True), ForeignKey("nodes.id", ondelete='CASCADE'), nullable=False)
-#     name = Column(String, index=True, unique=True)
-#     description = Column(String, index=True)
-#     type = Column(String, index=True)
-#     created_at = Column(TIMESTAMP, index=True, default=datetime.utcnow)

@@ -103,7 +103,7 @@ class ReverseSSHClient:
 
     async def stop_listener(self):
         logger['info'].info(
-            f"Shutting down Reverse SSH Client"
+            "Shutting down Reverse SSH Client"
         )
 
         self.disconnect_all()

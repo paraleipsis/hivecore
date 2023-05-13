@@ -10,3 +10,6 @@ trafaret==2.1.1
 uvicorn==0.22.0
 websockets==11.0.2
 yarl==1.9.2
+typer~=0.9.0
+aiohttp~=3.8.4
+python-jose==3.3.0
