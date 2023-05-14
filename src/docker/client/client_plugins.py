@@ -2,7 +2,7 @@ from typing import Dict, List
 
 from asyncssh import SSHTCPSession
 
-from config.agent_config import (AGENT_URL, DOCKER_PLUGIN, DOCKER_PLUGIN_INSTALL, DOCKER_PLUGIN_ENABLE,
+from config.agent_config import (DOCKER_PLUGIN, DOCKER_PLUGIN_INSTALL, DOCKER_PLUGIN_ENABLE,
                                  DOCKER_PLUGIN_DISABLE)
 from docker.schemas.schemas_plugins import PluginInstall
 
@@ -15,7 +15,7 @@ async def install_plugin(
 
     response = await ssh_session.post(
         router='/post_resource',
-        target_resource=f'{AGENT_URL}/{DOCKER_PLUGIN}/{DOCKER_PLUGIN_INSTALL}',
+        target_resource=f'{DOCKER_PLUGIN}/{DOCKER_PLUGIN_INSTALL}',
         data=data
     )
 
@@ -30,7 +30,7 @@ async def enable_plugin(
 
     response = await ssh_session.post(
         router='/post_resource',
-        target_resource=f'{AGENT_URL}/{DOCKER_PLUGIN}/{plugin_id}/{DOCKER_PLUGIN_ENABLE}',
+        target_resource=f'{DOCKER_PLUGIN}/{plugin_id}/{DOCKER_PLUGIN_ENABLE}',
         params=kwargs
     )
 
@@ -44,7 +44,7 @@ async def disable_plugin(
 
     response = await ssh_session.post(
         router='/post_resource',
-        target_resource=f'{AGENT_URL}/{DOCKER_PLUGIN}/{plugin_id}/{DOCKER_PLUGIN_DISABLE}',
+        target_resource=f'{DOCKER_PLUGIN}/{plugin_id}/{DOCKER_PLUGIN_DISABLE}',
     )
 
     return response
@@ -57,7 +57,7 @@ async def remove_plugin(
 ) -> Dict:
     response = await ssh_session.delete(
         router='/delete_resource',
-        target_resource=f'{AGENT_URL}/{DOCKER_PLUGIN}/{plugin_id}',
+        target_resource=f'{DOCKER_PLUGIN}/{plugin_id}',
         params=kwargs
     )
 

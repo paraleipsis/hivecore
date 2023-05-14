@@ -4,7 +4,7 @@ from pydantic import BaseModel
 
 
 class NodeCredentials(BaseModel):
-    id: UUID
+    node_id: UUID
     token: str
 
 

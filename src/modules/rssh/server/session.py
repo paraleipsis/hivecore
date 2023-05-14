@@ -17,7 +17,8 @@ class ReverseSSHServerSession(asyncssh.SSHTCPSession):
             request_types: Tuple,
             stream_types: Tuple,
             internal_request_types: Tuple,
-            server_uuid: uuid.UUID = None
+            server_uuid: uuid.UUID = None,
+            server_token: str = None
     ):
         self._callbacks = callbacks
         self.request_types = request_types
@@ -26,12 +27,13 @@ class ReverseSSHServerSession(asyncssh.SSHTCPSession):
         self._chan = None
         self._loop = asyncio.get_event_loop()
         self._server_uuid = server_uuid
+        self._server_token = server_token
 
     def connection_made(self, chan: asyncssh.SSHTCPChannel) -> None:
         """New connection established"""
 
         logger['debug'].debug(
-            f'Connection incoming ...'
+            'Connection incoming ...'
         )
         self._chan = chan
 
@@ -46,7 +48,7 @@ class ReverseSSHServerSession(asyncssh.SSHTCPSession):
         """New session established successfully"""
 
         logger['debug'].debug(
-            f"Connection successful"
+            "Connection successful"
         )
 
     def data_received(self, data: bytes, datatype: asyncssh.DataType) -> None:
@@ -61,7 +63,7 @@ class ReverseSSHServerSession(asyncssh.SSHTCPSession):
         """Got an EOF, close the channel"""
 
         logger['debug'].debug(
-            f"EOF"
+            "EOF"
         )
         self._chan.exit(0)
 
@@ -116,9 +118,10 @@ class ReverseSSHServerSession(asyncssh.SSHTCPSession):
         response = None
 
         if request['request_type'] == 'IDENTIFY':
-            if self._server_uuid is None:
-                self._server_uuid = uuid.uuid4()
-            response = {'UUID': str(self._server_uuid)}
+            response = {
+                'node_id': str(self._server_uuid),
+                'token': self._server_token.replace(' ', '')
+            }
 
         try:
             self._send_response(

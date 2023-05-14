@@ -47,7 +47,7 @@ class ClientRequestHandler:
                 url=url,
                 params=params,
                 data=data,
-                json=json
+                json=json,
             )
 
             return response

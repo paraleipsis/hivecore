@@ -2,7 +2,7 @@ from typing import Dict
 
 from asyncssh import SSHTCPSession
 
-from config.agent_config import (AGENT_URL, DOCKER_VOLUME, DOCKER_VOLUME_CREATE, DOCKER_VOLUME_PRUNE)
+from config.agent_config import (DOCKER_VOLUME, DOCKER_VOLUME_CREATE, DOCKER_VOLUME_PRUNE)
 from docker.schemas.schemas_volumes import VolumeCreate
 
 
@@ -14,7 +14,7 @@ async def create_volume(
 
     response = await ssh_session.post(
         router='/post_resource',
-        target_resource=f'{AGENT_URL}/{DOCKER_VOLUME}/{DOCKER_VOLUME_CREATE}',
+        target_resource=f'{DOCKER_VOLUME}/{DOCKER_VOLUME_CREATE}',
         data=data
     )
 
@@ -26,7 +26,7 @@ async def prune_volumes(
 ) -> Dict:
     response = await ssh_session.post(
         router='/post_resource',
-        target_resource=f'{AGENT_URL}/{DOCKER_VOLUME}/{DOCKER_VOLUME_PRUNE}'
+        target_resource=f'{DOCKER_VOLUME}/{DOCKER_VOLUME_PRUNE}'
     )
 
     return response
@@ -39,7 +39,7 @@ async def remove_volume(
 ) -> Dict:
     response = await ssh_session.delete(
         router='/delete_resource',
-        target_resource=f'{AGENT_URL}/{DOCKER_VOLUME}/{volume_id}',
+        target_resource=f'{DOCKER_VOLUME}/{volume_id}',
         params=kwargs
     )
 

@@ -8,8 +8,7 @@ from uuid import UUID
 
 import asyncssh
 
-# fork
-from modules.pubsub.publisher import Publisher
+from modules.rssh.client.misc import new_node_conn_handler
 
 from modules.rssh.client.session import ReverseSSHClientSession
 from logger.logs import logger
@@ -32,11 +31,6 @@ class ReverseSSHClient:
            existing sockets are bound to.
        :param max_packet_size: (optional)
            Maximum allowed network packet size.
-       :param publisher: (optional)
-           The :class:`Publisher` object used to send messages about new connections.
-       :param pubsub_channel: (optional)
-           The channel to send messages about new connections.
-
     """
 
     def __init__(
@@ -47,8 +41,6 @@ class ReverseSSHClient:
             known_hosts: str = None,
             reuse_port: bool = False,
             max_packet_size: int = 32768,
-            publisher: Publisher = None,  # fork
-            pubsub_channel: str = None  # fork
     ):
         self.local_host = local_host
         self.local_port = local_port
@@ -58,9 +50,6 @@ class ReverseSSHClient:
         self.max_packet_size = max_packet_size
 
         self.listener = None
-
-        self.publisher = publisher  # fork
-        self.pubsub_channel = pubsub_channel  # fork
 
         self._active_connections: Dict[
             UUID, Dict[str, Union[
@@ -143,40 +132,43 @@ class ReverseSSHClient:
             )
 
             identification_request = await session._identify()
+            # node_uuid = UUID(identification_request['response']['node_id'])
 
-            # TODO: Add check for agent Token and UUID in PostgreSQL database. UUID and Token need to be generated on
-            #  the main server in the node_manager application. Then UUID and Token pass as environment variables to
-            #  the node agent on deployment. For each next request we need to pass in required method a specific
-            #  session (by a host UUID as Path param)
+            node_uuid = await new_node_conn_handler(
+                identify_response=identification_request,
+                host_connection=conn,
+                host_channel=chan,
+                host_session=session
+            )
 
-            uuid = UUID(identification_request['response']['UUID'])
+            if not node_uuid:
+                conn.close()
+                return None
 
-            self._active_connections[uuid] = {
+            self._active_connections[node_uuid] = {
                 'connection': conn,
                 'channel': chan,
                 'session': session
             }
 
-            # fork
-            if self.publisher is not None:
-                await self.publish_host(uuid, conn, chan, session)
-
             logger['debug'].debug(
-                f"Established connection with host: {uuid}"
+                f"Established connection with host: {node_uuid}"
             )
 
             await conn.wait_closed()
 
-            del self._active_connections[uuid]
+            del self._active_connections[node_uuid]
 
             logger['debug'].debug(
-                f"Closed connection with host: {uuid}"
+                f"Closed connection with host: {node_uuid}"
             )
 
         except Exception as exc:
             logger['error'].error(
-                f"The connection was not established correctly: {str(exc)}"
+                f"The connection was not established correctly: {repr(exc)}"
             )
+
+            conn.close()
 
     async def start_listener(self) -> None:
         """Run the Reverse SSH Client Listener.
@@ -230,31 +222,13 @@ class ReverseSSHClient:
 
         return None
 
-    def get_connection(self, host_uuid: UUID) -> Dict[str, Union[
+    def get_connection(
+            self,
+            host_uuid: UUID
+    ) -> Dict[str, Union[
         asyncssh.SSHTCPChannel,
         asyncssh.SSHTCPSession,
         asyncssh.SSHClientConnection
     ]]:
         connection = self._active_connections[host_uuid]
         return connection
-
-    async def publish_host(
-            self,
-            host_uuid: UUID,
-            host_connection: asyncssh.SSHClientConnection,
-            host_channel: asyncssh.SSHTCPChannel,
-            host_session: asyncssh.SSHTCPSession
-    ) -> None:
-        msg = {
-            'uuid': host_uuid,
-            'connection': host_connection,
-            'channel': host_channel,
-            'session': host_session
-        }
-        await self.publisher.publish(channel=self.pubsub_channel, message=msg)
-
-        logger['debug'].debug(
-            f"Message published to the channel '{self.pubsub_channel}': {msg}"
-        )
-
-        return None

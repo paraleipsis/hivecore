@@ -2,7 +2,7 @@ from typing import Dict, Generator
 
 from asyncssh import SSHTCPSession
 
-from config.agent_config import (AGENT_URL, DOCKER_SYSTEM, DOCKER_SYSTEM_EVENTS, DOCKER_SYSTEM_PRUNE,
+from config.agent_config import (DOCKER_SYSTEM, DOCKER_SYSTEM_EVENTS, DOCKER_SYSTEM_PRUNE,
                                  DOCKER_SYSTEM_AUTH)
 from docker.schemas.schemas_system import AuthCredentials
 
@@ -15,7 +15,7 @@ async def docker_login(
 
     response = await ssh_session.post(
         router='/post_resource',
-        target_resource=f'{AGENT_URL}/{DOCKER_SYSTEM}/{DOCKER_SYSTEM_AUTH}',
+        target_resource=f'{DOCKER_SYSTEM}/{DOCKER_SYSTEM_AUTH}',
         data=data
     )
 
@@ -30,7 +30,7 @@ async def prune_system(
 
     response = await ssh_session.post(
         router='/post_resource',
-        target_resource=f'{AGENT_URL}/{DOCKER_SYSTEM}/{DOCKER_SYSTEM_PRUNE}',
+        target_resource=f'{DOCKER_SYSTEM}/{DOCKER_SYSTEM_PRUNE}',
         params=params
     )
 
@@ -42,6 +42,6 @@ async def docker_events(
 ) -> Generator[Dict, Dict, None]:
     async for msg in ssh_session.stream(
             router='/ws_resource',
-            target_resource=f'{AGENT_URL}/{DOCKER_SYSTEM}/{DOCKER_SYSTEM_EVENTS}',
+            target_resource=f'{DOCKER_SYSTEM}/{DOCKER_SYSTEM_EVENTS}',
     ):
         yield msg

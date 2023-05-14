@@ -8,8 +8,6 @@ CONFIG_FILE = 'agent_config.yml'
 
 CONFIG_TRAFARET = t.Dict(
     {
-        'AGENT_HOST': t.String,
-        'AGENT_PORT': t.Int,
         'DOCKER_CONTAINER': t.String,
         'DOCKER_CONTAINER_START': t.String,
         'DOCKER_CONTAINER_STOP': t.String,
@@ -51,10 +49,6 @@ CONF = load_config(
     config_trafaret=CONFIG_TRAFARET
 )
 
-
-AGENT_HOST = CONF['AGENT_HOST']
-AGENT_PORT = CONF['AGENT_PORT']
-AGENT_URL = f'http://{AGENT_HOST}:{AGENT_PORT}'
 
 DOCKER_CONTAINER = CONF['DOCKER_CONTAINER']
 DOCKER_CONTAINER_START = CONF['DOCKER_CONTAINER_START']

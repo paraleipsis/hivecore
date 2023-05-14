@@ -14,7 +14,7 @@ router = APIRouter(
 
 
 @router.post(
-    '/',
+    '',
     response_model=GenericResponseModel[bool]
 )
 async def login(

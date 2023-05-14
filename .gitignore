@@ -20,4 +20,5 @@ docs_build
 venv
 docs.zip
 archive.zip
-test/ws_client_test.py
+test
+migrations/versions/*

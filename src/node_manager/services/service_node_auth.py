@@ -12,16 +12,15 @@ async def verify_node(
         session: AsyncSession
 ) -> GenericResponseModel[bool]:
     node = await crud_nodes.get_node_by_id(
-        node_id=node_credentials.id,
+        node_id=node_credentials.node_id,
         session=session
     )
 
     if not node:
         raise NodeAuthError('Invalid node credentials')
 
-    node_token = verify_node_access_token(token=node_credentials.token)
+    if verify_node_access_token(token=node_credentials.token):
+        if node.token == node_credentials.token:
+            return GenericResponseModel(data=True)
 
-    if node.token != node_credentials.token or node_token.node_name != node.name:
-        raise NodeAuthError('Invalid node credentials')
-
-    return GenericResponseModel(data=True)
+    raise NodeAuthError('Invalid node credentials')

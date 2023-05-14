@@ -2,7 +2,7 @@ from typing import Dict
 
 from asyncssh import SSHTCPSession
 
-from config.agent_config import (AGENT_URL, DOCKER_IMAGE, DOCKER_IMAGE_PULL, DOCKER_IMAGE_TAG,
+from config.agent_config import (DOCKER_IMAGE, DOCKER_IMAGE_PULL, DOCKER_IMAGE_TAG,
                                  DOCKER_IMAGE_BUILD, DOCKER_IMAGE_PRUNE)
 from docker.schemas.schemas_images import ImageCreate
 from modules.utils.utils import clean_map
@@ -16,7 +16,7 @@ async def build_image(
 
     response = await ssh_session.post(
         router='/post_resource',
-        target_resource=f'{AGENT_URL}/{DOCKER_IMAGE}/{DOCKER_IMAGE_BUILD}',
+        target_resource=f'{DOCKER_IMAGE}/{DOCKER_IMAGE_BUILD}',
         data=data
     )
 
@@ -28,7 +28,7 @@ async def prune_images(
 ) -> Dict:
     response = await ssh_session.post(
         router='/post_resource',
-        target_resource=f'{AGENT_URL}/{DOCKER_IMAGE}/{DOCKER_IMAGE_PRUNE}'
+        target_resource=f'{DOCKER_IMAGE}/{DOCKER_IMAGE_PRUNE}'
     )
 
     return response
@@ -42,7 +42,7 @@ async def pull_image(
 
     response = await ssh_session.post(
         router='/post_resource',
-        target_resource=f'{AGENT_URL}/{DOCKER_IMAGE}/{DOCKER_IMAGE_PULL}',
+        target_resource=f'{DOCKER_IMAGE}/{DOCKER_IMAGE_PULL}',
         params=params
     )
 
@@ -58,7 +58,7 @@ async def tag_image(
 
     response = await ssh_session.post(
         router='/post_resource',
-        target_resource=f'{AGENT_URL}/{DOCKER_IMAGE}/{image_id}/{DOCKER_IMAGE_TAG}',
+        target_resource=f'{DOCKER_IMAGE}/{image_id}/{DOCKER_IMAGE_TAG}',
         params=params
     )
 
@@ -72,7 +72,7 @@ async def remove_image(
 ) -> Dict:
     response = await ssh_session.delete(
         router='/delete_resource',
-        target_resource=f'{AGENT_URL}/{DOCKER_IMAGE}/{image_id}',
+        target_resource=f'{DOCKER_IMAGE}/{image_id}',
         params=kwargs
     )
 

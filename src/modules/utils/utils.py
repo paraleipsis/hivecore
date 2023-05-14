@@ -12,7 +12,7 @@ def clean_map(obj: Mapping[Any, Any]) -> Mapping[Any, Any]:
 
 
 def get_hash_of_obj(obj: Any) -> str:
-    return hashlib.md5(json.dumps(obj).encode("utf-8")).hexdigest()
+    return hashlib.sha256(json.dumps(obj).encode("utf-8")).hexdigest()
 
 
 def is_equal(old_object: Any, new_object: Any) -> bool:

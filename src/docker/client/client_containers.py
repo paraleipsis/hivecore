@@ -2,7 +2,7 @@ from typing import Dict, Generator
 
 from asyncssh import SSHTCPSession
 
-from config.agent_config import (AGENT_URL, DOCKER_CONTAINER_START, DOCKER_CONTAINER_STOP,
+from config.agent_config import (DOCKER_CONTAINER_START, DOCKER_CONTAINER_STOP,
                                  DOCKER_CONTAINER_RESTART, DOCKER_CONTAINER_PAUSE, DOCKER_CONTAINER_UNPAUSE,
                                  DOCKER_CONTAINER_KILL, DOCKER_CONTAINER_PRUNE, DOCKER_CONTAINER, DOCKER_CONTAINER_LOGS,
                                  DOCKER_CONTAINER_STATS, DOCKER_CONTAINER_RUN)
@@ -18,7 +18,7 @@ async def run_container(
 
     response = await ssh_session.post(
         router='/post_resource',
-        target_resource=f'{AGENT_URL}/{DOCKER_CONTAINER}/{DOCKER_CONTAINER_RUN}',
+        target_resource=f'{DOCKER_CONTAINER}/{DOCKER_CONTAINER_RUN}',
         params=kwargs,
         data=data
     )
@@ -32,7 +32,7 @@ async def start_container(
 ) -> Dict:
     response = await ssh_session.post(
         router='/post_resource',
-        target_resource=f'{AGENT_URL}/{DOCKER_CONTAINER}/{container_id}/{DOCKER_CONTAINER_START}'
+        target_resource=f'{DOCKER_CONTAINER}/{container_id}/{DOCKER_CONTAINER_START}'
     )
 
     return response
@@ -44,7 +44,7 @@ async def stop_container(
 ) -> Dict:
     response = await ssh_session.post(
         router='/post_resource',
-        target_resource=f'{AGENT_URL}/{DOCKER_CONTAINER}/{container_id}/{DOCKER_CONTAINER_STOP}'
+        target_resource=f'{DOCKER_CONTAINER}/{container_id}/{DOCKER_CONTAINER_STOP}'
     )
 
     return response
@@ -56,7 +56,7 @@ async def restart_container(
 ) -> Dict:
     response = await ssh_session.post(
         router='/post_resource',
-        target_resource=f'{AGENT_URL}/{DOCKER_CONTAINER}/{container_id}/{DOCKER_CONTAINER_RESTART}'
+        target_resource=f'{DOCKER_CONTAINER}/{container_id}/{DOCKER_CONTAINER_RESTART}'
     )
 
     return response
@@ -68,7 +68,7 @@ async def pause_container(
 ) -> Dict:
     response = await ssh_session.post(
         router='/post_resource',
-        target_resource=f'{AGENT_URL}/{DOCKER_CONTAINER}/{container_id}/{DOCKER_CONTAINER_PAUSE}'
+        target_resource=f'{DOCKER_CONTAINER}/{container_id}/{DOCKER_CONTAINER_PAUSE}'
     )
 
     return response
@@ -80,7 +80,7 @@ async def unpause_container(
 ) -> Dict:
     response = await ssh_session.post(
         router='/post_resource',
-        target_resource=f'{AGENT_URL}/{DOCKER_CONTAINER}/{container_id}/{DOCKER_CONTAINER_UNPAUSE}'
+        target_resource=f'{DOCKER_CONTAINER}/{container_id}/{DOCKER_CONTAINER_UNPAUSE}'
     )
 
     return response
@@ -92,7 +92,7 @@ async def kill_container(
 ) -> Dict:
     response = await ssh_session.post(
         router='/post_resource',
-        target_resource=f'{AGENT_URL}/{DOCKER_CONTAINER}/{container_id}/{DOCKER_CONTAINER_KILL}'
+        target_resource=f'{DOCKER_CONTAINER}/{container_id}/{DOCKER_CONTAINER_KILL}'
     )
 
     return response
@@ -105,7 +105,7 @@ async def remove_container(
 ) -> Dict:
     response = await ssh_session.delete(
         router='/delete_resource',
-        target_resource=f'{AGENT_URL}/{DOCKER_CONTAINER}/{container_id}',
+        target_resource=f'{DOCKER_CONTAINER}/{container_id}',
         params=kwargs
     )
 
@@ -117,7 +117,7 @@ async def prune_containers(
 ) -> Dict:
     response = await ssh_session.post(
         router='/post_resource',
-        target_resource=f'{AGENT_URL}/{DOCKER_CONTAINER}/{DOCKER_CONTAINER_PRUNE}'
+        target_resource=f'{DOCKER_CONTAINER}/{DOCKER_CONTAINER_PRUNE}'
     )
 
     return response
@@ -129,7 +129,7 @@ async def logs_container(
 ) -> Generator[Dict, Dict, None]:
     async for msg in ssh_session.stream(
             router='/ws_resource',
-            target_resource=f'{AGENT_URL}/{DOCKER_CONTAINER}/{container_id}/{DOCKER_CONTAINER_LOGS}',
+            target_resource=f'{DOCKER_CONTAINER}/{container_id}/{DOCKER_CONTAINER_LOGS}',
     ):
         yield msg
 
@@ -140,6 +140,6 @@ async def stats_container(
 ) -> Generator[Dict, Dict, None]:
     async for msg in ssh_session.stream(
             router='/ws_resource',
-            target_resource=f'{AGENT_URL}/{DOCKER_CONTAINER}/{container_id}/{DOCKER_CONTAINER_STATS}',
+            target_resource=f'{DOCKER_CONTAINER}/{container_id}/{DOCKER_CONTAINER_STATS}',
     ):
         yield msg

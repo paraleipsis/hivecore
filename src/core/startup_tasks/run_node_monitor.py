@@ -30,7 +30,7 @@ def run_node_monitor() -> NodeMonitor:
     _monitor.run_monitor()
 
     logger['info'].info(
-        f'Node Monitor is running'
+        'Node Monitor is running'
     )
 
     return _monitor
