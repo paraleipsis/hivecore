@@ -1,0 +1,17 @@
+# service name
+KAFKA_HOST: 'kafka'
+KAFKA_PORT: 9092
+
+DOCKER_PLATFORM_NAME: 'docker'
+DOCKER_TYPE: 'Container Runtime'
+DOCKER_DESCRIPTION: 'platform for the development, delivery and operation of containerized applications'
+SWARM_PLATFORM_NAME: 'swarm'
+SWARM_TYPE: 'Container Orchestration Tool'
+SWARM_DESCRIPTION: 'tool for managing a cluster of Docker daemons'
+
+DB_USER: 'postgres'
+DB_PASS: 'postgres'
+# service name
+DB_HOST: 'postgres'
+DB_PORT: '5432'
+DB_NAME: 'hivecore'

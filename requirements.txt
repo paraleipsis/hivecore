@@ -1,4 +1,4 @@
-aiokafka==0.8.0
+aiokafka==0.8.1
 alembic==1.10.4
 asyncpg==0.27.0
 asyncssh==2.13.1

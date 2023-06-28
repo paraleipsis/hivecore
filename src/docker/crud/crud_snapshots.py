@@ -7,31 +7,29 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from modules.exc.exceptions.exceptions_docker import DockerSnapshotDoesNotExist
-from modules.exc.exceptions.exceptions_nodes import NoSuchNode
-from node_manager.models import models_nodes
+from modules.exc.exceptions.exceptions_nodes import NodeSnapshotError
+from node_manager.models import models_snapshots
 
 
 async def get_docker_snapshot(
         node_id: UUID,
         session: AsyncSession
 ) -> Dict:
-    query_nodes = select(
-        models_nodes.Node
+    query_snapshot = select(
+        models_snapshots.Snapshot
     ).where(
-        models_nodes.Node.id == node_id
+        models_snapshots.Snapshot.node_id == node_id,
+        models_snapshots.Snapshot.platform_name == 'docker'
     )
 
-    result_query_nodes = await session.execute(query_nodes)
-    node = result_query_nodes.scalars().first()
-
-    if not node:
-        raise NoSuchNode(f'Node with id {node_id} does not exist')
-
-    snapshot = node.docker_snapshot
+    result_query_snapshots = await session.execute(query_snapshot)
+    snapshot = result_query_snapshots.scalars().first()
 
     if not snapshot:
-        raise DockerSnapshotDoesNotExist(f"Docker snapshot for Node '{node_id}' does not exist")
+        raise NodeSnapshotError(f"No snapshot for node '{node_id}'")
 
-    deserialized_snapshot = json.loads(snapshot)
+    snapshot_json = snapshot.snapshot
+
+    deserialized_snapshot = json.loads(snapshot_json)
 
     return deserialized_snapshot

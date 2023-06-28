@@ -1,5 +1,5 @@
-HOST: 'localhost'
-PORT: 8000
+HOST: '0.0.0.0'
+PORT: 8003
 LOG_LEVEL: 'info'
 DOCS_URL: '/api/docs'
 OPENAPI_URL: '/api/openapi.json'

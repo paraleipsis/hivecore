@@ -1,0 +1,73 @@
+version: '3.3'
+
+services:
+  hivecore:
+    build: .
+    container_name: hivecore-api
+    command: ./docker-entrypoint.sh
+    restart: unless-stopped
+    ports:
+      - "8003:8003"
+      - "8022:8022"
+    depends_on:
+      - kafka
+      - postgres
+    networks:
+      - default
+    volumes:
+      - .:/hivecore-api
+
+  zookeeper:
+    image: bitnami/zookeeper:3.8.1
+    container_name: zookeeper
+    restart: unless-stopped
+    ports:
+      - "2181:2181"
+    environment:
+      - ALLOW_ANONYMOUS_LOGIN=yes
+    networks:
+      - default
+    volumes:
+      - zookeeper_data:/home/bitnami/zookeeper
+
+
+  kafka:
+    image: bitnami/kafka:3
+    container_name: kafka
+    restart: unless-stopped
+    ports:
+      - "9092:9092"
+    environment:
+      - KAFKA_ZOOKEEPER_CONNECT=zookeeper:2181
+      - KAFKA_CFG_AUTO_CREATE_TOPICS_ENABLE=true
+      - KAFKA_CFG_LISTENERS=PLAINTEXT://:9092
+      - KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://kafka:9092
+      - ALLOW_PLAINTEXT_LISTENER=yes
+    depends_on:
+      - zookeeper
+    networks:
+      - default
+    volumes:
+      - kafka_data:/home/bitnami/kafka
+
+  postgres:
+    image: postgres:15.3-alpine3.18
+    container_name: postgres
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: hivecore
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      PGDATA: "/var/lib/postgresql/data/pg_data"
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+
+networks:
+  hivecore:
+
+volumes:
+  zookeeper_data:
+  kafka_data:
+  pg_data:

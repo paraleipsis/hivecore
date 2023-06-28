@@ -1,7 +1,7 @@
 import trafaret as t
 
 from config.utils import load_config
-from config.agent_config import CONFIGS_BASE_DIR
+from config.config import CONFIGS_BASE_DIR
 
 
 CONFIG_FILE = 'node_monitor_config.yml'

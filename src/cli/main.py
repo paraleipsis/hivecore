@@ -1,14 +1,10 @@
-import pathlib
-import sys
-
 import asyncio
 from typing import Annotated
 
 import typer
 
-sys.path.append(str(pathlib.Path(__file__).parent.parent))
-
 from db.database.service import init_models
+from db.broker.service import init_topics
 from auth.auth_config import CONFIG_FILE, CONFIGS_BASE_DIR
 from cli.utils import (get_yaml_data, write_yaml_data, generate_secret_key, generate_ssh_keys)
 
@@ -19,6 +15,11 @@ cli = typer.Typer()
 @cli.command()
 def db_init_models():
     asyncio.run(init_models())
+
+
+@cli.command()
+def broker_init_topics():
+    asyncio.run(init_topics())
 
 
 @cli.command()

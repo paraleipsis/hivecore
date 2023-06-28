@@ -1,7 +1,7 @@
 import trafaret as t
 
 from config.utils import load_config
-from config.agent_config import CONFIGS_BASE_DIR
+from config.config import CONFIGS_BASE_DIR
 
 CONFIG_FILE = 'storage_config.yml'
 
@@ -16,9 +16,11 @@ CONFIG_TRAFARET = t.Dict(
         'DB_PORT': t.String,
         'DB_NAME': t.String,
         'DOCKER_PLATFORM_NAME': t.String,
+        'DOCKER_TYPE': t.String,
+        'DOCKER_DESCRIPTION': t.String,
         'SWARM_PLATFORM_NAME': t.String,
-        'DOCKER_KAFKA_PARTITIONS': t.Int,
-        'SWARM_KAFKA_PARTITIONS': t.Int,
+        'SWARM_TYPE': t.String,
+        'SWARM_DESCRIPTION': t.String,
     }
 )
 
@@ -39,7 +41,8 @@ DB_PORT = CONF['DB_PORT']
 DB_NAME = CONF['DB_NAME']
 
 DOCKER_PLATFORM_NAME = CONF['DOCKER_PLATFORM_NAME']
+DOCKER_TYPE = CONF['DOCKER_TYPE']
+DOCKER_DESCRIPTION = CONF['DOCKER_DESCRIPTION']
 SWARM_PLATFORM_NAME = CONF['SWARM_PLATFORM_NAME']
-
-DOCKER_KAFKA_PARTITIONS = CONF['DOCKER_KAFKA_PARTITIONS']
-SWARM_KAFKA_PARTITIONS = CONF['SWARM_KAFKA_PARTITIONS']
+SWARM_TYPE = CONF['SWARM_TYPE']
+SWARM_DESCRIPTION = CONF['SWARM_DESCRIPTION']

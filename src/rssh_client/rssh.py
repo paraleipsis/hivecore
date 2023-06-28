@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, Dict
 
 from modules.rssh.client.client import ReverseSSHClient
 from modules.rssh.client.misc import init_publisher, init_conn_channel, init_node_auth_conf
@@ -38,3 +38,7 @@ def init_rssh_client() -> ReverseSSHClient:
 
 def get_rssh_client() -> ReverseSSHClient:
     return _rssh_client
+
+
+def get_active_connections() -> Dict:
+    return _rssh_client.active_connections

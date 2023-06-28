@@ -61,6 +61,10 @@ class ReverseSSHClient:
 
         self._loop = None
 
+    @property
+    def active_connections(self) -> Dict:
+        return self._active_connections
+
     def run_rssh_forever(
             self,
             event_loop: AbstractEventLoop = None
