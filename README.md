@@ -2,8 +2,6 @@
 
 ## Installation
 
-## Installation
-
 - Install Docker
 - Clone this repository and navigate to it:
   
