@@ -30,6 +30,4 @@ async def get_docker_snapshot(
 
     snapshot_json = snapshot.snapshot
 
-    deserialized_snapshot = json.loads(snapshot_json)
-
-    return deserialized_snapshot
+    return snapshot_json
