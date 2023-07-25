@@ -94,7 +94,9 @@ async def auth_node(
             json=node_creds
         )
 
-    return await response.json()
+        data = await response.json()
+
+    return data
 
 
 async def new_node_conn_handler(
