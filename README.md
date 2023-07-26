@@ -42,7 +42,8 @@ Swagger UI documentation by default will be available at: <http://localhost:8003
 Open API documentation by default will be available at: <http://localhost:8003/api/openapi.json>
 
 Hivecore server uses two default ports: 
-- 8022 to connect to the host-agent
+
+- 8022 to connect to the host-agents
 - 8003 to access the API
 
 ## Add a remote/local Docker/Swarm host using Hivecore Agent
