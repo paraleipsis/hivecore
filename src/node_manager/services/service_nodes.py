@@ -45,6 +45,7 @@ async def create_node(
 
     token_data = TokenData(
         node_name=new_node.name,
+        server_ipv4=new_node.server_ipv4,
         server_pub_key=SSH_PUBLIC_KEY
     )
     token = create_access_token(
