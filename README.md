@@ -1,6 +1,6 @@
 ![Image alt](https://github.com/paraleipsis/repo_images/raw/main/hivecore/7.png)
 
-## Overview
+## Overview (work in progress)
 
 This is a RESTful API for remote Docker and Swarm resources management built with FastAPI, PostgreSQL, Kafka, Aiohttp, AsyncSSH and providing the following functionality:
 
